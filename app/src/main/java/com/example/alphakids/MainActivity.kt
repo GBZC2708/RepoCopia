@@ -36,8 +36,8 @@ object AppScreen {
     const val LOGIN = "login"
     const val PROFILE_SELECTION = "profile_selection"
     const val MAIN_MENU = "main_menu"
-    const val GAME_SCREEN = "game_screen" // Pantalla de juego (pre-cámara)
-    const val CAMERA_SCREEN = "camera_screen" // Pantalla con la cámara y resultados
+    const val GAME_SCREEN = "game_screen"
+    const val CAMERA_SCREEN = "camera_screen"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -144,8 +144,6 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        // Este caso ya no es necesario porque "Jugar" va directo a la cámara.
-                        // Lo mantengo por si quieres reutilizarlo, pero podrías borrarlo.
                         AppScreen.GAME_SCREEN -> GameScreen(
                             onBackClick = { currentScreen = AppScreen.MAIN_MENU },
                             onCloseClick = { currentScreen = AppScreen.PROFILE_SELECTION }

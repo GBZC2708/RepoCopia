@@ -29,7 +29,7 @@ fun CameraButton(
             .clip(RoundedCornerShape(28.dp))
             .background(AlphaKidsTextGreen)
             .clickable { onClick() }
-            .padding(horizontal = 100.dp, vertical = 10.dp), // Padding amplio para hacerlo ancho
+            .padding(horizontal = 100.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center
     ) {
         Icon(

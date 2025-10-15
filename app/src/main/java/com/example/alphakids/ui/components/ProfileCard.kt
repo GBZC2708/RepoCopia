@@ -39,7 +39,7 @@ fun ProfileCard(
                 .fillMaxSize()
                 .padding(24.dp),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start // 👈 todo alineado a la izquierda
+            horizontalAlignment = Alignment.Start
         ) {
             // 🟢 Título
             Text(

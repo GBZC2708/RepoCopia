@@ -16,8 +16,6 @@ fun AlphaPrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    // --- PARÁMETRO AÑADIDO ---
-    // Acepta colores personalizados, si no se pasan, usa los colores primarios por defecto.
     colors: ButtonColors = ButtonDefaults.buttonColors(
         containerColor = MaterialTheme.colorScheme.primary,
         contentColor = MaterialTheme.colorScheme.onPrimary

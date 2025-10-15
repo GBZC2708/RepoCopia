@@ -43,13 +43,13 @@ fun LetterInputBox(
     }
 }
 
-// Este componente es una variación con el borde punteado, como en tu diseño.
+
 @Composable
 fun DashedLetterInputBox(
     modifier: Modifier = Modifier
 ) {
     val shape = RoundedCornerShape(16.dp)
-    // Para el borde punteado, usamos un Canvas, que nos da más control sobre el dibujado.
+
     androidx.compose.foundation.Canvas(
         modifier = modifier.size(width = 50.dp, height = 60.dp)
     ) {

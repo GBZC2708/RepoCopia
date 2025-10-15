@@ -31,9 +31,9 @@ fun AlphaTextField(
     label: String,
     modifier: Modifier = Modifier,
     placeholderText: String = "",
-    // Parámetro para manejar campos de contraseña
+
     visualTransformation: VisualTransformation = VisualTransformation.None,
-    // Parámetro para configurar el tipo de teclado
+
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default
 ) {
     Column(modifier = modifier) {
@@ -49,20 +49,20 @@ fun AlphaTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp), // Esquinas redondeadas
+            shape = RoundedCornerShape(16.dp),
             placeholder = { Text(text = placeholderText) },
             singleLine = true,
             visualTransformation = visualTransformation,
             keyboardOptions = keyboardOptions,
-            // Aquí personalizamos los colores para que coincidan con tu diseño
+
             colors = TextFieldDefaults.colors(
-                // Color de fondo cuando el campo está activo o inactivo
+
                 focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                // Color del texto y del cursor
+
                 focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 cursorColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                // Hacemos transparente la línea indicadora de abajo
+
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent
@@ -75,7 +75,7 @@ fun AlphaTextField(
 @Composable
 fun AlphaTextFieldPreview() {
     AlphakidsTheme {
-        // Usamos 'remember' para que la preview sea interactiva
+
         var emailValue by remember { mutableStateOf("") }
         var passwordValue by remember { mutableStateOf("12345") }
 
@@ -93,7 +93,7 @@ fun AlphaTextFieldPreview() {
                 value = passwordValue,
                 onValueChange = { passwordValue = it },
                 label = "Contraseña",
-                visualTransformation = PasswordVisualTransformation() // Oculta el texto
+                visualTransformation = PasswordVisualTransformation()
             )
         }
     }

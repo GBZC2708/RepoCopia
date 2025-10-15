@@ -9,13 +9,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.alphakids.ui.components.AlphaPrimaryButton
 import com.example.alphakids.ui.components.AlphaSecondaryButton
 import com.example.alphakids.ui.components.GameImageContainer
 import com.example.alphakids.ui.components.LetterInputBox
-import com.example.alphakids.ui.theme.AlphakidsTheme
+
 
 @Composable
 fun SuccessResultScreen(
@@ -47,16 +46,14 @@ fun SuccessResultScreen(
                     LetterInputBox(letter = letter)
                 }
             }
-            AlphaPrimaryButton(text = "Continuar", onClick = onContinue)
-            AlphaSecondaryButton(text = "Volver", onClick = onBack)
-        }
-    }
-}
 
-@Preview
-@Composable
-fun SuccessResultScreenPreview() {
-    AlphakidsTheme {
-        SuccessResultScreen("GATO", {}, {})
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                AlphaPrimaryButton(text = "Continuar", onClick = onContinue)
+                AlphaSecondaryButton(text = "Volver", onClick = onBack)
+            }
+        }
     }
 }

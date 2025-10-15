@@ -23,7 +23,7 @@ sealed class GameState {
 
 @Composable
 fun CameraScreen(
-    onExitGame: () -> Unit // Callback para salir del juego por completo
+    onExitGame: () -> Unit
 ) {
     var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
     var gameState by remember { mutableStateOf<GameState>(GameState.Scanning) }
@@ -31,11 +31,11 @@ fun CameraScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         when (val state = gameState) {
             is GameState.Scanning -> {
-                // El estado por defecto, muestra la cámara y los controles
+
                 CameraPreview(
                     modifier = Modifier.fillMaxSize(),
                     lensFacing = lensFacing,
-                    onCameraBound = { /* Lógica de control de cámara */ }
+                    onCameraBound = {  }
                 )
                 ScannerOverlay(modifier = Modifier.fillMaxSize())
                 TopHintChip(
@@ -48,7 +48,6 @@ fun CameraScreen(
                 )
                 CameraControls(
                     onTakePhoto = {
-                        // Al tomar la foto, simulamos un resultado aleatorio
                         gameState = if (Random.nextBoolean()) GameState.Success else GameState.Failure
                     },
                     onToggleFlash = { /* ... */ },
@@ -66,15 +65,15 @@ fun CameraScreen(
             }
             is GameState.Success -> {
                 SuccessResultScreen(
-                    word = "POLO", // Palabra hardcodeada
-                    onContinue = { gameState = GameState.Scanning }, // Vuelve a escanear
-                    onBack = onExitGame // Sale al menú principal
+                    word = "POLO",
+                    onContinue = { gameState = GameState.Scanning },
+                    onBack = onExitGame
                 )
             }
             is GameState.Failure -> {
                 FailureResultScreen(
-                    onRetry = { gameState = GameState.Scanning }, // Vuelve a escanear
-                    onExit = onExitGame // Sale al menú principal
+                    onRetry = { gameState = GameState.Scanning },
+                    onExit = onExitGame
                 )
             }
         }

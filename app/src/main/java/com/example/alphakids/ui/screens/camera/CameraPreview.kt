@@ -19,14 +19,14 @@ import kotlin.coroutines.suspendCoroutine
 @Composable
 fun CameraPreview(
     modifier: Modifier = Modifier,
-    lensFacing: Int = CameraSelector.LENS_FACING_BACK, // Parámetro para elegir la cámara
-    onCameraBound: (Camera) -> Unit // Callback para devolver el control de la cámara
+    lensFacing: Int = CameraSelector.LENS_FACING_BACK,
+    onCameraBound: (Camera) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val previewView = remember { PreviewView(context) }
 
-    // Usamos LaunchedEffect para que la cámara se actualice cuando cambie lensFacing
+
     LaunchedEffect(lensFacing) {
         val cameraProvider = suspendCoroutine<ProcessCameraProvider> { continuation ->
             ProcessCameraProvider.getInstance(context).also { future ->
@@ -51,7 +51,7 @@ fun CameraPreview(
                 cameraSelector,
                 preview
             )
-            // Devolvemos el objeto 'camera' para poder controlarlo desde fuera
+
             onCameraBound(camera)
         } catch (e: Exception) {
             e.printStackTrace()

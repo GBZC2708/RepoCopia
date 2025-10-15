@@ -8,13 +8,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.alphakids.ui.components.AlphaPrimaryButton
 import com.example.alphakids.ui.components.AlphaSecondaryButton
 import com.example.alphakids.ui.components.GameImageContainer
-import com.example.alphakids.ui.theme.AlphakidsTheme
-import kotlin.random.Random
+
 
 @Composable
 fun FailureResultScreen(
@@ -44,30 +42,27 @@ fun FailureResultScreen(
                 iconColor = MaterialTheme.colorScheme.error
             )
             Text("Vuelve a intentarlo", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.error)
-            AlphaPrimaryButton(
-                text = "Seguir jugando",
-                onClick = onRetry,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
-                    contentColor = MaterialTheme.colorScheme.onError
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                AlphaPrimaryButton(
+                    text = "Seguir jugando",
+                    onClick = onRetry,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
                 )
-            )
-            AlphaSecondaryButton(
-                text = "Salir",
-                onClick = onExit,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                AlphaSecondaryButton(
+                    text = "Salir",
+                    onClick = onExit,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
                 )
-            )
+            }
         }
-    }
-}
-
-@Preview
-@Composable
-fun FailureResultScreenPreview() {
-    AlphakidsTheme {
-        FailureResultScreen({}, {})
     }
 }

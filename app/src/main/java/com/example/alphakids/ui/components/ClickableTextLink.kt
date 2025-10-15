@@ -19,7 +19,7 @@ fun ClickableTextLink(
 ) {
     Text(
         text = text,
-        modifier = modifier.clickable { onClick() },// La magia para hacerlo clicleable
+        modifier = modifier.clickable { onClick() },
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary
     )

@@ -16,8 +16,7 @@ fun AlphaSecondaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    // --- PARÁMETRO AÑADIDO ---
-    // Acepta colores personalizados, si no se pasan, usa los colores secundarios por defecto.
+
     colors: ButtonColors = ButtonDefaults.buttonColors(
         containerColor = MaterialTheme.colorScheme.secondary,
         contentColor = MaterialTheme.colorScheme.onSecondary
@@ -30,7 +29,7 @@ fun AlphaSecondaryButton(
             .fillMaxWidth()
             .height(56.dp),
         shape = RoundedCornerShape(50),
-        colors = colors // Usamos el parámetro aquí
+        colors = colors 
     ) {
         Text(text = text, style = MaterialTheme.typography.labelLarge)
     }
