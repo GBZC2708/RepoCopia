@@ -59,4 +59,12 @@ dependencies {
 
     // Material Symbols (Iconos)
     implementation("androidx.compose.material:material-icons-extended-android:1.6.6")
+
+    // --- Dependencias de CameraX ---
+    val cameraxVersion = "1.3.1" // Usa la última versión estable que encuentres
+    implementation("androidx.camera:camera-core:${cameraxVersion}")
+    implementation("androidx.camera:camera-camera2:${cameraxVersion}")
+    implementation("androidx.camera:camera-lifecycle:${cameraxVersion}")
+    implementation("androidx.camera:camera-view:${cameraxVersion}")
+
 }
