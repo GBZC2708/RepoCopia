@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.alphakids.ui.components.AppBottomNavigationBar
 import com.example.alphakids.ui.components.BottomNavItem
+import com.example.alphakids.ui.screens.game.GameScreen
 import com.example.alphakids.ui.screens.login.LoginScreen
 import com.example.alphakids.ui.screens.main_menu.MainMenuScreen
 import com.example.alphakids.ui.screens.profile.ProfileSelectionScreen
@@ -27,7 +28,8 @@ object AppScreen {
     const val ROLE_SELECTION = "role_selection"
     const val LOGIN = "login"
     const val PROFILE_SELECTION = "profile_selection"
-    const val MAIN_MENU = "main_menu" // Nueva pantalla
+    const val MAIN_MENU = "main_menu"
+    const val GAME_SCREEN = "game_screen" // Nueva pantalla
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,7 +41,7 @@ class MainActivity : ComponentActivity() {
             AlphakidsTheme {
                 var currentScreen by remember { mutableStateOf(AppScreen.ROLE_SELECTION) }
                 var selectedRole by remember { mutableStateOf<String?>(null) }
-                var selectedProfile by remember { mutableStateOf("Sofía") } // Perfil por defecto para la demo
+                var selectedProfile by remember { mutableStateOf("Sofía") }
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -62,9 +64,7 @@ class MainActivity : ComponentActivity() {
                                 onLoginClick = { _, _ ->
                                     if (role == "Tutor") {
                                         currentScreen = AppScreen.PROFILE_SELECTION
-                                    } else {
-                                        Log.d("LoginSuccess", "Docente ha iniciado sesión.")
-                                    }
+                                    } else { Log.d("LoginSuccess", "Docente ha iniciado sesión.") }
                                 },
                                 onForgotPasswordClick = { Log.d("Navigation", "Ir a Olvidé Contraseña") },
                                 onRegisterClick = { Log.d("Navigation", "Ir a Registro") }
@@ -105,16 +105,21 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             ) { paddingValues ->
-                                when (currentBottomRoute) {
-                                    BottomNavItem.Inicio.route -> MainMenuScreen(
-                                        profileName = selectedProfile,
-                                        modifier = Modifier.padding(paddingValues)
-                                    )
-                                    BottomNavItem.Diccionario.route -> { /* TODO: Pantalla Diccionario */ }
-                                    BottomNavItem.Logros.route -> { /* TODO: Pantalla Logros */ }
-                                }
+                                // La llamada a MainMenuScreen ahora está completa
+                                MainMenuScreen(
+                                    profileName = selectedProfile,
+                                    onPlayClick = { currentScreen = AppScreen.GAME_SCREEN },
+                                    onDictionaryClick = { Log.d("Navigation", "Go to Dictionary") },
+                                    onAchievementsClick = { Log.d("Navigation", "Go to Achievements") },
+                                    modifier = Modifier.padding(paddingValues)
+                                )
                             }
                         }
+
+                        AppScreen.GAME_SCREEN -> GameScreen(
+                            onBackClick = { currentScreen = AppScreen.MAIN_MENU },
+                            onCloseClick = { currentScreen = AppScreen.PROFILE_SELECTION }
+                        )
                     }
                 }
             }

@@ -1,6 +1,5 @@
 package com.example.alphakids.ui.screens.main_menu
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -21,6 +20,9 @@ import com.example.alphakids.ui.theme.AlphakidsTheme
 @Composable
 fun MainMenuScreen(
     profileName: String,
+    onPlayClick: () -> Unit, // Parámetro añadido
+    onDictionaryClick: () -> Unit, // Parámetro añadido
+    onAchievementsClick: () -> Unit, // Parámetro añadido
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -51,13 +53,13 @@ fun MainMenuScreen(
             MenuActionCard(
                 title = "Jugar",
                 icon = Icons.Default.SportsEsports,
-                onClick = { Log.d("MainMenu", "Click en Jugar") },
+                onClick = onPlayClick, // Usamos el callback
                 modifier = Modifier.size(width = 164.dp, height = 189.dp)
             )
             MenuActionCard(
                 title = "Mi\nDiccionario",
                 icon = Icons.Default.MenuBook,
-                onClick = { Log.d("MainMenu", "Click en Diccionario") },
+                onClick = onDictionaryClick, // Usamos el callback
                 modifier = Modifier.size(width = 164.dp, height = 189.dp)
             )
         }
@@ -65,17 +67,23 @@ fun MainMenuScreen(
         MenuActionCard(
             title = "Mis Logros",
             icon = Icons.Default.EmojiEvents,
-            onClick = { Log.d("MainMenu", "Click en Logros") },
+            onClick = onAchievementsClick, // Usamos el callback
             modifier = Modifier.size(width = 348.dp, height = 189.dp)
         )
         Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
 fun MainMenuScreenPreview() {
     AlphakidsTheme {
-        MainMenuScreen(profileName = "Sofía")
+        MainMenuScreen(
+            profileName = "Sofía",
+            onPlayClick = {},
+            onDictionaryClick = {},
+            onAchievementsClick = {}
+        )
     }
 }
