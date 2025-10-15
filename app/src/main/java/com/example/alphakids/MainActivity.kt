@@ -23,7 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import com.example.alphakids.ui.components.AppBottomNavigationBar
 import com.example.alphakids.ui.components.BottomNavItem
-import com.example.alphakids.ui.screens.camera.CameraScreen // Importamos la pantalla final
+import com.example.alphakids.ui.screens.camera.CameraScreen
 import com.example.alphakids.ui.screens.game.GameScreen
 import com.example.alphakids.ui.screens.login.LoginScreen
 import com.example.alphakids.ui.screens.main_menu.MainMenuScreen
@@ -36,8 +36,8 @@ object AppScreen {
     const val LOGIN = "login"
     const val PROFILE_SELECTION = "profile_selection"
     const val MAIN_MENU = "main_menu"
-    const val GAME_SCREEN = "game_screen"
-    const val CAMERA_SCREEN = "camera_screen"
+    const val GAME_SCREEN = "game_screen" // Pantalla de juego (pre-cámara)
+    const val CAMERA_SCREEN = "camera_screen" // Pantalla con la cámara y resultados
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
                     contract = ActivityResultContracts.RequestPermission(),
                     onResult = { isGranted ->
                         if (isGranted) {
+                            Log.d("Permissions", "Camera permission granted.")
                             currentScreen = AppScreen.CAMERA_SCREEN
                         } else {
                             Log.d("Permissions", "Camera permission denied.")
@@ -63,9 +64,11 @@ class MainActivity : ComponentActivity() {
                     }
                 )
 
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
                     when (currentScreen) {
-                        // ... (Los otros casos no cambian)
                         AppScreen.ROLE_SELECTION -> RoleSelectionScreen { role ->
                             selectedRole = role
                             currentScreen = AppScreen.LOGIN
@@ -126,6 +129,7 @@ class MainActivity : ComponentActivity() {
                                 MainMenuScreen(
                                     profileName = selectedProfile,
                                     onPlayClick = {
+                                        // La pantalla de juego ahora es la de la cámara
                                         val permissionStatus = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
                                         if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
                                             currentScreen = AppScreen.CAMERA_SCREEN
@@ -140,14 +144,17 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
+                        // Este caso ya no es necesario porque "Jugar" va directo a la cámara.
+                        // Lo mantengo por si quieres reutilizarlo, pero podrías borrarlo.
                         AppScreen.GAME_SCREEN -> GameScreen(
                             onBackClick = { currentScreen = AppScreen.MAIN_MENU },
                             onCloseClick = { currentScreen = AppScreen.PROFILE_SELECTION }
                         )
 
                         AppScreen.CAMERA_SCREEN -> {
-                            // *** CASO FINAL ACTUALIZADO ***
-                            CameraScreen()
+                            CameraScreen(
+                                onExitGame = { currentScreen = AppScreen.MAIN_MENU }
+                            )
                         }
                     }
                 }

@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -24,8 +25,13 @@ private val LightColorScheme = lightColorScheme(
     tertiary = Pink40,
 
     // Colores específicos para la tarjeta
-    surfaceVariant = AlphaKidsTealLight, // Fondo de la tarjeta
-    onSurfaceVariant = AlphaKidsTextGreen     // Color del contenido sobre la tarjeta
+    surfaceVariant = AlphaKidsCardBackground, // Fondo de la tarjeta
+    onSurfaceVariant = AlphaKidsTextGreen,    // Color del contenido sobre la tarjeta
+
+            // --- Slots de Error ---error = AlphaKidsRed,
+    onError = Color.White,
+    errorContainer = AlphaKidsRedLight,
+    onErrorContainer = AlphaKidsRed,
 
     /* Otros colores por defecto que puedes sobreescribir
      background = Color(0xFFFFFBFE),

@@ -17,3 +17,6 @@ val AlphaKidsCardBackground = Color(0xFFF4FBF8)
 // --- Colores para el Menú Principal ---
 val AlphaKidsTealLight = Color(0xFF9EF2E3) // Color de fondo de las tarjetas de acción
 val AlphaKidsTealNav = Color(0xFFCCE8E2)
+
+val AlphaKidsRed = Color(0xFFC52929)
+val AlphaKidsRedLight = Color(0xFFFFEDED)

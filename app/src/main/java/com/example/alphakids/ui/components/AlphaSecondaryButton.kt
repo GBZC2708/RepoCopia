@@ -11,16 +11,16 @@ import androidx.compose.ui.unit.dp
 import com.example.alphakids.ui.theme.AlphakidsTheme
 
 @Composable
-fun AlphaPrimaryButton(
+fun AlphaSecondaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     // --- PARÁMETRO AÑADIDO ---
-    // Acepta colores personalizados, si no se pasan, usa los colores primarios por defecto.
+    // Acepta colores personalizados, si no se pasan, usa los colores secundarios por defecto.
     colors: ButtonColors = ButtonDefaults.buttonColors(
-        containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary
+        containerColor = MaterialTheme.colorScheme.secondary,
+        contentColor = MaterialTheme.colorScheme.onSecondary
     )
 ) {
     Button(
@@ -32,21 +32,14 @@ fun AlphaPrimaryButton(
         shape = RoundedCornerShape(50),
         colors = colors // Usamos el parámetro aquí
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge
-        )
+        Text(text = text, style = MaterialTheme.typography.labelLarge)
     }
 }
 
-
-@Preview(showBackground = true, widthDp = 360)
+@Preview
 @Composable
-fun AlphaPrimaryButtonPreview() {
+fun AlphaSecondaryButtonPreview() {
     AlphakidsTheme {
-        AlphaPrimaryButton(
-            text = "Botón Primario",
-            onClick = {}
-        )
+        AlphaSecondaryButton(text = "Botón Secundario", onClick = {})
     }
 }
