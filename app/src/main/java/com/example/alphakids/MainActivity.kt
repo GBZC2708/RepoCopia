@@ -14,12 +14,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.alphakids.ui.screens.login.LoginScreen
+import com.example.alphakids.ui.screens.profile.ProfileSelectionScreen
 import com.example.alphakids.ui.screens.role_selection.RoleSelectionScreen
 import com.example.alphakids.ui.theme.AlphakidsTheme
 
 object AppScreen {
     const val ROLE_SELECTION = "role_selection"
     const val LOGIN = "login"
+    const val PROFILE_SELECTION = "profile_selection"
 }
 
 class MainActivity : ComponentActivity() {
@@ -28,7 +30,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AlphakidsTheme {
-                // Variables de estado para controlar la navegación
                 var currentScreen by remember { mutableStateOf(AppScreen.ROLE_SELECTION) }
                 var selectedRole by remember { mutableStateOf<String?>(null) }
 
@@ -36,20 +37,16 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Usamos un 'when' para decidir qué pantalla mostrar
                     when (currentScreen) {
                         AppScreen.ROLE_SELECTION -> {
                             RoleSelectionScreen { role ->
-                                // Cuando un rol es seleccionado, guardamos el rol
-                                // y cambiamos el estado para mostrar la pantalla de login
                                 selectedRole = role
                                 currentScreen = AppScreen.LOGIN
                             }
                         }
 
                         AppScreen.LOGIN -> {
-                            // Determinamos qué ícono y texto usar basado en el rol guardado
-                            val role = selectedRole ?: "usuario" // Valor por defecto
+                            val role = selectedRole ?: "usuario"
                             val icon = if (role == "Tutor") Icons.Rounded.Face else Icons.Rounded.School
 
                             LoginScreen(
@@ -59,10 +56,24 @@ class MainActivity : ComponentActivity() {
                                 onCloseClick = { currentScreen = AppScreen.ROLE_SELECTION },
                                 onLoginClick = { email, password ->
                                     Log.d("LoginAttempt", "Role: $role, Email: $email, Pass: $password")
-                                    // Aquí iría la lógica del ViewModel para iniciar sesión
+                                    // *** LÓGICA DE NAVEGACIÓN ACTUALIZADA ***
+                                    if (role == "Tutor") {
+                                        currentScreen = AppScreen.PROFILE_SELECTION
+                                    } else {
+                                        // Para el docente, por ahora solo logueamos
+                                        Log.d("LoginSuccess", "Docente ha iniciado sesión.")
+                                    }
                                 },
                                 onForgotPasswordClick = { Log.d("Navigation", "Go to Forgot Password") },
                                 onRegisterClick = { Log.d("Navigation", "Go to Register") }
+                            )
+                        }
+
+                        AppScreen.PROFILE_SELECTION -> {
+                            ProfileSelectionScreen(
+                                onLogoutClick = { currentScreen = AppScreen.ROLE_SELECTION },
+                                onProfileClick = { profileName -> Log.d("ProfileSelected", profileName) },
+                                onAddProfileClick = { Log.d("Navigation", "Go to Add Profile") }
                             )
                         }
                     }
