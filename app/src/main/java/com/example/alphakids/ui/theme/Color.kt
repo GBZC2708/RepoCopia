@@ -13,3 +13,7 @@ val Pink40 = Color(0xFF7D5260)
 // --- Tus nuevos colores ---
 val AlphaKidsTextGreen = Color(0xFF1A8B7D)
 val AlphaKidsCardBackground = Color(0xFFF4FBF8)
+
+// --- Colores para el Menú Principal ---
+val AlphaKidsTealLight = Color(0xFF9EF2E3) // Color de fondo de las tarjetas de acción
+val AlphaKidsTealNav = Color(0xFFCCE8E2)

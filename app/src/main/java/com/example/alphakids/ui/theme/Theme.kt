@@ -24,7 +24,7 @@ private val LightColorScheme = lightColorScheme(
     tertiary = Pink40,
 
     // Colores específicos para la tarjeta
-    surfaceVariant = AlphaKidsCardBackground, // Fondo de la tarjeta
+    surfaceVariant = AlphaKidsTealLight, // Fondo de la tarjeta
     onSurfaceVariant = AlphaKidsTextGreen     // Color del contenido sobre la tarjeta
 
     /* Otros colores por defecto que puedes sobreescribir
