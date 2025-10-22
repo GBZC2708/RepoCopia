@@ -68,4 +68,19 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
     implementation("com.google.firebase:firebase-analytics")
 
+    // 1. AUTENTICACIÓN (Inicio de sesión y registro)
+    implementation("com.google.firebase:firebase-auth-ktx")
+
+    // 2. FIRESTORE (Base de datos NoSQL para Palabras, Estudiantes, Docentes)
+    implementation("com.google.firebase:firebase-firestore-ktx")
+
+    // Jetpack
+    // 1. NAVIGATION COMPOSE (Para moverte entre pantallas)
+    val navVersion = "2.7.0" // Usa una versión estable reciente
+    implementation("androidx.navigation:navigation-compose:$navVersion")
+
+    // 2. LIFECYCLE/VIEWMODEL COMPOSE (Para la arquitectura MVVM)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.3")
+
 }
