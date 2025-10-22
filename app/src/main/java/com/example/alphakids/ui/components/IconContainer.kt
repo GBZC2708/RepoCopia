@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -21,20 +22,22 @@ import com.example.alphakids.ui.theme.AlphakidsTheme
 fun IconContainer(
     modifier: Modifier = Modifier,
     icon: ImageVector,
-    contentDescription: String?
+    contentDescription: String?,
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
+    contentColor: Color = MaterialTheme.colorScheme.primary
 ) {
     Box(
         modifier = modifier
             .size(84.dp)
-            .clip(RoundedCornerShape(28.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer),
+            .clip(RoundedCornerShape(20.dp))
+            .background(containerColor),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
             modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.primary
+            tint = contentColor
         )
     }
 }
@@ -46,6 +49,19 @@ fun IconContainerPreview() {
         IconContainer(
             icon = Icons.Rounded.Face,
             contentDescription = "Tutor Icon"
+        )
+    }
+}
+
+@Preview
+@Composable
+fun IconContainerErrorPreview() {
+    AlphakidsTheme {
+        IconContainer(
+            icon = Icons.Rounded.Face,
+            contentDescription = "Error Icon",
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.error
         )
     }
 }
