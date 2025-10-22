@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.alphakids" />
+                  <option name="mobileSdkAppId" value="1:902095428865:android:d94a5702c9e6772e434f00" />
+                  <option name="projectId" value="alphakids-tecsup" />
+                  <option name="projectNumber" value="902095428865" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

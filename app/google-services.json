@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "902095428865",
+    "project_id": "alphakids-tecsup",
+    "storage_bucket": "alphakids-tecsup.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:902095428865:android:d94a5702c9e6772e434f00",
+        "android_client_info": {
+          "package_name": "com.example.alphakids"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDE_FPB7mcxr3AD4siJYvfcHUsKmWRlgQE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
