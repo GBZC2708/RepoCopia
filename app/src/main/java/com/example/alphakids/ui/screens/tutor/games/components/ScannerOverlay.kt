@@ -43,8 +43,8 @@ fun ScannerOverlay(modifier: Modifier = Modifier) {
     Canvas(modifier = modifier.fillMaxSize()) {
         val (width, height) = size
 
-        // Definir el área del marco
-        val framePadding = 48.dp.toPx()
+        // Definir el área del marco (más pequeño)
+        val framePadding = 96.dp.toPx()
         val left = framePadding
         val top = framePadding
         val right = width - framePadding

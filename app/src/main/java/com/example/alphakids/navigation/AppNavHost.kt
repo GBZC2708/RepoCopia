@@ -29,11 +29,10 @@ import com.example.alphakids.ui.screens.tutor.games.GameScreen
 import com.example.alphakids.ui.screens.tutor.games.CameraScreen
 import com.example.alphakids.ui.components.ActionDialog
 import androidx.compose.material.icons.rounded.Warning
+import com.example.alphakids.ui.screens.profile.EditProfileScreen
+import com.example.alphakids.ui.screens.tutor.studentprofile.CreateStudentProfileScreen
+import com.example.alphakids.ui.screens.tutor.studentprofile.EditStudentProfileScreen
 
-// Placeholders para las pantallas que faltan
-@Composable fun RoleSelectionScreen(onRoleSelected: (String) -> Unit) { /* ... */ }
-@Composable fun LoginScreen(role: String, onLoginSuccess: (String) -> Unit, onRegisterClick: (String) -> Unit, onBack: () -> Unit) { /* ... */ }
-@Composable fun RegisterScreen(role: String, onRegisterSuccess: (String) -> Unit, onBack: () -> Unit) { /* ... */ }
 
 
 @Composable
@@ -51,21 +50,27 @@ fun AppNavHost(
     }
 
     // Función auxiliar para manejar la navegación de la barra inferior del DOCENTE
-    val navigateToTeacherBottomNav: (String) -> Unit = { route ->
-        navController.navigate(route) {
-            // Asumiendo que la ruta actual es una de las tres del bottom nav (HOME, STUDENTS, WORDS)
-            // Usamos popUpTo para evitar el crecimiento excesivo del stack
-            popUpTo(route) { saveState = true }
+    // Recibe rutas base: "home" | "students" | "words" y las mapea a las rutas reales
+    val navigateToTeacherBottomNav: (String) -> Unit = { base ->
+        val targetRoute = when (base) {
+            "students" -> Routes.TEACHER_STUDENTS
+            "words" -> Routes.WORDS
+            else -> Routes.TEACHER_HOME
+        }
+        navController.navigate(targetRoute) {
+            // Usamos una ruta fija para popUpTo dentro del flujo del docente
+            popUpTo(Routes.TEACHER_HOME) { saveState = true }
             launchSingleTop = true
             restoreState = true
         }
     }
 
     // Función auxiliar para manejar la navegación de la barra inferior del TUTOR
+    // Recibe rutas concretas (con studentId) y hace popUpTo a la ruta base del flujo
     val navigateToStudentBottomNav: (String) -> Unit = { route ->
         navController.navigate(route) {
-            // Asumiendo que la ruta actual es una de las tres del bottom nav (HOME, DICTIONARY, ACHIEVEMENTS)
-            popUpTo(route) { saveState = true }
+            // Importante: popUpTo a la ruta base declarada (no parametrizada)
+            popUpTo(Routes.HOME) { saveState = true }
             launchSingleTop = true
             restoreState = true
         }
@@ -79,8 +84,9 @@ fun AppNavHost(
     ) {
         // --- 1. Selección de Rol (/ - ROLE_SELECTION) ---
         composable(Routes.ROLE_SELECTION) {
-            RoleSelectionScreen(
-                onRoleSelected = { role -> navController.navigate(Routes.loginRoute(role)) }
+            com.example.alphakids.ui.screens.common.RoleSelectScreen(
+                onTutorClick = { navController.navigate(Routes.loginRoute(Routes.ROLE_TUTOR)) },
+                onTeacherClick = { navController.navigate(Routes.loginRoute(Routes.ROLE_TEACHER)) }
             )
         }
 
@@ -90,18 +96,17 @@ fun AppNavHost(
             arguments = listOf(navArgument("role") { type = NavType.StringType })
         ) { backStackEntry ->
             val role = backStackEntry.arguments?.getString("role") ?: Routes.ROLE_TEACHER
-            LoginScreen(
-                role = role,
-                onBack = { navController.popBackStack() },
-                onLoginSuccess = { userRole ->
-                    val nextRoute = when (userRole) {
-                        Routes.ROLE_TEACHER -> Routes.TEACHER_HOME
-                        Routes.ROLE_TUTOR -> Routes.PROFILES
-                        else -> Routes.LOGIN
-                    }
+            val isTutor = role == Routes.ROLE_TUTOR
+            com.example.alphakids.ui.screens.auth.LoginScreen(
+                onBackClick = { navController.popBackStack() },
+                onCloseClick = { navController.popBackStack() },
+                onLoginClick = {
+                    val nextRoute = if (isTutor) Routes.PROFILES else Routes.TEACHER_HOME
                     navController.navigate(nextRoute) { popUpTo(Routes.LOGIN) { inclusive = true } }
                 },
-                onRegisterClick = { role -> navController.navigate(Routes.registerRoute(role)) }
+                onForgotPasswordClick = { /* TODO: recuperar contraseña */ },
+                onRegisterClick = { navController.navigate(Routes.registerRoute(role)) },
+                isTutorLogin = isTutor
             )
         }
 
@@ -110,17 +115,15 @@ fun AppNavHost(
             arguments = listOf(navArgument("role") { type = NavType.StringType })
         ) { backStackEntry ->
             val role = backStackEntry.arguments?.getString("role") ?: Routes.ROLE_TEACHER
-            RegisterScreen(
-                role = role,
-                onBack = { navController.popBackStack() },
-                onRegisterSuccess = { userRole ->
-                    val nextRoute = when (userRole) {
-                        Routes.ROLE_TEACHER -> Routes.TEACHER_HOME
-                        Routes.ROLE_TUTOR -> Routes.PROFILES
-                        else -> Routes.LOGIN
-                    }
+            val isTutor = role == Routes.ROLE_TUTOR
+            com.example.alphakids.ui.screens.auth.RegisterScreen(
+                onBackClick = { navController.popBackStack() },
+                onCloseClick = { navController.popBackStack() },
+                onRegisterClick = {
+                    val nextRoute = if (isTutor) Routes.PROFILES else Routes.TEACHER_HOME
                     navController.navigate(nextRoute) { popUpTo(Routes.REGISTER) { inclusive = true } }
-                }
+                },
+                isTutorRegister = isTutor
             )
         }
 
@@ -130,8 +133,8 @@ fun AppNavHost(
         composable(Routes.PROFILES) {
             ProfileSelectionScreen(
                 onProfileClick = { profileId -> navController.navigate(Routes.homeRoute(profileId)) },
-                onAddProfileClick = { /* Navegar a pantalla de creación de perfil */ },
-                onSettingsClick = { /* Manejar ajustes */ },
+                onAddProfileClick = { navController.navigate(Routes.STUDENT_PROFILE_CREATE) },
+                onSettingsClick = { navController.navigate(Routes.editProfileRoute(Routes.ROLE_TUTOR)) },
                 onLogoutClick = onLogout
             )
         }
@@ -151,7 +154,7 @@ fun AppNavHost(
                 onPlayClick = { navController.navigate(Routes.GAME) },
                 onDictionaryClick = { navigateToStudentBottomNav(Routes.dictionaryRoute(studentId)) },
                 onAchievementsClick = { navigateToStudentBottomNav(Routes.achievementsRoute(studentId)) },
-                onSettingsClick = { /* Manejar ajustes */ },
+                onSettingsClick = { navController.navigate(Routes.editStudentProfileRoute(studentId)) },
                 onBottomNavClick = { route ->
                     val targetRoute = when (route) {
                         "dictionary" -> Routes.dictionaryRoute(studentId)
@@ -160,7 +163,7 @@ fun AppNavHost(
                     }
                     navigateToStudentBottomNav(targetRoute)
                 },
-                currentRoute = backStackEntry.destination.route ?: Routes.HOME
+                currentRoute = "home"
             )
         }
 
@@ -169,13 +172,21 @@ fun AppNavHost(
             route = Routes.DICTIONARY,
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
         ) { backStackEntry ->
+            val studentId = backStackEntry.arguments?.getString("studentId") ?: "default"
             StudentDictionaryScreen(
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
                 onWordClick = { /* Ver detalle de palabra en el diccionario */ },
-                onSettingsClick = { /* Manejar ajustes */ },
-                onBottomNavClick = { route -> navigateToStudentBottomNav(Routes.dictionaryRoute(backStackEntry.arguments?.getString("studentId") ?: "default")) },
-                currentRoute = backStackEntry.destination.route ?: Routes.DICTIONARY
+                onSettingsClick = { navController.navigate(Routes.editStudentProfileRoute(studentId)) },
+                onBottomNavClick = { route ->
+                    val targetRoute = when (route) {
+                        "home" -> Routes.homeRoute(studentId)
+                        "achievements" -> Routes.achievementsRoute(studentId)
+                        else -> Routes.dictionaryRoute(studentId)
+                    }
+                    navigateToStudentBottomNav(targetRoute)
+                },
+                currentRoute = "dictionary"
             )
         }
 
@@ -184,12 +195,20 @@ fun AppNavHost(
             route = Routes.ACHIEVEMENTS,
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
         ) { backStackEntry ->
+            val studentId = backStackEntry.arguments?.getString("studentId") ?: "default"
             StudentAchievementsScreen(
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
-                onSettingsClick = { /* Manejar ajustes */ },
-                onBottomNavClick = { route -> navigateToStudentBottomNav(Routes.achievementsRoute(backStackEntry.arguments?.getString("studentId") ?: "default")) },
-                currentRoute = backStackEntry.destination.route ?: Routes.ACHIEVEMENTS
+                onSettingsClick = { navController.navigate(Routes.editStudentProfileRoute(studentId)) },
+                onBottomNavClick = { route ->
+                    val targetRoute = when (route) {
+                        "home" -> Routes.homeRoute(studentId)
+                        "dictionary" -> Routes.dictionaryRoute(studentId)
+                        else -> Routes.achievementsRoute(studentId)
+                    }
+                    navigateToStudentBottomNav(targetRoute)
+                },
+                currentRoute = "achievements"
             )
         }
 
@@ -222,9 +241,9 @@ fun AppNavHost(
                 onAssignWordsClick = { navController.navigate(Routes.ASSIGN_WORD) },
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
-                onSettingsClick = { /* Abrir Settings */ },
+                onSettingsClick = { navController.navigate(Routes.editProfileRoute(Routes.ROLE_TEACHER)) },
                 onBottomNavClick = navigateToTeacherBottomNav,
-                currentRoute = backStackEntry.destination.route ?: Routes.TEACHER_HOME
+                currentRoute = "home"
             )
         }
 
@@ -234,9 +253,9 @@ fun AppNavHost(
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
                 onStudentClick = { studentId -> navController.navigate(Routes.teacherStudentDetailRoute(studentId)) },
-                onSettingsClick = { /* Abrir Settings */ },
+                onSettingsClick = { navController.navigate(Routes.editProfileRoute(Routes.ROLE_TEACHER)) },
                 onBottomNavClick = navigateToTeacherBottomNav,
-                currentRoute = backStackEntry.destination.route ?: Routes.TEACHER_STUDENTS
+                currentRoute = "students"
             )
         }
 
@@ -263,12 +282,12 @@ fun AppNavHost(
             WordsScreen(
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
-                onSettingsClick = { /* Abrir Settings */ },
+                onSettingsClick = { navController.navigate(Routes.editProfileRoute(Routes.ROLE_TEACHER)) },
                 onCreateWordClick = { navController.navigate(Routes.createWordRoute()) },
                 onAssignWordClick = { navController.navigate(Routes.ASSIGN_WORD) },
                 onWordClick = { wordId -> navController.navigate(Routes.wordDetailRoute(wordId)) },
                 onBottomNavClick = navigateToTeacherBottomNav,
-                currentRoute = backStackEntry.destination.route ?: Routes.WORDS
+                currentRoute = "words"
             )
         }
 
@@ -330,6 +349,47 @@ fun AppNavHost(
                 onBackClick = { navController.popBackStack() },
                 onAssignWordClick = { studentId, wordId -> /* Lógica de asignación */ },
                 onStudentClick = { /* Navegar al detalle del estudiante */ }
+            )
+        }
+
+        // --- 5. Perfiles y Edición ---
+        // Editar perfil (Docente o Tutor)
+        composable(
+            route = Routes.EDIT_PROFILE,
+            arguments = listOf(navArgument("role") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val role = backStackEntry.arguments?.getString("role") ?: Routes.ROLE_TUTOR
+            val isTutor = role == Routes.ROLE_TUTOR
+            EditProfileScreen(
+                onBackClick = { navController.popBackStack() },
+                onCloseClick = { navController.popBackStack() },
+                onSaveClick = { navController.popBackStack() },
+                isTutorProfile = isTutor
+            )
+        }
+
+        // Crear perfil de estudiante (Tutor)
+        composable(Routes.STUDENT_PROFILE_CREATE) {
+            CreateStudentProfileScreen(
+                onBackClick = { navController.popBackStack() },
+                onCloseClick = { navController.popBackStack() },
+                onCreateClick = {
+                    // Tras crear, volvemos a la lista de perfiles
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // Editar perfil de estudiante (Tutor)
+        composable(
+            route = Routes.STUDENT_PROFILE_EDIT,
+            arguments = listOf(navArgument("studentId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val studentId = backStackEntry.arguments?.getString("studentId") ?: "default"
+            EditStudentProfileScreen(
+                onBackClick = { navController.popBackStack() },
+                onCloseClick = { navController.popBackStack() },
+                onSaveClick = { navController.popBackStack() }
             )
         }
     }

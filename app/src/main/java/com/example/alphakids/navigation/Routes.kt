@@ -53,4 +53,15 @@ object Routes {
     const val WORD_DETAIL = "word_detail/{wordId}"
     fun wordDetailRoute(wordId: String) = "word_detail/$wordId"
     const val ASSIGN_WORD = "assign_word"
+
+    // --- 7. Perfiles y Edición ---
+    const val EDIT_PROFILE_BASE = "edit_profile"
+    const val EDIT_PROFILE = "$EDIT_PROFILE_BASE/{role}" // role: teacher|tutor
+    fun editProfileRoute(role: String) = "$EDIT_PROFILE_BASE/$role"
+
+    const val STUDENT_PROFILE_CREATE = "student_profile_create"
+
+    const val STUDENT_PROFILE_EDIT_BASE = "student_profile_edit"
+    const val STUDENT_PROFILE_EDIT = "$STUDENT_PROFILE_EDIT_BASE/{studentId}"
+    fun editStudentProfileRoute(studentId: String) = "$STUDENT_PROFILE_EDIT_BASE/$studentId"
 }
