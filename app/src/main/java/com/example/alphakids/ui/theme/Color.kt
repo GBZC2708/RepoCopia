@@ -3,28 +3,28 @@ package com.example.alphakids.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // (Light Theme)
-val md_theme_light_primary = Color(0xFF006A5E) // Verde oscuro botones
-val md_theme_light_onPrimary = Color(0xFFFFFFFF) // Texto en botones
-val md_theme_light_primaryContainer = Color(0xFFB2DFDB) // Fondo íconos (ej. login)
-val md_theme_light_onPrimaryContainer = Color(0xFF00201B) // Ícono sobre el fondo
+val md_theme_light_primary = Color(0xFF1A8B7D)
+val md_theme_light_onPrimary = Color(0xFFFFFFFF)
+val md_theme_light_primaryContainer = Color(0xFFB2DFDB)
+val md_theme_light_onPrimaryContainer = Color(0xFF00201B)
 val md_theme_light_secondary = Color(0xFF4A6360)
 val md_theme_light_onSecondary = Color(0xFFFFFFFF)
 val md_theme_light_secondaryContainer = Color(0xFFCCE8E4)
 val md_theme_light_onSecondaryContainer = Color(0xFF04201D)
-val md_theme_light_tertiary = Color(0xFF4A6360) // Similar al secundario
+val md_theme_light_tertiary = Color(0xFF4A6360)
 val md_theme_light_onTertiary = Color(0xFFFFFFFF)
-val md_theme_light_tertiaryContainer = Color(0xFFA0E6D9) // Verde Menta (Chips)
-val md_theme_light_onTertiaryContainer = Color(0xFF00201B) // Texto en chips
-val md_theme_light_error = Color(0xFFC62828) // Rojo (Botón Eliminar)
-val md_theme_light_onError = Color(0xFFFFFFFF) // Texto en botón rojo
-val md_theme_light_errorContainer = Color(0xFFFFDAD6) // Fondo dialog error
+val md_theme_light_tertiaryContainer = Color(0xFFA0E6D9)
+val md_theme_light_onTertiaryContainer = Color(0xFF00201B)
+val md_theme_light_error = Color(0xFFC62828)
+val md_theme_light_onError = Color(0xFFFFFFFF)
+val md_theme_light_errorContainer = Color(0xFFFFDAD6)
 val md_theme_light_onErrorContainer = Color(0xFF410002)
-val md_theme_light_background = Color(0xFFFFFFFF) // Fondo de la App
-val md_theme_light_onBackground = Color(0xFF191C1B) // Texto principal
-val md_theme_light_surface = Color(0xFFFFFFFF) // Fondo de Dialogs/Menus
-val md_theme_light_onSurface = Color(0xFF191C1B) // Texto en Dialogs
-val md_theme_light_surfaceVariant = Color(0xFFF5FBF9) // Fondo Tarjetas y TextFields
-val md_theme_light_onSurfaceVariant = Color(0xFF3F4947) // Texto placeholder
+val md_theme_light_background = Color(0xFFFFFFFF)
+val md_theme_light_onBackground = Color(0xFF191C1B)
+val md_theme_light_surface = Color(0xFFFFFFFF)
+val md_theme_light_onSurface = Color(0xFF191C1B)
+val md_theme_light_surfaceVariant = Color(0xFFF4FBF8)
+val md_theme_light_onSurfaceVariant = Color(0xFF3F4947)
 val md_theme_light_outline = Color(0xFF6F7977)
 
 // (Dark Theme)
