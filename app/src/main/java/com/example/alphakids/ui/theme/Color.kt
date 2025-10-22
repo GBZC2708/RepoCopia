@@ -3,9 +3,9 @@ package com.example.alphakids.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // (Light Theme)
-val md_theme_light_primary = Color(0xFF1A8B7D)
+val md_theme_light_primary = Color(0xFF006B5F)
 val md_theme_light_onPrimary = Color(0xFFFFFFFF)
-val md_theme_light_primaryContainer = Color(0xFFB2DFDB)
+val md_theme_light_primaryContainer = Color(0xFF9EF2E3)
 val md_theme_light_onPrimaryContainer = Color(0xFF00201B)
 val md_theme_light_secondary = Color(0xFF4A6360)
 val md_theme_light_onSecondary = Color(0xFFFFFFFF)
