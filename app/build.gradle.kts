@@ -77,6 +77,9 @@ dependencies {
     // 2. Auth
     implementation("com.google.firebase:firebase-auth")
 
+    // 3. Firestore
+    implementation("com.google.firebase:firebase-firestore")
+
     // Jetpack
     // 1. NAVIGATION COMPOSE (Para moverte entre pantallas)
     val navVersion = "2.7.0" // Usa una versión estable reciente
