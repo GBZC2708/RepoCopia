@@ -10,21 +10,21 @@ data class Partida(
     @PropertyName("id_asignacion")
     val idAsignacion: String = "",
     @PropertyName("id_palabra")
-    val idPalabra: String = "", // Denormalizado
+    val idPalabra: String = "",
     @PropertyName("palabra_texto")
-    val palabraTexto: String = "", // Denormalizado
+    val palabraTexto: String = "",
     @PropertyName("nivel_dificultad")
-    val nivelDificultad: String = "", // Denormalizado
+    val nivelDificultad: String = "",
     @PropertyName("fecha_inicio")
-    val fechaInicio: Timestamp? = null, // Usar ServerTimestamp al escribir
+    val fechaInicio: Timestamp? = null,
     @PropertyName("fecha_fin")
-    val fechaFin: Timestamp? = null, // Usar ServerTimestamp al escribir
+    val fechaFin: Timestamp? = null,
     @PropertyName("tiempo_transcurrido")
-    val tiempoTranscurrido: Long = 0, // Segundos
+    val tiempoTranscurrido: Long = 0,
     @PropertyName("intentos_fallidos")
     val intentosFallidos: Int = 0,
     @PropertyName("intentos_exitosos")
     val intentosExitosos: Int = 0,
-    val resultado: String = "", // "completado", "incompleto", etc.
+    val resultado: String = "",
     val puntuacion: Int = 0
 )
