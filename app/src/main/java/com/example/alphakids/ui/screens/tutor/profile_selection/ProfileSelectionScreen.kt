@@ -1,11 +1,6 @@
 package com.example.alphakids.ui.screens.tutor.profile_selection
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -13,31 +8,33 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Face
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.alphakids.ui.auth.AuthViewModel
 import com.example.alphakids.ui.components.AppHeader
 import com.example.alphakids.ui.components.CustomFAB
 import com.example.alphakids.ui.screens.tutor.profile_selection.components.StudentProfileCard
 import com.example.alphakids.ui.theme.AlphakidsTheme
 import com.example.alphakids.ui.theme.dmSansFamily
-import androidx.compose.material.icons.rounded.Settings
+
 @Composable
 fun ProfileSelectionScreen(
     onProfileClick: (profileId: String) -> Unit,
     onAddProfileClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    viewModel: AuthViewModel = hiltViewModel() // Inyecta el ViewModel
 ) {
+    val currentUser by viewModel.currentUser.collectAsState()
+    val tutorName = currentUser?.nombre
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
@@ -72,6 +69,17 @@ fun ProfileSelectionScreen(
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
+            tutorName?.let { name ->
+                Text(
+                    text = "¡Hola, $name!",
+                    fontFamily = dmSansFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(5.dp))
+            }
+
             Text(
                 text = "¿Quién jugará hoy?",
                 fontFamily = dmSansFamily,
@@ -95,7 +103,7 @@ fun ProfileSelectionScreen(
             StudentProfileCard(
                 title = "Sofía",
                 description = "Institución Educativa Santa Sofía",
-                icon = Icons.Rounded.Face, // Placeholder para el conejo
+                icon = Icons.Rounded.Face,
                 onClick = { onProfileClick("sofia_id") }
             )
 
