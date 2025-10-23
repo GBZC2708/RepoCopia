@@ -356,7 +356,7 @@ fun AppNavHost(
             CreateStudentProfileScreen(
                 onBackClick = { navController.popBackStack() },
                 onCloseClick = { navController.popBackStack() },
-                onCreateClick = {
+                onCreateSuccess = {
                     navController.popBackStack()
                 }
             )
@@ -375,4 +375,5 @@ fun AppNavHost(
         }
     }
 }
+
 

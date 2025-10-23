@@ -20,7 +20,7 @@ data class Estudiante(
     @PropertyName("id_institucion")
     val idInstitucion: String = "",
     @PropertyName("foto_perfil")
-    val fotoPerfil: String = "", // URL Storage
+    val fotoPerfil: String? = null,
     @PropertyName("fecha_registro") @ServerTimestamp
     val fechaRegistro: Timestamp? = null
 )
