@@ -1,5 +1,6 @@
 package com.example.alphakids.data.firebase.repository
 
+import android.util.Log
 import com.example.alphakids.data.firebase.models.Docente
 import com.example.alphakids.data.firebase.models.Tutor
 import com.example.alphakids.data.firebase.models.Usuario
@@ -32,21 +33,34 @@ class AuthRepositoryImpl @Inject constructor(
         var firestoreRegistration: ListenerRegistration? = null
 
         val authListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            firestoreRegistration?.remove()
+            firestoreRegistration = null
+
             val firebaseUser = firebaseAuth.currentUser
             if (firebaseUser == null) {
-                firestoreRegistration?.remove()
                 trySend(null)
             } else {
                 val userDocRef = usuariosCol.document(firebaseUser.uid)
-                firestoreRegistration = userDocRef.addSnapshotListener { snapshot, _ ->
+                Log.d("AuthRepo", "Setting up Firestore listener for user: ${firebaseUser.uid}")
+
+                firestoreRegistration = userDocRef.addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        Log.e("AuthRepo", "Firestore listener error for user ${firebaseUser.uid}", error)
+                        trySend(null)
+                        return@addSnapshotListener
+                    }
+
                     if (snapshot != null && snapshot.exists()) {
                         val usuarioDto = snapshot.toObject(Usuario::class.java)
                         if (usuarioDto != null) {
+                            Log.d("AuthRepo", "User data received for ${firebaseUser.uid}: ${usuarioDto.nombre}")
                             trySend(UsuarioMapper.toDomain(usuarioDto))
                         } else {
+                            Log.w("AuthRepo", "Failed to parse user document for ${firebaseUser.uid}")
                             trySend(null)
                         }
                     } else {
+                        Log.w("AuthRepo", "User document for ${firebaseUser.uid} does not exist or access denied.")
                         trySend(null)
                     }
                 }
@@ -56,6 +70,7 @@ class AuthRepositoryImpl @Inject constructor(
         auth.addAuthStateListener(authListener)
 
         awaitClose {
+            Log.d("AuthRepo", "Removing listeners on awaitClose")
             auth.removeAuthStateListener(authListener)
             firestoreRegistration?.remove()
         }
@@ -88,7 +103,6 @@ class AuthRepositoryImpl @Inject constructor(
             )
 
             val batch = db.batch()
-
             batch.set(usuariosCol.document(uid), usuario)
 
             if (rol == "docente") {
@@ -108,7 +122,8 @@ class AuthRepositoryImpl @Inject constructor(
         } catch (e: FirebaseAuthUserCollisionException) {
             emit(Result.failure(Exception("El correo electrónico ya está en uso.")))
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Log.e("AuthRepo", "Registration failed", e)
+            emit(Result.failure(Exception("Error durante el registro: ${e.message}")))
         }
     }
 
@@ -125,6 +140,7 @@ class AuthRepositoryImpl @Inject constructor(
             emit(Result.success(UsuarioMapper.toDomain(usuarioDto)))
 
         } catch (e: Exception) {
+            Log.e("AuthRepo", "Login failed", e)
             emit(Result.failure(Exception("Correo o contraseña incorrectos.")))
         }
     }

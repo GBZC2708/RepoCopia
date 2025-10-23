@@ -9,13 +9,13 @@ data class Docente(
     @DocumentId
     val uid: String = "",
 
-    @PropertyName("id_institucion")
+    @PropertyName("idInstitucion")
     val idInstitucion: String = "",
 
     val seccion: String = "",
     val grado: String = "",
 
-    @PropertyName("fecha_registro")
+    @PropertyName("fechaRegistro")
     @ServerTimestamp
     val fechaRegistro: Timestamp? = null
 )

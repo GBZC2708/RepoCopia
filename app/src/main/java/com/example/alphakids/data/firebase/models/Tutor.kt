@@ -9,7 +9,7 @@ data class Tutor(
     @DocumentId
     val uid: String = "",
 
-    @PropertyName("fecha_registro")
+    @PropertyName("fechaRegistro")
     @ServerTimestamp
     val fechaRegistro: Timestamp? = null
 )

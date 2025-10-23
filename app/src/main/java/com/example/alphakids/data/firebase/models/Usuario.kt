@@ -15,18 +15,18 @@ data class Usuario(
     val email: String = "",
     val telefono: String = "",
 
-    @PropertyName("foto_perfil")
+    @PropertyName("fotoPerfil")
     val fotoPerfil: String = "",
 
     val rol: String = "", // "tutor" | "docente" | "admin"
 
     val estado: String = "activo", // "activo" | "inactivo" | "pendiente"
 
-    @PropertyName("creado_en")
+    @PropertyName("creadoEn")
     @ServerTimestamp
     val creadoEn: Timestamp? = null,
 
-    @PropertyName("actualizado_en")
+    @PropertyName("actualizadoEn")
     @ServerTimestamp
     val actualizadoEn: Timestamp? = null
 )
