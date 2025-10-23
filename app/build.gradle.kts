@@ -6,6 +6,8 @@ plugins {
 
     // Crashlytics
     id("com.google.firebase.crashlytics")
+    id("com.google.dagger.hilt.android")
+    id("kotlin-kapt")
 }
 
 android {
@@ -64,6 +66,11 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+    // Corrutinas
+
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    kapt("com.google.dagger:hilt-compiler:2.51.1")
+
     // Iconos
     implementation("androidx.compose.material:material-icons-extended")
 
@@ -97,4 +104,5 @@ dependencies {
 
     // 1. Accompanist Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.36.0")
+
 }
