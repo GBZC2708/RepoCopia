@@ -71,7 +71,11 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
     implementation("com.google.firebase:firebase-analytics")
 
+    // 1. Crashlytics
     implementation("com.google.firebase:firebase-crashlytics-ndk")
+
+    // 2. Auth
+    implementation("com.google.firebase:firebase-auth")
 
     // Jetpack
     // 1. NAVIGATION COMPOSE (Para moverte entre pantallas)
