@@ -66,10 +66,11 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // Corrutinas
-
+    // Hilt
     implementation("com.google.dagger:hilt-android:2.51.1")
     kapt("com.google.dagger:hilt-compiler:2.51.1")
+    // Compose integration for HiltViewModel()
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Iconos
     implementation("androidx.compose.material:material-icons-extended")

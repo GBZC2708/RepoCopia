@@ -32,25 +32,30 @@ import androidx.compose.material.icons.rounded.Warning
 import com.example.alphakids.ui.screens.profile.EditProfileScreen
 import com.example.alphakids.ui.screens.tutor.studentprofile.CreateStudentProfileScreen
 import com.example.alphakids.ui.screens.tutor.studentprofile.EditStudentProfileScreen
-
-
+import androidx.compose.runtime.collectAsState
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.alphakids.domain.models.UserRole
+import com.example.alphakids.ui.auth.AuthViewModel
 
 @Composable
 fun AppNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = Routes.ROLE_SELECTION
 ) {
-    // Función centralizada para CERRAR SESIÓN (navega a ROLE_SELECTION y limpia el stack)
-    val onLogout: () -> Unit = {
-        // Lógica: Llamar a AuthViewModel.signOut()
-        navController.navigate(Routes.ROLE_SELECTION) {
-            popUpTo(0) { inclusive = true } // Limpia todas las pantallas del stack
-        }
+    val authViewModel: AuthViewModel = hiltViewModel()
+    val currentUser by authViewModel.currentUser.collectAsState()
+
+    val startDestination = when {
+        currentUser == null -> Routes.ROLE_SELECTION
+        currentUser?.rol == UserRole.TUTOR -> Routes.PROFILES
+        currentUser?.rol == UserRole.DOCENTE -> Routes.TEACHER_HOME
+        else -> Routes.ROLE_SELECTION
     }
 
-    // Función auxiliar para manejar la navegación de la barra inferior del DOCENTE
-    // Recibe rutas base: "home" | "students" | "words" y las mapea a las rutas reales
+    val onLogout: () -> Unit = {
+        authViewModel.logout()
+    }
+
     val navigateToTeacherBottomNav: (String) -> Unit = { base ->
         val targetRoute = when (base) {
             "students" -> Routes.TEACHER_STUDENTS
@@ -58,18 +63,14 @@ fun AppNavHost(
             else -> Routes.TEACHER_HOME
         }
         navController.navigate(targetRoute) {
-            // Usamos una ruta fija para popUpTo dentro del flujo del docente
             popUpTo(Routes.TEACHER_HOME) { saveState = true }
             launchSingleTop = true
             restoreState = true
         }
     }
 
-    // Función auxiliar para manejar la navegación de la barra inferior del TUTOR
-    // Recibe rutas concretas (con studentId) y hace popUpTo a la ruta base del flujo
     val navigateToStudentBottomNav: (String) -> Unit = { route ->
         navController.navigate(route) {
-            // Importante: popUpTo a la ruta base declarada (no parametrizada)
             popUpTo(Routes.HOME) { saveState = true }
             launchSingleTop = true
             restoreState = true
@@ -82,7 +83,6 @@ fun AppNavHost(
         startDestination = startDestination,
         modifier = modifier
     ) {
-        // --- 1. Selección de Rol (/ - ROLE_SELECTION) ---
         composable(Routes.ROLE_SELECTION) {
             com.example.alphakids.ui.screens.common.RoleSelectScreen(
                 onTutorClick = { navController.navigate(Routes.loginRoute(Routes.ROLE_TUTOR)) },
@@ -90,21 +90,22 @@ fun AppNavHost(
             )
         }
 
-        // --- 2. Autenticación (Login / Register) ---
         composable(
             route = Routes.LOGIN,
             arguments = listOf(navArgument("role") { type = NavType.StringType })
         ) { backStackEntry ->
             val role = backStackEntry.arguments?.getString("role") ?: Routes.ROLE_TEACHER
             val isTutor = role == Routes.ROLE_TUTOR
-            com.example.alphakids.ui.screens.auth.LoginScreen(
+            com.example.alphakids.ui.auth.LoginScreen(
                 onBackClick = { navController.popBackStack() },
                 onCloseClick = { navController.popBackStack() },
-                onLoginClick = {
+                onLoginSuccess = {
                     val nextRoute = if (isTutor) Routes.PROFILES else Routes.TEACHER_HOME
-                    navController.navigate(nextRoute) { popUpTo(Routes.LOGIN) { inclusive = true } }
+                    navController.navigate(nextRoute) {
+                        popUpTo(Routes.ROLE_SELECTION) { inclusive = true }
+                    }
                 },
-                onForgotPasswordClick = { /* TODO: recuperar contraseña */ },
+                onForgotPasswordClick = { /* TODO */ },
                 onRegisterClick = { navController.navigate(Routes.registerRoute(role)) },
                 isTutorLogin = isTutor
             )
@@ -116,20 +117,19 @@ fun AppNavHost(
         ) { backStackEntry ->
             val role = backStackEntry.arguments?.getString("role") ?: Routes.ROLE_TEACHER
             val isTutor = role == Routes.ROLE_TUTOR
-            com.example.alphakids.ui.screens.auth.RegisterScreen(
+            com.example.alphakids.ui.auth.RegisterScreen(
                 onBackClick = { navController.popBackStack() },
                 onCloseClick = { navController.popBackStack() },
-                onRegisterClick = {
+                onRegisterSuccess = {
                     val nextRoute = if (isTutor) Routes.PROFILES else Routes.TEACHER_HOME
-                    navController.navigate(nextRoute) { popUpTo(Routes.REGISTER) { inclusive = true } }
+                    navController.navigate(nextRoute) {
+                        popUpTo(Routes.ROLE_SELECTION) { inclusive = true }
+                    }
                 },
                 isTutorRegister = isTutor
             )
         }
 
-        // --- 3. Rutas de TUTORÍA/JUEGO ---
-
-        // Pantalla de Selección de Perfiles (/perfiles)
         composable(Routes.PROFILES) {
             ProfileSelectionScreen(
                 onProfileClick = { profileId -> navController.navigate(Routes.homeRoute(profileId)) },
@@ -139,7 +139,6 @@ fun AppNavHost(
             )
         }
 
-        // Home del Estudiante (/home/{studentId})
         composable(
             route = Routes.HOME,
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
@@ -167,7 +166,6 @@ fun AppNavHost(
             )
         }
 
-        // Mi Diccionario (/dictionary/{studentId})
         composable(
             route = Routes.DICTIONARY,
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
@@ -176,7 +174,7 @@ fun AppNavHost(
             StudentDictionaryScreen(
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
-                onWordClick = { /* Ver detalle de palabra en el diccionario */ },
+                onWordClick = { },
                 onSettingsClick = { navController.navigate(Routes.editStudentProfileRoute(studentId)) },
                 onBottomNavClick = { route ->
                     val targetRoute = when (route) {
@@ -190,7 +188,6 @@ fun AppNavHost(
             )
         }
 
-        // Mis Logros (/achievements/{studentId})
         composable(
             route = Routes.ACHIEVEMENTS,
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
@@ -212,7 +209,6 @@ fun AppNavHost(
             )
         }
 
-        // Pantalla de Juego (/game)
         composable(Routes.GAME) {
             GameScreen(
                 wordLength = 4, icon = Icons.Rounded.Checkroom, difficulty = "Fácil",
@@ -222,19 +218,15 @@ fun AppNavHost(
             )
         }
 
-        // Pantalla de Cámara (/camera)
         composable(Routes.CAMERA) {
             CameraScreen(
                 onBackClick = { navController.popBackStack() },
-                onShutterClick = { /* Lógica para mostrar diálogo */ },
-                onCloseNotificationClick = { /* Cerrar la notificación */ },
-                onFlashClick = { /* Toggle Flash */ }, onFlipCameraClick = { /* Flip Camera */ }
+                onShutterClick = { },
+                onCloseNotificationClick = { },
+                onFlashClick = { }, onFlipCameraClick = { }
             )
         }
 
-        // --- 4. Rutas de DOCENTE (Bottom Navigation) ---
-
-        // Home del Docente (Inicio)
         composable(Routes.TEACHER_HOME) { backStackEntry ->
             TeacherHomeScreen(
                 teacherName = "Profesor/a",
@@ -247,7 +239,6 @@ fun AppNavHost(
             )
         }
 
-        // Alumnos (students)
         composable(Routes.TEACHER_STUDENTS) { backStackEntry ->
             TeacherStudentsScreen(
                 onLogoutClick = onLogout,
@@ -259,7 +250,6 @@ fun AppNavHost(
             )
         }
 
-        // Detalle de Alumno (Docente)
         composable(
             route = Routes.TEACHER_STUDENT_DETAIL,
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
@@ -271,13 +261,12 @@ fun AppNavHost(
                 onBackClick = { navController.popBackStack() },
                 onAssignWordClick = { navController.navigate(Routes.ASSIGN_WORD) },
                 onWordClick = { wordId -> navController.navigate(Routes.wordDetailRoute(wordId)) },
-                onSettingsClick = { /* Abrir Settings */ },
+                onSettingsClick = { },
                 onBottomNavClick = navigateToTeacherBottomNav,
                 currentRoute = backStackEntry.destination.route ?: Routes.TEACHER_STUDENTS
             )
         }
 
-        // Palabras (words)
         composable(Routes.WORDS) { backStackEntry ->
             WordsScreen(
                 onLogoutClick = onLogout,
@@ -291,7 +280,6 @@ fun AppNavHost(
             )
         }
 
-        // Pantalla de Creación/Edición de Palabra (WORD_EDIT)
         composable(
             route = Routes.WORD_EDIT,
             arguments = listOf(navArgument("wordId") { type = NavType.StringType; nullable = true })
@@ -307,7 +295,6 @@ fun AppNavHost(
             )
         }
 
-        // Pantalla de Detalle de Palabra (WORD_DETAIL)
         composable(
             route = Routes.WORD_DETAIL,
             arguments = listOf(navArgument("wordId") { type = NavType.StringType })
@@ -320,8 +307,8 @@ fun AppNavHost(
                 onBackClick = { navController.popBackStack() },
                 onEditWordClick = { navController.navigate(Routes.editWordRoute(wordId)) },
                 onDeleteWordClick = { showDeleteDialog = true },
-                onStudentClick = { /* Navegar al detalle del estudiante */ },
-                onSettingsClick = { /* Abrir Settings */ },
+                onStudentClick = { },
+                onSettingsClick = { },
                 onBottomNavClick = navigateToTeacherBottomNav,
                 currentRoute = backStackEntry.destination.route ?: Routes.WORDS
             )
@@ -343,17 +330,14 @@ fun AppNavHost(
             }
         }
 
-        // Pantalla de Asignar Palabra
         composable(Routes.ASSIGN_WORD) {
             AssignWordScreen(
                 onBackClick = { navController.popBackStack() },
-                onAssignWordClick = { studentId, wordId -> /* Lógica de asignación */ },
-                onStudentClick = { /* Navegar al detalle del estudiante */ }
+                onAssignWordClick = { studentId, wordId -> },
+                onStudentClick = { }
             )
         }
 
-        // --- 5. Perfiles y Edición ---
-        // Editar perfil (Docente o Tutor)
         composable(
             route = Routes.EDIT_PROFILE,
             arguments = listOf(navArgument("role") { type = NavType.StringType })
@@ -368,19 +352,16 @@ fun AppNavHost(
             )
         }
 
-        // Crear perfil de estudiante (Tutor)
         composable(Routes.STUDENT_PROFILE_CREATE) {
             CreateStudentProfileScreen(
                 onBackClick = { navController.popBackStack() },
                 onCloseClick = { navController.popBackStack() },
                 onCreateClick = {
-                    // Tras crear, volvemos a la lista de perfiles
                     navController.popBackStack()
                 }
             )
         }
 
-        // Editar perfil de estudiante (Tutor)
         composable(
             route = Routes.STUDENT_PROFILE_EDIT,
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
@@ -394,3 +375,4 @@ fun AppNavHost(
         }
     }
 }
+
