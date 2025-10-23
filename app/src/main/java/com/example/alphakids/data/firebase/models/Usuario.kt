@@ -5,10 +5,6 @@ import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.PropertyName
 import com.google.firebase.firestore.ServerTimestamp
 
-/**
- * Representa el documento base de la colección `usuarios/{uid}`
- * Cada usuario autenticado en Firebase Auth tiene su perfil aquí.
- */
 data class Usuario(
 
     @DocumentId

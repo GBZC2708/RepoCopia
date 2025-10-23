@@ -5,20 +5,9 @@ import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.PropertyName
 import com.google.firebase.firestore.ServerTimestamp
 
-/**
- * Representa el documento en la colección `tutores/{id}`
- */
 data class Tutor(
-
     @DocumentId
-    val id: String = "",
-
-    val nombre: String = "",
-    val correo: String = "",
-    val telefono: String = "",
-
-    @PropertyName("uid_usuario")
-    val uidUsuario: String = "", // referencia al documento usuarios/{uid}
+    val uid: String = "",
 
     @PropertyName("fecha_registro")
     @ServerTimestamp
