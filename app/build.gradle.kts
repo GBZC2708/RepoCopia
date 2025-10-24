@@ -47,6 +47,7 @@ android {
 
 dependencies {
 
+    // --- DEPENDENCIAS BÁSICAS (Usando libs.versions.toml) ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -75,9 +76,14 @@ dependencies {
     // Iconos
     implementation("androidx.compose.material:material-icons-extended")
 
-    // Firebase
+    // --- FIREBASE (Usando BoM para manejar versiones) ---
+    // Importa el BoM MÁS RECIENTE UNA SOLA VEZ
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
-    implementation("com.google.firebase:firebase-analytics")
+
+    // Añade las dependencias de Firebase SIN especificar versión
+    implementation("com.google.firebase:firebase-analytics") // Analytics (opcional pero común)
+    implementation("com.google.firebase:firebase-ai") // Firebase AI (Gemini)
+    implementation("com.google.firebase:firebase-firestore") // Firestore
 
     // 1. Crashlytics
     implementation("com.google.firebase:firebase-crashlytics-ndk")
@@ -85,17 +91,15 @@ dependencies {
     // 2. Auth
     implementation("com.google.firebase:firebase-auth")
 
-    // 3. Firestore
-    implementation("com.google.firebase:firebase-firestore")
+    // --- COROUTINES & VIEWMODEL ---
+    // Para la extensión .await() con Tasks de Play Services
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
+    // ViewModels (versiones explícitas o puedes ponerlas en libs.versions.toml)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3") // Para viewModel() en Compose
 
-    // Jetpack
-    // 1. NAVIGATION COMPOSE (Para moverte entre pantallas)
-    val navVersion = "2.7.0" // Usa una versión estable reciente
-    implementation("androidx.navigation:navigation-compose:$navVersion")
-
-    // 2. LIFECYCLE/VIEWMODEL COMPOSE (Para la arquitectura MVVM)
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.3")
+    // --- NAVEGACIÓN ---
+    implementation("androidx.navigation:navigation-compose:2.7.7")
 
     // Camera X
     val cameraXVersion = "1.3.4"
@@ -105,6 +109,7 @@ dependencies {
 
     // 1. Accompanist Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.36.0")
+    implementation("com.google.firebase:firebase-vertexai:16.0.0-beta01")
 
     // Coil for image loading
     implementation("io.coil-kt:coil-compose:2.7.0")
