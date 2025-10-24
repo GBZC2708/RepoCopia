@@ -44,7 +44,10 @@ object Routes {
     const val ASSIGNED_WORDS = "assigned_words/{studentId}"
     fun assignedWordsRoute(studentId: String) = "assigned_words/$studentId"
     
-    const val WORD_PUZZLE = "word_puzzle"
+    const val WORD_PUZZLE_BASE = "word_puzzle"
+    const val WORD_PUZZLE = "$WORD_PUZZLE_BASE/{assignmentId}"
+    fun wordPuzzleRoute(assignmentId: String) = "$WORD_PUZZLE_BASE/$assignmentId"
+    
     const val GAME = "game"
     const val CAMERA = "camera"
 

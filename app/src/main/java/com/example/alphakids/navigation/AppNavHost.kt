@@ -41,6 +41,8 @@ import com.example.alphakids.ui.screens.tutor.studentprofile.CreateStudentProfil
 import com.example.alphakids.ui.screens.tutor.studentprofile.EditStudentProfileScreen
 import com.example.alphakids.ui.screens.tutor.games.MyGamesScreen
 import com.example.alphakids.ui.screens.tutor.games.GameWordsScreen
+import com.example.alphakids.ui.screens.tutor.games.AssignedWordsScreen
+import com.example.alphakids.ui.screens.tutor.games.WordPuzzleScreen
 
 
 @Composable
@@ -160,7 +162,7 @@ fun AppNavHost(
                 studentName = studentName,
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
-                onPlayClick = { navController.navigate(Routes.myGamesRoute(studentId)) }, // <-- PASA EL ID
+                onPlayClick = { navController.navigate(Routes.assignedWordsRoute(studentId)) }, // <-- NAVEGA A PALABRAS ASIGNADAS
                 onDictionaryClick = { navigateToStudentBottomNav(Routes.dictionaryRoute(studentId)) },
                 onAchievementsClick = { navigateToStudentBottomNav(Routes.achievementsRoute(studentId)) },
                 onSettingsClick = { navController.navigate(Routes.editStudentProfileRoute(studentId)) },
@@ -198,6 +200,44 @@ fun AppNavHost(
             GameWordsScreen(
                 onBackClick = { navController.popBackStack() },
                 onWordClick = { navController.navigate(Routes.GAME) }
+            )
+        }
+
+        // Pantalla de Palabras Asignadas
+        composable(
+            route = Routes.ASSIGNED_WORDS,
+            arguments = listOf(navArgument("studentId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val studentId = backStackEntry.arguments?.getString("studentId") ?: "default"
+            
+            AssignedWordsScreen(
+                studentId = studentId,
+                onBackClick = { navController.popBackStack() },
+                onWordClick = { assignment ->
+                    // Navegar al puzzle con los datos de la asignación
+                    navController.navigate(Routes.wordPuzzleRoute(assignment.id ?: ""))
+                }
+            )
+        }
+
+        // Pantalla del Puzzle de Palabras
+        composable(
+            route = Routes.WORD_PUZZLE,
+            arguments = listOf(navArgument("assignmentId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val assignmentId = backStackEntry.arguments?.getString("assignmentId") ?: ""
+            
+            // Aquí necesitarías obtener la asignación por ID
+            // Por simplicidad, usaré datos de ejemplo
+            WordPuzzleScreen(
+                assignment = com.example.alphakids.data.firebase.models.AsignacionPalabra(
+                    id = assignmentId,
+                    palabraTexto = "CASA",
+                    palabraImagen = null,
+                    palabraDificultad = "Fácil"
+                ),
+                onBackClick = { navController.popBackStack() },
+                onTakePhotoClick = { navController.navigate(Routes.CAMERA) }
             )
         }
 
