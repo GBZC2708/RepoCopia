@@ -12,4 +12,10 @@ interface AssignmentRepository {
     fun getStudentsForDocente(docenteId: String): Flow<List<com.example.alphakids.data.firebase.models.Estudiante>>
 
     fun getStudentsAssignedToWord(wordId: String): Flow<List<com.example.alphakids.data.firebase.models.Estudiante>>
+
+    fun getFilteredAssignmentsByStudent(
+        studentId: String,
+        difficulty: String? = null,
+        query: String? = null
+    ): Flow<List<WordAssignment>>
 }

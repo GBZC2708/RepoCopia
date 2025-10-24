@@ -29,8 +29,8 @@ class AssignmentRepositoryImpl @Inject constructor(
 
     override suspend fun createAssignment(assignment: WordAssignment): AssignmentResult {
         return try {
-            val asignacionDto = WordAssignmentMapper.fromDomain(assignment)
-            val docRef = asignacionesCol.add(asignacionDto).await()
+            val asignacionMap = WordAssignmentMapper.fromDomain(assignment)
+            val docRef = asignacionesCol.add(asignacionMap).await()
             Log.d("AssignmentRepo", "Asignación creada con ID: ${docRef.id}")
             Result.success(docRef.id)
         } catch (e: Exception) {
@@ -51,7 +51,6 @@ class AssignmentRepositoryImpl @Inject constructor(
     }
 
     override fun getStudentsAssignedToWord(wordId: String): Flow<List<Estudiante>> {
-
         val studentIdsFlow: Flow<List<String>> = asignacionesCol
             .whereEqualTo("id_palabra", wordId)
             .snapshots()
@@ -61,7 +60,7 @@ class AssignmentRepositoryImpl @Inject constructor(
 
         return studentIdsFlow.flatMapLatest { studentIds ->
             if (studentIds.isEmpty()) {
-                flowOf(emptyList()) //
+                flowOf(emptyList())
             } else {
                 estudiantesCol.whereIn(FieldPath.documentId(), studentIds.take(10))
                     .snapshots()
@@ -78,4 +77,36 @@ class AssignmentRepositoryImpl @Inject constructor(
             emit(emptyList())
         }
     }
+
+
+    override fun getFilteredAssignmentsByStudent(
+        studentId: String,
+        difficulty: String?,
+        query: String?
+    ): Flow<List<WordAssignment>> = asignacionesCol
+        .whereEqualTo("id_estudiante", studentId)
+        .apply {
+
+            if (difficulty != null && difficulty != "Todos") {
+                whereEqualTo("palabra_dificultad", difficulty)
+            }
+        }
+        .orderBy("fecha_asignacion", Query.Direction.DESCENDING)
+        .snapshots()
+        .map { snapshot ->
+
+            snapshot.toObjects(AsignacionPalabra::class.java).mapNotNull { dto ->
+                val domain = WordAssignmentMapper.toDomain(dto)
+
+                if (query.isNullOrBlank() || domain.palabraTexto.contains(query, ignoreCase = true)) {
+                    domain
+                } else {
+                    null
+                }
+            }
+        }
+        .catch { exception ->
+            Log.e("AssignmentRepo", "Error fetching assignments for student $studentId", exception)
+            emit(emptyList())
+        }
 }

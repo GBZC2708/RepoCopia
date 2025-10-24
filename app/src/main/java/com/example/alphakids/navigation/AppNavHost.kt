@@ -39,7 +39,6 @@ import com.example.alphakids.ui.screens.tutor.games.CameraScreen
 import com.example.alphakids.ui.screens.profile.EditProfileScreen
 import com.example.alphakids.ui.screens.tutor.studentprofile.CreateStudentProfileScreen
 import com.example.alphakids.ui.screens.tutor.studentprofile.EditStudentProfileScreen
-// NUEVAS PANTALLAS DE JUEGO
 import com.example.alphakids.ui.screens.tutor.games.MyGamesScreen
 import com.example.alphakids.ui.screens.tutor.games.GameWordsScreen
 
@@ -89,8 +88,6 @@ fun AppNavHost(
         startDestination = startDestination,
         modifier = modifier
     ) {
-        // ... (Rutas de Auth, Perfiles, Dictionary, Achievements, TeacherHome se mantienen igual) ...
-
         // Selección de rol
         composable(Routes.ROLE_SELECTION) {
             com.example.alphakids.ui.screens.common.RoleSelectScreen(
@@ -151,7 +148,7 @@ fun AppNavHost(
             )
         }
 
-        // Pantalla principal del estudiante
+        // Pantalla principal del estudiante (ORIGEN)
         composable(
             route = Routes.HOME,
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
@@ -163,7 +160,7 @@ fun AppNavHost(
                 studentName = studentName,
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
-                onPlayClick = { navController.navigate(Routes.MY_GAMES) }, // <-- NUEVA RUTA DE JUEGOS
+                onPlayClick = { navController.navigate(Routes.myGamesRoute(studentId)) }, // <-- PASA EL ID
                 onDictionaryClick = { navigateToStudentBottomNav(Routes.dictionaryRoute(studentId)) },
                 onAchievementsClick = { navigateToStudentBottomNav(Routes.achievementsRoute(studentId)) },
                 onSettingsClick = { navController.navigate(Routes.editStudentProfileRoute(studentId)) },
@@ -179,23 +176,28 @@ fun AppNavHost(
             )
         }
 
-        // **********************************************
-        // NUEVAS RUTAS DE JUEGOS (Flujo: Home -> MyGames -> GameWords -> Game)
-        // **********************************************
+        // 2. Pantalla de Selección de Juego (MY_GAMES - PIVOTE)
+        composable(
+            route = Routes.MY_GAMES,
+            arguments = listOf(navArgument("studentId") { type = NavType.StringType }) // <-- RECIBE EL ID
+        ) { backStackEntry ->
+            val studentId = backStackEntry.arguments?.getString("studentId") ?: "default"
 
-        // 2. Pantalla de Selección de Juego (MyGamesScreen)
-        composable(Routes.MY_GAMES) {
             MyGamesScreen(
                 onBackClick = { navController.popBackStack() },
-                onWordsGameClick = { navController.navigate(Routes.GAME_WORDS) } // Navega a la lista de palabras
+                onWordsGameClick = { navController.navigate(Routes.gameWordsRoute(studentId)) } // PASA EL ID
             )
         }
 
-        // 3. Pantalla de Palabras Asignadas para Jugar (GameWordsScreen)
-        composable(Routes.GAME_WORDS) {
+        // 3. Pantalla de Palabras Asignadas para Jugar (GAME_WORDS - DESTINO)
+        composable(
+            route = Routes.GAME_WORDS,
+            arguments = listOf(navArgument("studentId") { type = NavType.StringType }) // <-- RECIBE EL ID
+        ) {
+            // El VM ahora lo obtendrá de SavedStateHandle
             GameWordsScreen(
                 onBackClick = { navController.popBackStack() },
-                onWordClick = { navController.navigate(Routes.GAME) } // Al seleccionar, va al juego
+                onWordClick = { navController.navigate(Routes.GAME) }
             )
         }
 
@@ -210,8 +212,6 @@ fun AppNavHost(
                 onTakePhotoClick = { navController.navigate(Routes.CAMERA) }
             )
         }
-
-        // ... (Rutas de Teacher, Words, etc. se mantienen igual) ...
 
         // Diccionario
         composable(
@@ -410,7 +410,7 @@ fun AppNavHost(
                 )
             }
 
-            // 🔧 Se corrigió el Smart Cast
+            // Se corrigió el Smart Cast
             LaunchedEffect(wordUiState) {
                 when (val state = wordUiState) {
                     is WordUiState.Success -> {

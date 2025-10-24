@@ -2,6 +2,9 @@ package com.example.alphakids.data.mappers
 
 import com.example.alphakids.data.firebase.models.AsignacionPalabra
 import com.example.alphakids.domain.models.WordAssignment
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FieldValue
+import java.util.Date
 
 object WordAssignmentMapper {
 
@@ -22,20 +25,29 @@ object WordAssignmentMapper {
         )
     }
 
-    fun fromDomain(model: WordAssignment): AsignacionPalabra {
-        return AsignacionPalabra(
-            id = model.id,
-            idDocente = model.idDocente,
-            idEstudiante = model.idEstudiante,
-            idPalabra = model.idPalabra,
-            palabraTexto = model.palabraTexto,
-            palabraImagen = model.palabraImagenUrl,
-            palabraAudio = model.palabraAudioUrl,
-            palabraDificultad = model.palabraDificultad,
-            estudianteNombre = model.estudianteNombre,
-            fechaAsignacion = null,
-            fechaLimite = null,
-            estado = model.estado
+    fun fromDomain(model: WordAssignment): Map<String, Any?> {
+        val data = mutableMapOf<String, Any?>(
+            "id_docente" to model.idDocente,
+            "id_estudiante" to model.idEstudiante,
+            "id_palabra" to model.idPalabra,
+            "palabra_texto" to model.palabraTexto,
+            "palabra_imagen" to model.palabraImagenUrl,
+            "palabra_audio" to model.palabraAudioUrl,
+            "palabra_dificultad" to model.palabraDificultad.ifEmpty { "Desconocida" },
+            "estudiante_nombre" to model.estudianteNombre,
+            "estado" to model.estado
         )
+
+        if (model.fechaAsignacionMillis == null) {
+            data["fecha_asignacion"] = FieldValue.serverTimestamp()
+        } else {
+            data["fecha_asignacion"] = Timestamp(Date(model.fechaAsignacionMillis))
+        }
+
+        if (model.fechaLimiteMillis != null) {
+            data["fecha_limite"] = Timestamp(Date(model.fechaLimiteMillis))
+        }
+
+        return data
     }
 }
