@@ -11,6 +11,7 @@ import com.example.alphakids.domain.usecases.GetCurrentUserUseCase
 import com.example.alphakids.domain.usecases.GetFilteredWordsUseCase
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
+import com.google.firebase.ai.type.GenerativeBackend
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -50,7 +51,11 @@ class ChatViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<ChatUiState>(ChatUiState.Idle)
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
-    private val generativeModel = Firebase.ai.generativeModel("gemini-1.5-flash")
+    private val generativeModel = Firebase.ai(
+        backend = GenerativeBackend.vertexAI()
+    ).generativeModel(
+        "gemini-2.5-flash"
+    )
 
     fun onUserSelected(user: Estudiante) {
         _selectedUser.value = user

@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Face
@@ -34,9 +35,86 @@ import com.example.alphakids.ui.word.assign.AssignmentUiState
 import com.example.alphakids.ui.word.assign.AssignWordViewModel
 import com.example.alphakids.ui.chat.ChatViewModel
 import com.example.alphakids.ui.chat.ChatMessage
+import com.example.alphakids.ui.chat.ChatUiState
 import kotlinx.coroutines.launch
 
 val assignmentDifficultiesList = listOf("Fácil", "Medio", "Difícil")
+
+// Función para determinar el desempeño del estudiante
+private fun determineStudentPerformance(student: Estudiante): String {
+    return when {
+        student.edad <= 4 -> "Principiante"
+        student.edad <= 6 -> "Intermedio"
+        else -> "Avanzado"
+    }
+}
+
+@Composable
+fun ChatMessageItem(
+    message: ChatMessage,
+    isFromUser: Boolean,
+    onAssignWord: ((com.example.alphakids.domain.models.Word) -> Unit)? = null,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = if (isFromUser) Arrangement.End else Arrangement.Start
+    ) {
+        Column {
+            Card(
+                modifier = Modifier.widthIn(max = 280.dp),
+                shape = RoundedCornerShape(
+                    topStart = 16.dp,
+                    topEnd = 16.dp,
+                    bottomStart = if (isFromUser) 16.dp else 4.dp,
+                    bottomEnd = if (isFromUser) 4.dp else 16.dp
+                ),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isFromUser) 
+                        MaterialTheme.colorScheme.primary 
+                    else 
+                        MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Text(
+                    text = message.text,
+                    modifier = Modifier.padding(12.dp),
+                    fontSize = 14.sp,
+                    color = if (isFromUser) 
+                        MaterialTheme.colorScheme.onPrimary 
+                    else 
+                        MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = dmSansFamily
+                )
+            }
+            
+            // Mostrar botón de asignar si hay una palabra recomendada y no es del usuario
+            if (!isFromUser && message.recommendedWord != null && onAssignWord != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Button(
+                    onClick = { onAssignWord(message.recommendedWord) },
+                    modifier = Modifier.align(Alignment.End),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.CheckCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Asignar",
+                        fontSize = 12.sp,
+                        fontFamily = dmSansFamily
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun ModeSelector(
@@ -118,6 +196,7 @@ fun AssignWordScreen(
     val chatMessages by chatViewModel.messages.collectAsState()
     val chatIsLoading by chatViewModel.isLoading.collectAsState()
     val selectedUser by chatViewModel.selectedUser.collectAsState()
+    val chatUiState by chatViewModel.uiState.collectAsState()
 
     var showSuccessDialog by remember { mutableStateOf(false) }
     var wordSearchQuery by remember { mutableStateOf("") }
@@ -127,17 +206,13 @@ fun AssignWordScreen(
     val coroutineScope = rememberCoroutineScope()
     val chatListState = rememberLazyListState()
 
-    LaunchedEffect(Unit) {
-        viewModel.loadStudents()
-        viewModel.loadWords()
-    }
+    // Los datos se cargan automáticamente a través de StateFlow en el ViewModel
+    // No se necesitan llamadas explícitas a loadStudents() y loadWords()
 
     // Auto-scroll cuando llegan nuevos mensajes
     LaunchedEffect(chatMessages.size) {
         if (chatMessages.isNotEmpty()) {
-            coroutineScope.launch {
-                chatListState.animateScrollToItem(chatMessages.size - 1)
-            }
+            chatListState.animateScrollToItem(chatMessages.size - 1)
         }
     }
 
@@ -152,6 +227,30 @@ fun AssignWordScreen(
             }
             AssignmentUiState.Loading -> {}
             AssignmentUiState.Idle -> {}
+        }
+    }
+
+    // Manejar estados del chat (asignaciones desde IA)
+    LaunchedEffect(chatUiState) {
+        when (val currentState = chatUiState) {
+            is ChatUiState.Success -> {
+                Toast.makeText(context, currentState.message, Toast.LENGTH_LONG).show()
+                chatViewModel.resetUiState()
+            }
+            is ChatUiState.Error -> {
+                Toast.makeText(context, currentState.message, Toast.LENGTH_LONG).show()
+                chatViewModel.resetUiState()
+            }
+            ChatUiState.Loading -> {}
+            ChatUiState.Idle -> {}
+        }
+    }
+
+    // Configurar el estudiante seleccionado en el ChatViewModel
+    LaunchedEffect(selectedStudentId) {
+        val selectedStudent = students.find { it.id == selectedStudentId }
+        selectedStudent?.let { student ->
+            chatViewModel.onUserSelected(student)
         }
     }
 
@@ -219,7 +318,7 @@ fun AssignWordScreen(
                             age = "${student.edad} años",
                             numWords = "N/A",
                             icon = Icons.Rounded.Face,
-                            chipText = "90%",
+                            chipText = determineStudentPerformance(student),
                             onClickNavigation = { onStudentClick(student.id) }
                         )
                     }
@@ -273,6 +372,138 @@ fun AssignWordScreen(
                                 viewModel.createAssignment(word)
                             }
                         )
+                    }
+                }
+
+                // SECCIÓN DE CHAT IA (Solo si se selecciona un estudiante y está en modo IA)
+                if (selectedStudentId != null && selectedMode == "IA") {
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        SectionTitle(text = "Asistente IA")
+                    }
+
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(400.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp)
+                            ) {
+                                // Encabezado del chat
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.SmartToy,
+                                        contentDescription = "IA",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Asistente IA para asignación de palabras",
+                                        fontFamily = dmSansFamily,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 16.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                // Lista de mensajes del chat
+                                LazyColumn(
+                                    state = chatListState,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(chatMessages) { message ->
+                                        ChatMessageItem(
+                                            message = message,
+                                            isFromUser = message.isFromUser,
+                                            onAssignWord = { word ->
+                                                selectedUser?.let { student ->
+                                                    chatViewModel.assignWordToUser(student.id, word)
+                                                }
+                                            }
+                                        )
+                                    }
+
+                                    if (chatIsLoading) {
+                                        item {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.Start
+                                            ) {
+                                                CircularProgressIndicator(
+                                                    modifier = Modifier.size(20.dp),
+                                                    strokeWidth = 2.dp
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    text = "IA está pensando...",
+                                                    fontSize = 12.sp,
+                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                // Campo de entrada de mensaje
+                                var messageText by remember { mutableStateOf("") }
+                                
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    OutlinedTextField(
+                                        value = messageText,
+                                        onValueChange = { messageText = it },
+                                        placeholder = { 
+                                            Text(
+                                                text = "Pregunta sobre asignación de palabras...",
+                                                fontSize = 14.sp
+                                            ) 
+                                        },
+                                        modifier = Modifier.weight(1f),
+                                        singleLine = true,
+                                        shape = RoundedCornerShape(24.dp)
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    
+                                    IconButton(
+                                        onClick = {
+                                            if (messageText.isNotBlank()) {
+                                                chatViewModel.sendStudentMessage(messageText)
+                                                messageText = ""
+                                            }
+                                        },
+                                        enabled = messageText.isNotBlank() && !chatIsLoading
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.Send,
+                                            contentDescription = "Enviar",
+                                            tint = if (messageText.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
