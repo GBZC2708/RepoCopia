@@ -130,11 +130,7 @@ fun AssignWordScreen(
     LaunchedEffect(Unit) {
         viewModel.loadStudents()
         viewModel.loadWords()
-        chatViewModel.fetchUsers()
     }
-
-    val coroutineScope = rememberCoroutineScope()
-    val chatListState = rememberLazyListState()
 
     // Auto-scroll cuando llegan nuevos mensajes
     LaunchedEffect(chatMessages.size) {

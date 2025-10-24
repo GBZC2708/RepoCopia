@@ -10,8 +10,7 @@ import com.example.alphakids.domain.usecases.CreateAssignmentUseCase
 import com.example.alphakids.domain.usecases.GetCurrentUserUseCase
 import com.example.alphakids.domain.usecases.GetFilteredWordsUseCase
 import com.google.firebase.Firebase
-import com.google.firebase.vertexai.GenerativeModel
-import com.google.firebase.vertexai.vertexAI
+import com.google.firebase.ai.ai
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -51,16 +50,7 @@ class ChatViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<ChatUiState>(ChatUiState.Idle)
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
-    private val generativeModel = GenerativeModel(
-        modelName = "gemini-1.5-flash",
-        apiKey = "", // Se configurará desde Firebase
-        generationConfig = com.google.firebase.vertexai.generationConfig {
-            temperature = 0.7f
-            topK = 40
-            topP = 0.95f
-            maxOutputTokens = 1024
-        }
-    )
+    private val generativeModel = Firebase.ai.generativeModel("gemini-1.5-flash")
 
     fun onUserSelected(user: Estudiante) {
         _selectedUser.value = user
