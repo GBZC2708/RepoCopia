@@ -97,6 +97,7 @@ fun SectionTitle(text: String, modifier: Modifier = Modifier) {
 @Composable
 fun AssignWordScreen(
     viewModel: AssignWordViewModel = hiltViewModel(),
+    chatViewModel: com.example.alphakids.ui.chat.ChatViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
     onStudentClick: (studentId: String) -> Unit
 ) {
@@ -107,10 +108,15 @@ fun AssignWordScreen(
     val currentFilter by viewModel.wordFilterDifficulty.collectAsState()
 
     val assignmentUiState by viewModel.uiState.collectAsState()
+    
+    // Estados del chat
+    val chatMessages by chatViewModel.messages.collectAsState()
+    val isChatLoading by chatViewModel.isLoading.collectAsState()
+    val chatUiState by chatViewModel.uiState.collectAsState()
 
     var showSuccessDialog by remember { mutableStateOf(false) }
     var wordSearchQuery by remember { mutableStateOf("") }
-    var selectedMode by remember { mutableStateOf("Manual") }
+    var selectedMode by remember { mutableStateOf("IA") }
 
     val context = LocalContext.current
 
