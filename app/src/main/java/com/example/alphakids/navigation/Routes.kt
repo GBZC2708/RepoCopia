@@ -50,6 +50,14 @@ object Routes {
     
     const val GAME = "game"
     const val CAMERA = "camera"
+    
+    // OCR Camera routes
+    const val CAMERA_OCR_BASE = "camera_ocr"
+    const val CAMERA_OCR = "$CAMERA_OCR_BASE/{assignmentId}/{targetWord}"
+    fun cameraOCRRoute(assignmentId: String, targetWord: String) = "$CAMERA_OCR_BASE/$assignmentId/$targetWord"
+    
+    // Word History
+    const val WORD_HISTORY = "word_history"
 
     // --- 5. Docente (Bottom Navigation) ---
     const val TEACHER_HOME = "teacher_home"

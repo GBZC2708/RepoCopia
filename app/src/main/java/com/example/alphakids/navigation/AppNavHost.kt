@@ -250,10 +250,26 @@ fun AppNavHost(
         ) { backStackEntry ->
             val assignmentId = backStackEntry.arguments?.getString("assignmentId") ?: ""
             
+            // Get the assignment data to pass the target word
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Routes.ASSIGNED_WORDS)
+            }
+            val viewModel: com.example.alphakids.ui.screens.tutor.games.WordPuzzleViewModel = hiltViewModel(parentEntry)
+            val uiState by viewModel.uiState.collectAsState()
+            
+            LaunchedEffect(assignmentId) {
+                viewModel.loadWordData(assignmentId)
+            }
+            
             WordPuzzleScreen(
                 assignmentId = assignmentId,
                 onBackClick = { navController.popBackStack() },
-                onTakePhotoClick = { navController.navigate(Routes.CAMERA) }
+                onTakePhotoClick = { 
+                    val targetWord = uiState.assignment?.palabraTexto ?: ""
+                    if (targetWord.isNotEmpty()) {
+                        navController.navigate(Routes.cameraOCRRoute(assignmentId, targetWord))
+                    }
+                }
             )
         }
 
