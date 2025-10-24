@@ -469,6 +469,7 @@ fun AssignWordScreen(
                             wordTitle = word.texto,
                             wordSubtitle = word.categoria,
                             chipText = word.nivelDificultad,
+                            imageUrl = word.imagenUrl,
                             onClickAssign = {
                                 viewModel.createAssignment(word)
                             }

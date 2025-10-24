@@ -41,13 +41,6 @@ object Routes {
     const val GAME_WORDS = "$GAME_WORDS_BASE/{studentId}"
     fun gameWordsRoute(studentId: String) = "$GAME_WORDS_BASE/$studentId"
 
-    const val ASSIGNED_WORDS = "assigned_words/{studentId}"
-    fun assignedWordsRoute(studentId: String) = "assigned_words/$studentId"
-    
-    const val WORD_PUZZLE_BASE = "word_puzzle"
-    const val WORD_PUZZLE = "$WORD_PUZZLE_BASE/{assignmentId}"
-    fun wordPuzzleRoute(assignmentId: String) = "$WORD_PUZZLE_BASE/$assignmentId"
-    
     const val GAME = "game"
     const val CAMERA = "camera"
     
@@ -59,10 +52,22 @@ object Routes {
     // Word History
     const val WORD_HISTORY = "word_history"
 
+    // Assigned Words and Word Puzzle routes
+    const val ASSIGNED_WORDS_BASE = "assigned_words"
+    const val ASSIGNED_WORDS = "$ASSIGNED_WORDS_BASE/{studentId}"
+    fun assignedWordsRoute(studentId: String) = "$ASSIGNED_WORDS_BASE/$studentId"
+
+    const val WORD_PUZZLE_BASE = "word_puzzle"
+    const val WORD_PUZZLE = "$WORD_PUZZLE_BASE/{assignmentId}"
+    fun wordPuzzleRoute(assignmentId: String) = "$WORD_PUZZLE_BASE/$assignmentId"
+
     // --- 5. Docente (Bottom Navigation) ---
     const val TEACHER_HOME = "teacher_home"
     const val TEACHER_STUDENTS = "teacher_students"
     const val WORDS = "words"
+
+    // Role constants
+    const val ROLE_TEACHSHORTENED = "teacher_short"
 
     // --- 6. Docente (CRUD y Tareas) ---
     const val TEACHER_STUDENT_DETAIL = "teacher_student_detail/{studentId}"

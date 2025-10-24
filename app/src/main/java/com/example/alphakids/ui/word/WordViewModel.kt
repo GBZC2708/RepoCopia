@@ -1,5 +1,8 @@
 package com.example.alphakids.ui.word
 
+import android.content.Context
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,12 +11,25 @@ import com.example.alphakids.domain.repository.WordSortOrder
 import com.example.alphakids.domain.usecases.CreateWordUseCase
 import com.example.alphakids.domain.usecases.DeleteWordUseCase
 import com.example.alphakids.domain.usecases.GetCurrentUserUseCase
-import com.example.alphakids.domain.usecases.GetFilteredWordsUseCase // Importante
+import com.example.alphakids.domain.usecases.GetFilteredWordsUseCase
 import com.example.alphakids.domain.usecases.UpdateWordUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.net.HttpURLConnection
+import java.net.URL
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,6 +50,9 @@ class WordViewModel @Inject constructor(
     private val _filterDifficulty = MutableStateFlow<String?>(null)
     val filterDifficulty: StateFlow<String?> = _filterDifficulty.asStateFlow()
 
+    private val _selectedImageUri = MutableStateFlow<Uri?>(null)
+    val selectedImageUri: StateFlow<Uri?> = _selectedImageUri.asStateFlow()
+
     private val docenteIdFlow: Flow<String?> = getCurrentUserUseCase()
         .map { it?.uid }
 
@@ -46,7 +65,6 @@ class WordViewModel @Inject constructor(
         Triple(docenteId, sortOrder, difficulty)
     }.flatMapLatest { (docenteId, sortOrder, difficulty) ->
         if (docenteId != null) {
-            // Usamos el nuevo UseCase para filtrar
             getFilteredWordsUseCase(
                 docenteId = docenteId,
                 dificultad = difficulty,
@@ -64,12 +82,15 @@ class WordViewModel @Inject constructor(
         initialValue = emptyList()
     )
 
+    fun setSelectedImageUri(uri: Uri?) {
+        _selectedImageUri.value = uri
+    }
+
     fun createWord(
         texto: String,
         categoria: String,
         nivelDificultad: String,
-        imagenUrl: String, // TODO: Manejar subida de imagen
-        audioUrl: String   // TODO: Manejar subida de audio
+        audioUrl: String
     ) {
         viewModelScope.launch {
             _uiState.value = WordUiState.Loading
@@ -83,12 +104,19 @@ class WordViewModel @Inject constructor(
                 texto = texto,
                 categoria = categoria,
                 nivelDificultad = nivelDificultad,
-                imagenUrl = imagenUrl,
+                imagenUrl = "",
                 audioUrl = audioUrl,
                 fechaCreacionMillis = null,
                 creadoPor = currentUser.uid
             )
-            val result = createWordUseCase(newWord)
+
+            val result = createWordUseCase(
+                word = newWord,
+                imageUri = _selectedImageUri.value
+            )
+
+            _selectedImageUri.value = null
+
             _uiState.value = if (result.isSuccess) {
                 WordUiState.Success("Palabra creada con éxito", result.getOrNull())
             } else {
@@ -136,5 +164,50 @@ class WordViewModel @Inject constructor(
     fun resetUiState() {
         _uiState.value = WordUiState.Idle
     }
-}
 
+    fun testImageUrl() {
+        val testUrl = "https://firebasestorage.googleapis.com/v0/b/alphakids-tecsup.firebasestorage.app/o/palabras%2F561c7555-1d02-4321-9c83-dfff92a472f4%2Fimagen_1761314478472.jpg?alt=media&token=551edd4b-8036-4489-9d18-28263b64b692"
+
+        Log.d("TEST_URL", "Testing URL: $testUrl")
+        Log.d("TEST_URL", "URL Length: ${testUrl.length}")
+        Log.d("TEST_URL", "Contains 'firebasestorage': ${testUrl.contains("firebasestorage")}")
+
+        // Intenta descargar directamente
+        viewModelScope.launch {
+            try {
+                val url = URL(testUrl)
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.connect()
+
+                val responseCode = connection.responseCode
+                Log.d("TEST_URL", "Response Code: $responseCode")
+
+                if (responseCode == 200) {
+                    Log.d("TEST_URL", "✅ URL es accesible")
+                } else {
+                    Log.e("TEST_URL", "❌ URL retorna código: $responseCode")
+                }
+            } catch (e: Exception) {
+                Log.e("TEST_URL", "❌ Error al acceder a URL", e)
+            }
+        }
+    }
+
+    fun checkInternetPermission(context: Context): Boolean {
+        val pm = context.packageManager
+        val internetPermission = pm.checkPermission(
+            android.Manifest.permission.INTERNET,
+            context.packageName
+        )
+        val networkStatePermission = pm.checkPermission(
+            android.Manifest.permission.ACCESS_NETWORK_STATE,
+            context.packageName
+        )
+
+        Log.d("PERMISSIONS", "INTERNET: ${internetPermission == PackageManager.PERMISSION_GRANTED}")
+        Log.d("PERMISSIONS", "NETWORK_STATE: ${networkStatePermission == PackageManager.PERMISSION_GRANTED}")
+
+        return internetPermission == PackageManager.PERMISSION_GRANTED
+    }
+}
