@@ -109,6 +109,11 @@ class AssignWordViewModel @Inject constructor(
                 return@launch
             }
 
+            // Log para debug
+            android.util.Log.d("AssignWordViewModel", "Creating assignment for student: ${student.id} (${student.nombre})")
+            android.util.Log.d("AssignWordViewModel", "Word: ${word.texto} (${word.id})")
+            android.util.Log.d("AssignWordViewModel", "Teacher: ${docente.uid}")
+
             val newAssignment = WordAssignment(
                 id = "",
                 idDocente = docente.uid,
@@ -125,6 +130,11 @@ class AssignWordViewModel @Inject constructor(
             )
 
             val result = createAssignmentUseCase(newAssignment)
+            android.util.Log.d("AssignWordViewModel", "Assignment result: ${if (result.isSuccess) "SUCCESS" else "FAILURE"}")
+            if (result.isFailure) {
+                android.util.Log.e("AssignWordViewModel", "Assignment error: ${result.exceptionOrNull()?.message}")
+            }
+
             _uiState.value = if (result.isSuccess) {
                 AssignmentUiState.Success("Palabra asignada correctamente a ${student.nombre}.")
             } else {

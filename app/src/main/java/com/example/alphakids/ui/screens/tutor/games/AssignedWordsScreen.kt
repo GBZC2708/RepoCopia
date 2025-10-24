@@ -16,11 +16,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.alphakids.data.firebase.models.AsignacionPalabra
+import com.example.alphakids.ui.screens.tutor.games.components.WordPuzzleCard
 import com.example.alphakids.ui.theme.dmSansFamily
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,25 +80,55 @@ fun AssignedWordsScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "Error: ${uiState.error}",
-                        color = MaterialTheme.colorScheme.error,
-                        fontFamily = dmSansFamily
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Error: ${uiState.error}",
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { viewModel.loadAssignedWords(studentId) }
+                        ) {
+                            Text("Reintentar")
+                        }
+                    }
                 }
             }
-            
-            uiState.assignedWords.isEmpty() -> {
+
+            uiState.assignedWords.isEmpty() && !uiState.isLoading -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "No tienes palabras asignadas",
-                        fontFamily = dmSansFamily,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "No tienes palabras asignadas",
+                            fontFamily = dmSansFamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Tu tutor te asignará palabras para practicar",
+                            fontFamily = dmSansFamily,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { viewModel.loadAssignedWords(studentId) }
+                        ) {
+                            Text("Actualizar")
+                        }
+                    }
                 }
             }
             

@@ -3,7 +3,7 @@ package com.example.alphakids.ui.screens.tutor.games
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.rounded.Checkroom
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.example.alphakids.data.firebase.models.AsignacionPalabra
 import com.example.alphakids.ui.screens.tutor.games.components.WordPuzzleCard
 import com.example.alphakids.ui.theme.dmSansFamily
@@ -19,15 +20,15 @@ import com.example.alphakids.ui.theme.dmSansFamily
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WordPuzzleScreen(
-    assignment: AsignacionPalabra,
+    assignmentId: String,
     onBackClick: () -> Unit,
     onTakePhotoClick: () -> Unit,
     viewModel: WordPuzzleViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(assignment.idPalabra) {
-        viewModel.loadWordData(assignment.idPalabra)
+    LaunchedEffect(assignmentId) {
+        viewModel.loadWordData(assignmentId)
     }
 
     Column(
@@ -36,7 +37,7 @@ fun WordPuzzleScreen(
         TopAppBar(
             title = {
                 Text(
-                    text = "Puzzle: ${assignment.palabraTexto.uppercase()}",
+                    text = "Puzzle de Palabra",
                     fontFamily = dmSansFamily,
                     fontWeight = FontWeight.Bold
                 )
@@ -82,9 +83,9 @@ fun WordPuzzleScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     WordPuzzleCard(
-                        wordLength = assignment.palabraTexto.length,
-                        icon = Icons.Rounded.Checkroom, // Por ahora usamos un icono por defecto
-                        difficulty = assignment.palabraDificultad,
+                        wordLength = uiState.assignment?.palabraTexto?.length ?: 4,
+                        wordImage = uiState.assignment?.palabraImagen,
+                        difficulty = uiState.assignment?.palabraDificultad ?: "Normal",
                         onTakePhotoClick = onTakePhotoClick
                     )
                 }

@@ -105,11 +105,15 @@ fun AppNavHost(
         ) { backStackEntry ->
             val role = backStackEntry.arguments?.getString("role") ?: Routes.ROLE_TEACHER
             val isTutor = role == Routes.ROLE_TUTOR
+            
+            android.util.Log.d("AppNavHost", "Login screen loaded for role: $role, isTutor: $isTutor")
+            
             com.example.alphakids.ui.auth.LoginScreen(
                 onBackClick = { navController.popBackStack() },
                 onCloseClick = { navController.popBackStack() },
                 onLoginSuccess = {
                     val nextRoute = if (isTutor) Routes.PROFILES else Routes.TEACHER_HOME
+                    android.util.Log.d("AppNavHost", "Login success, navigating to: $nextRoute (isTutor: $isTutor)")
                     navController.navigate(nextRoute) {
                         popUpTo(Routes.ROLE_SELECTION) { inclusive = true }
                     }
@@ -143,7 +147,10 @@ fun AppNavHost(
         // Perfiles del tutor
         composable(Routes.PROFILES) {
             ProfileSelectionScreen(
-                onProfileClick = { profileId -> navController.navigate(Routes.homeRoute(profileId)) },
+                onProfileClick = { profileId -> 
+                    android.util.Log.d("AppNavHost", "Profile selected: $profileId, navigating to home")
+                    navController.navigate(Routes.homeRoute(profileId)) 
+                },
                 onAddProfileClick = { navController.navigate(Routes.STUDENT_PROFILE_CREATE) },
                 onSettingsClick = { navController.navigate(Routes.editProfileRoute(Routes.ROLE_TUTOR)) },
                 onLogoutClick = onLogout
@@ -156,13 +163,22 @@ fun AppNavHost(
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
         ) { backStackEntry ->
             val studentId = backStackEntry.arguments?.getString("studentId") ?: "default"
+            
+            // Log para debug - verificar qué studentId se está usando
+            LaunchedEffect(studentId) {
+                android.util.Log.d("AppNavHost", "StudentHomeScreen loaded with studentId: $studentId")
+            }
+            
             val studentName = if (studentId == "sofia_id") "Sofía" else "Estudiante"
 
             StudentHomeScreen(
                 studentName = studentName,
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
-                onPlayClick = { navController.navigate(Routes.assignedWordsRoute(studentId)) }, // <-- NAVEGA A PALABRAS ASIGNADAS
+                onPlayClick = { 
+                    android.util.Log.d("AppNavHost", "Play button clicked, navigating with studentId: $studentId")
+                    navController.navigate(Routes.assignedWordsRoute(studentId)) 
+                }, // <-- NAVEGA A PALABRAS ASIGNADAS
                 onDictionaryClick = { navigateToStudentBottomNav(Routes.dictionaryRoute(studentId)) },
                 onAchievementsClick = { navigateToStudentBottomNav(Routes.achievementsRoute(studentId)) },
                 onSettingsClick = { navController.navigate(Routes.editStudentProfileRoute(studentId)) },
@@ -210,6 +226,13 @@ fun AppNavHost(
         ) { backStackEntry ->
             val studentId = backStackEntry.arguments?.getString("studentId") ?: "default"
             
+            // Log detallado para debug
+            LaunchedEffect(studentId) {
+                android.util.Log.d("AppNavHost", "=== ASSIGNED WORDS SCREEN ===")
+                android.util.Log.d("AppNavHost", "Received studentId: $studentId")
+                android.util.Log.d("AppNavHost", "Route arguments: ${backStackEntry.arguments}")
+            }
+            
             AssignedWordsScreen(
                 studentId = studentId,
                 onBackClick = { navController.popBackStack() },
@@ -227,15 +250,8 @@ fun AppNavHost(
         ) { backStackEntry ->
             val assignmentId = backStackEntry.arguments?.getString("assignmentId") ?: ""
             
-            // Aquí necesitarías obtener la asignación por ID
-            // Por simplicidad, usaré datos de ejemplo
             WordPuzzleScreen(
-                assignment = com.example.alphakids.data.firebase.models.AsignacionPalabra(
-                    id = assignmentId,
-                    palabraTexto = "CASA",
-                    palabraImagen = null,
-                    palabraDificultad = "Fácil"
-                ),
+                assignmentId = assignmentId,
                 onBackClick = { navController.popBackStack() },
                 onTakePhotoClick = { navController.navigate(Routes.CAMERA) }
             )
