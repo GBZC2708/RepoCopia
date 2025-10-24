@@ -106,4 +106,7 @@ dependencies {
     // 1. Accompanist Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.36.0")
 
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
 }
