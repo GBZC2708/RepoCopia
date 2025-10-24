@@ -272,7 +272,6 @@ fun AppNavHost(
         // Docente: pantalla principal
         composable(Routes.TEACHER_HOME) {
             TeacherHomeScreen(
-                teacherName = "Profesor/a",
                 onAssignWordsClick = { navController.navigate(Routes.ASSIGN_WORD) },
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
@@ -355,7 +354,6 @@ fun AppNavHost(
 
             WordEditScreen(
                 viewModel = viewModel,
-                wordUiState = wordUiState,
                 word = wordToEdit,
                 isEditing = isEditing,
                 onCloseClick = { navController.popBackStack() },

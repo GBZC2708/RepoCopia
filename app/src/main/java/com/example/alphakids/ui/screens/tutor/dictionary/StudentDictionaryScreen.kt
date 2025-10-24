@@ -138,7 +138,8 @@ fun StudentDictionaryScreen(
                         icon = Icons.Rounded.Checkroom,
                         chipText = "Fácil",
                         isSelected = (selectedWordId == "id_$index"),
-                        onClick = { selectedWordId = "id_$index" }
+                        onClick = { selectedWordId = "id_$index" },
+                        imageUrl = null // Aquí se pasaría la URL real de la imagen
                     )
                 }
             }

@@ -162,16 +162,34 @@ class WordRepositoryImpl @Inject constructor(
     private fun Query.toWordListFlow(errorMessage: String): Flow<List<Word>> {
         return this.snapshots()
             .map { querySnapshot ->
-                Log.d("WordRepo", "Snapshot received. Documents found: ${querySnapshot.size()}")
+                Log.d("WordRepo", "Snapshot received. Documents: ${querySnapshot.size()}")
 
                 val palabrasDto = querySnapshot.toObjects(Palabra::class.java)
 
-                palabrasDto.map { palabra ->
-                    WordMapper.toDomain(palabra)
+                palabrasDto.forEachIndexed { index, palabra ->
+                    Log.d("WordRepo", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                    Log.d("WordRepo", "📝 Word #$index:")
+                    Log.d("WordRepo", "  ID: ${palabra.id}")
+                    Log.d("WordRepo", "  Texto: ${palabra.texto}")
+                    Log.d("WordRepo", "  Imagen (DTO): '${palabra.imagen}'")
+                    Log.d("WordRepo", "  Imagen Length: ${palabra.imagen.length}")
+                    Log.d("WordRepo", "  Imagen isEmpty: ${palabra.imagen.isEmpty()}")
+                    Log.d("WordRepo", "  Imagen isBlank: ${palabra.imagen.isBlank()}")
+                    Log.d("WordRepo", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                 }
+
+                val words = palabrasDto.map { palabra ->
+                    val word = WordMapper.toDomain(palabra)
+                    Log.d("WordRepo", "🔄 Mapped to Domain:")
+                    Log.d("WordRepo", "  ID: ${word.id}")
+                    Log.d("WordRepo", "  ImagenUrl (Domain): '${word.imagenUrl}'")
+                    word
+                }
+
+                words
             }
             .catch { exception ->
-                Log.e("WordRepo", errorMessage, exception)
+                Log.e("WordRepo", "❌ $errorMessage", exception)
                 emit(emptyList())
             }
     }

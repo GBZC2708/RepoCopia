@@ -25,11 +25,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.alphakids.ui.components.AppHeader
 import com.example.alphakids.ui.components.BottomNavItem
 import com.example.alphakids.ui.components.CustomFAB
@@ -41,14 +44,16 @@ import com.example.alphakids.ui.theme.dmSansFamily
 
 @Composable
 fun TeacherHomeScreen(
-    teacherName: String,
+    viewModel: TeacherHomeViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onAssignWordsClick: () -> Unit,
     onBottomNavClick: (String) -> Unit,
-    onSettingsClick: () -> Unit, // <-- Añadido
+    onSettingsClick: () -> Unit,
     currentRoute: String = "home"
 ) {
+    // Obtener el nombre del profesor desde el ViewModel
+    val teacherName by viewModel.teacherName.collectAsState()
     val teacherBottomNavItems = listOf(
         BottomNavItem("home", "Inicio", Icons.Rounded.Home),
         BottomNavItem("students", "Alumnos", Icons.Rounded.Groups),
@@ -159,7 +164,6 @@ fun TeacherHomeScreen(
 fun TeacherHomeScreenPreview() {
     AlphakidsTheme {
         TeacherHomeScreen(
-            teacherName = "<nombre>",
             onBackClick = {},
             onLogoutClick = {},
             onAssignWordsClick = {},

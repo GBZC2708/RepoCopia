@@ -202,7 +202,8 @@ fun WordsScreen(
                         onClick = {
                             selectedWordId = word.id
                             onWordClick(word.id)
-                        }
+                        },
+                        imageUrl = word.imagenUrl
                     )
                 }
             }

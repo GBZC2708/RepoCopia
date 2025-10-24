@@ -58,6 +58,8 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.foundation)
+    implementation(libs.ui)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -88,6 +90,9 @@ dependencies {
     // 3. Firestore
     implementation("com.google.firebase:firebase-firestore")
 
+    // 4. Storage
+    implementation("com.google.firebase:firebase-storage")
+
     // Jetpack
     // 1. NAVIGATION COMPOSE (Para moverte entre pantallas)
     val navVersion = "2.7.0" // Usa una versión estable reciente
@@ -106,4 +111,6 @@ dependencies {
     // 1. Accompanist Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.36.0")
 
+    // COIL - Image Loading Library for Compose
+    implementation("io.coil-kt:coil-compose:2.6.0")
 }

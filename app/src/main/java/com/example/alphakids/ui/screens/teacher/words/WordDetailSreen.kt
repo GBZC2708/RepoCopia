@@ -137,7 +137,8 @@ fun WordDetailScreen(
                 icon = Icons.Rounded.Checkroom,
                 chipText = word.nivelDificultad,
                 isSelected = true,
-                onClick = {}
+                onClick = {},
+                imageUrl = word.imagenUrl
             )
 
             Spacer(modifier = Modifier.height(16.dp))
