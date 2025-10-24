@@ -2,8 +2,10 @@ package com.example.alphakids.data.di
 
 import com.example.alphakids.data.firebase.repository.AuthRepositoryImpl
 import com.example.alphakids.data.firebase.repository.StudentRepositoryImpl
+import com.example.alphakids.data.firebase.repository.WordRepositoryImpl
 import com.example.alphakids.domain.repository.AuthRepository
 import com.example.alphakids.domain.repository.StudentRepository
+import com.example.alphakids.domain.repository.WordRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -21,4 +23,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindStudentRepository(impl: StudentRepositoryImpl): StudentRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWordRepository(impl: WordRepositoryImpl): WordRepository
 }

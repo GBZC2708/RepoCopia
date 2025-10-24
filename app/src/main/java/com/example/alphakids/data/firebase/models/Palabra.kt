@@ -8,14 +8,20 @@ import com.google.firebase.firestore.ServerTimestamp
 data class Palabra(
     @DocumentId
     val id: String = "",
+
     val texto: String = "",
     val categoria: String = "",
-    @PropertyName("nivel_dificultad")
+
+    @get:PropertyName("nivelDificultad")
     val nivelDificultad: String = "",
+
     val imagen: String = "",
     val audio: String = "",
-    @PropertyName("fecha_creacion") @ServerTimestamp
+
+    @get:PropertyName("fechaCreacion")
+    @ServerTimestamp
     val fechaCreacion: Timestamp? = null,
-    @PropertyName("creado_por")
+
+    @get:PropertyName("creadoPor")
     val creadoPor: String? = null
 )

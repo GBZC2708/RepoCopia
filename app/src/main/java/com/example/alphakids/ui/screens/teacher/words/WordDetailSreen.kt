@@ -1,55 +1,37 @@
 package com.example.alphakids.ui.screens.teacher.words
 
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.rounded.Checkroom
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.Face
-import androidx.compose.material.icons.rounded.Groups
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.Spellcheck
-import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.alphakids.ui.components.AppHeader
-import com.example.alphakids.ui.components.BottomNavItem
-import com.example.alphakids.ui.components.CustomFAB
-import com.example.alphakids.ui.components.ErrorButton
-import com.example.alphakids.ui.components.InfoCard
-import com.example.alphakids.ui.components.InfoChip
-import com.example.alphakids.ui.components.MainBottomBar
-import com.example.alphakids.ui.components.PrimaryButton
-import com.example.alphakids.ui.components.StudentListItem
-import com.example.alphakids.ui.components.WordListItem
+import com.example.alphakids.domain.models.Word
+import com.example.alphakids.ui.components.*
 import com.example.alphakids.ui.theme.AlphakidsTheme
 import com.example.alphakids.ui.theme.dmSansFamily
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun WordDetailScreen(
+    word: Word?,
     onBackClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onEditWordClick: () -> Unit,
@@ -65,11 +47,15 @@ fun WordDetailScreen(
         BottomNavItem("words", "Palabras", Icons.Rounded.Spellcheck)
     )
 
+    val dateFormatter = remember {
+        SimpleDateFormat("dd MMM, yyyy", Locale.getDefault())
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             AppHeader(
-                title = "<Palabra>",
+                title = word?.texto ?: "Detalle de palabra",
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -105,6 +91,20 @@ fun WordDetailScreen(
             )
         }
     ) { paddingValues ->
+        if (word == null) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Palabra no encontrada o cargando...")
+            }
+            return@Scaffold
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -132,11 +132,11 @@ fun WordDetailScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             WordListItem(
-                title = "WORD",
-                subtitle = "Categoría",
+                title = word.texto,
+                subtitle = word.categoria,
                 icon = Icons.Rounded.Checkroom,
-                chipText = "Chip",
-                isSelected = false,
+                chipText = word.nivelDificultad,
+                isSelected = true,
                 onClick = {}
             )
 
@@ -145,9 +145,11 @@ fun WordDetailScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 InfoCard(
                     modifier = Modifier.weight(1f),
-                    title = "Info",
-                    data = "Data",
-                    icon = Icons.Rounded.Star
+                    title = "Fecha Creación",
+                    data = word.fechaCreacionMillis?.let {
+                        dateFormatter.format(Date(it))
+                    } ?: "N/A",
+                    icon = Icons.Rounded.CalendarToday
                 )
                 InfoCard(
                     modifier = Modifier.weight(1f),
@@ -169,63 +171,9 @@ fun WordDetailScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                InfoChip(text = "Chip", isSelected = false)
-                InfoChip(text = "Chip", isSelected = false)
-            }
+            Text("Funcionalidad no implementada.", style = MaterialTheme.typography.bodyMedium)
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                StudentListItem(
-                    fullname = "Sofia Arenas",
-                    age = "3 años",
-                    numWords = "18 palabras",
-                    icon = Icons.Rounded.Face,
-                    chipText = "90%",
-                    onClick = { onStudentClick("sofia_id") }
-                )
-                StudentListItem(
-                    fullname = "Fullname",
-                    age = "Age",
-                    numWords = "Num words",
-                    icon = Icons.Rounded.Face,
-                    chipText = "90%",
-                    onClick = { onStudentClick("id_2") }
-                )
-                StudentListItem(
-                    fullname = "Fullname",
-                    age = "Age",
-                    numWords = "Num words",
-                    icon = Icons.Rounded.Face,
-                    chipText = "90%",
-                    onClick = { onStudentClick("id_3") }
-                )
-            }
             Spacer(modifier = Modifier.height(16.dp))
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun WordDetailScreenPreview() {
-    AlphakidsTheme {
-        WordDetailScreen(
-            onBackClick = {},
-            onLogoutClick = {},
-            onEditWordClick = {},
-            onDeleteWordClick = {},
-            onStudentClick = {},
-            onSettingsClick = {},
-            onBottomNavClick = {}
-        )
     }
 }

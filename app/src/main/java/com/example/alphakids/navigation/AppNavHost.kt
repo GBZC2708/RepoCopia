@@ -8,34 +8,33 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Checkroom
+import androidx.compose.material.icons.rounded.Warning
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.alphakids.ui.screens.teacher.words.AssignWordScreen
-import com.example.alphakids.ui.screens.teacher.words.WordDetailScreen
-import com.example.alphakids.ui.screens.teacher.words.WordsScreen
-import com.example.alphakids.ui.screens.teacher.words.WordEditScreen
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.alphakids.domain.models.UserRole
+import com.example.alphakids.ui.auth.AuthViewModel
+import com.example.alphakids.ui.word.WordUiState
+import com.example.alphakids.ui.word.WordViewModel
+import com.example.alphakids.ui.components.ActionDialog
+import com.example.alphakids.ui.screens.teacher.words.*
 import com.example.alphakids.ui.screens.teacher.home.TeacherHomeScreen
-import com.example.alphakids.ui.screens.teacher.students.TeacherStudentsScreen
-import com.example.alphakids.ui.screens.teacher.students.StudentDetailScreen
+import com.example.alphakids.ui.screens.teacher.students.*
 import com.example.alphakids.ui.screens.tutor.profile_selection.ProfileSelectionScreen
 import com.example.alphakids.ui.screens.tutor.home.StudentHomeScreen
 import com.example.alphakids.ui.screens.tutor.dictionary.StudentDictionaryScreen
 import com.example.alphakids.ui.screens.tutor.achievements.StudentAchievementsScreen
 import com.example.alphakids.ui.screens.tutor.games.GameScreen
 import com.example.alphakids.ui.screens.tutor.games.CameraScreen
-import com.example.alphakids.ui.components.ActionDialog
-import androidx.compose.material.icons.rounded.Warning
 import com.example.alphakids.ui.screens.profile.EditProfileScreen
 import com.example.alphakids.ui.screens.tutor.studentprofile.CreateStudentProfileScreen
 import com.example.alphakids.ui.screens.tutor.studentprofile.EditStudentProfileScreen
-import androidx.compose.runtime.collectAsState
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.alphakids.domain.models.UserRole
-import com.example.alphakids.ui.auth.AuthViewModel
 
 @Composable
 fun AppNavHost(
@@ -77,12 +76,12 @@ fun AppNavHost(
         }
     }
 
-
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier
     ) {
+        // Selección de rol
         composable(Routes.ROLE_SELECTION) {
             com.example.alphakids.ui.screens.common.RoleSelectScreen(
                 onTutorClick = { navController.navigate(Routes.loginRoute(Routes.ROLE_TUTOR)) },
@@ -90,6 +89,7 @@ fun AppNavHost(
             )
         }
 
+        // Login
         composable(
             route = Routes.LOGIN,
             arguments = listOf(navArgument("role") { type = NavType.StringType })
@@ -105,12 +105,13 @@ fun AppNavHost(
                         popUpTo(Routes.ROLE_SELECTION) { inclusive = true }
                     }
                 },
-                onForgotPasswordClick = { /* TODO */ },
+                onForgotPasswordClick = { },
                 onRegisterClick = { navController.navigate(Routes.registerRoute(role)) },
                 isTutorLogin = isTutor
             )
         }
 
+        // Registro
         composable(
             route = Routes.REGISTER,
             arguments = listOf(navArgument("role") { type = NavType.StringType })
@@ -130,6 +131,7 @@ fun AppNavHost(
             )
         }
 
+        // Perfiles del tutor
         composable(Routes.PROFILES) {
             ProfileSelectionScreen(
                 onProfileClick = { profileId -> navController.navigate(Routes.homeRoute(profileId)) },
@@ -139,6 +141,7 @@ fun AppNavHost(
             )
         }
 
+        // Pantalla principal del estudiante
         composable(
             route = Routes.HOME,
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
@@ -166,6 +169,7 @@ fun AppNavHost(
             )
         }
 
+        // Diccionario
         composable(
             route = Routes.DICTIONARY,
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
@@ -188,6 +192,7 @@ fun AppNavHost(
             )
         }
 
+        // Logros
         composable(
             route = Routes.ACHIEVEMENTS,
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
@@ -209,25 +214,31 @@ fun AppNavHost(
             )
         }
 
+        // Juego
         composable(Routes.GAME) {
             GameScreen(
-                wordLength = 4, icon = Icons.Rounded.Checkroom, difficulty = "Fácil",
+                wordLength = 4,
+                icon = Icons.Rounded.Checkroom,
+                difficulty = "Fácil",
                 onBackClick = { navController.popBackStack() },
                 onCloseClick = { navController.popBackStack(Routes.HOME, inclusive = true) },
                 onTakePhotoClick = { navController.navigate(Routes.CAMERA) }
             )
         }
 
+        // Cámara
         composable(Routes.CAMERA) {
             CameraScreen(
                 onBackClick = { navController.popBackStack() },
                 onShutterClick = { },
                 onCloseNotificationClick = { },
-                onFlashClick = { }, onFlipCameraClick = { }
+                onFlashClick = { },
+                onFlipCameraClick = { }
             )
         }
 
-        composable(Routes.TEACHER_HOME) { backStackEntry ->
+        // Docente: pantalla principal
+        composable(Routes.TEACHER_HOME) {
             TeacherHomeScreen(
                 teacherName = "Profesor/a",
                 onAssignWordsClick = { navController.navigate(Routes.ASSIGN_WORD) },
@@ -239,7 +250,8 @@ fun AppNavHost(
             )
         }
 
-        composable(Routes.TEACHER_STUDENTS) { backStackEntry ->
+        // Docente: estudiantes
+        composable(Routes.TEACHER_STUDENTS) {
             TeacherStudentsScreen(
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
@@ -250,6 +262,7 @@ fun AppNavHost(
             )
         }
 
+        // Detalle de estudiante
         composable(
             route = Routes.TEACHER_STUDENT_DETAIL,
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
@@ -267,8 +280,16 @@ fun AppNavHost(
             )
         }
 
+        // Palabras
         composable(Routes.WORDS) { backStackEntry ->
+            val viewModel: WordViewModel = hiltViewModel(backStackEntry)
+            val words by viewModel.words.collectAsState()
+            val currentFilter by viewModel.filterDifficulty.collectAsState()
+
             WordsScreen(
+                words = words,
+                currentDifficultyFilter = currentFilter,
+                onSetDifficultyFilter = viewModel::setDifficultyFilter,
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
                 onSettingsClick = { navController.navigate(Routes.editProfileRoute(Routes.ROLE_TEACHER)) },
@@ -280,6 +301,7 @@ fun AppNavHost(
             )
         }
 
+        // Editar palabra
         composable(
             route = Routes.WORD_EDIT,
             arguments = listOf(navArgument("wordId") { type = NavType.StringType; nullable = true })
@@ -287,14 +309,29 @@ fun AppNavHost(
             val wordId = backStackEntry.arguments?.getString("wordId")
             val isEditing = wordId != null
 
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Routes.WORDS)
+            }
+            val viewModel: WordViewModel = hiltViewModel(parentEntry)
+
+            val wordUiState by viewModel.uiState.collectAsState()
+            val words by viewModel.words.collectAsState()
+
+            val wordToEdit = remember(wordId, words) {
+                words.find { it.id == wordId }
+            }
+
             WordEditScreen(
+                viewModel = viewModel,
+                wordUiState = wordUiState,
+                word = wordToEdit,
                 isEditing = isEditing,
                 onCloseClick = { navController.popBackStack() },
-                onCancelClick = { navController.popBackStack() },
-                onPrimaryActionClick = { navController.popBackStack() }
+                onCancelClick = { navController.popBackStack() }
             )
         }
 
+        // Detalle de palabra
         composable(
             route = Routes.WORD_DETAIL,
             arguments = listOf(navArgument("wordId") { type = NavType.StringType })
@@ -302,7 +339,20 @@ fun AppNavHost(
             val wordId = backStackEntry.arguments?.getString("wordId") ?: "error"
             var showDeleteDialog by remember { mutableStateOf(false) }
 
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Routes.WORDS)
+            }
+            val viewModel: WordViewModel = hiltViewModel(parentEntry)
+
+            val words by viewModel.words.collectAsState()
+            val wordUiState by viewModel.uiState.collectAsState()
+
+            val word = remember(wordId, words) {
+                words.find { it.id == wordId }
+            }
+
             WordDetailScreen(
+                word = word,
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
                 onEditWordClick = { navController.navigate(Routes.editWordRoute(wordId)) },
@@ -319,8 +369,7 @@ fun AppNavHost(
                     message = "¿Estás seguro de eliminar esta palabra?",
                     primaryButtonText = "Eliminar",
                     onPrimaryButtonClick = {
-                        showDeleteDialog = false
-                        navController.popBackStack(Routes.WORDS, inclusive = false)
+                        viewModel.deleteWord(wordId)
                     },
                     secondaryButtonText = "Cancelar",
                     onSecondaryButtonClick = { showDeleteDialog = false },
@@ -328,16 +377,36 @@ fun AppNavHost(
                     isError = true
                 )
             }
+
+            // 🔧 Se corrigió el Smart Cast
+            LaunchedEffect(wordUiState) {
+                when (val state = wordUiState) {
+                    is WordUiState.Success -> {
+                        if (state.message.contains("eliminada")) {
+                            showDeleteDialog = false
+                            viewModel.resetUiState()
+                            navController.popBackStack(Routes.WORDS, inclusive = false)
+                        }
+                    }
+                    is WordUiState.Error -> {
+                        showDeleteDialog = false
+                        viewModel.resetUiState()
+                    }
+                    else -> {}
+                }
+            }
         }
 
+        // Asignar palabra
         composable(Routes.ASSIGN_WORD) {
             AssignWordScreen(
                 onBackClick = { navController.popBackStack() },
-                onAssignWordClick = { studentId, wordId -> },
+                onAssignWordClick = { _, _ -> },
                 onStudentClick = { }
             )
         }
 
+        // Editar perfil
         composable(
             route = Routes.EDIT_PROFILE,
             arguments = listOf(navArgument("role") { type = NavType.StringType })
@@ -352,21 +421,20 @@ fun AppNavHost(
             )
         }
 
+        // Crear perfil de estudiante
         composable(Routes.STUDENT_PROFILE_CREATE) {
             CreateStudentProfileScreen(
                 onBackClick = { navController.popBackStack() },
                 onCloseClick = { navController.popBackStack() },
-                onCreateSuccess = {
-                    navController.popBackStack()
-                }
+                onCreateSuccess = { navController.popBackStack() }
             )
         }
 
+        // Editar perfil de estudiante
         composable(
             route = Routes.STUDENT_PROFILE_EDIT,
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val studentId = backStackEntry.arguments?.getString("studentId") ?: "default"
+        ) {
             EditStudentProfileScreen(
                 onBackClick = { navController.popBackStack() },
                 onCloseClick = { navController.popBackStack() },
@@ -375,5 +443,3 @@ fun AppNavHost(
         }
     }
 }
-
-
