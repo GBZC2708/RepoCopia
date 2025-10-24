@@ -109,5 +109,6 @@ dependencies {
 
     // 1. Accompanist Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.36.0")
+    implementation("com.google.firebase:firebase-vertexai:16.0.0-beta01")
 
 }

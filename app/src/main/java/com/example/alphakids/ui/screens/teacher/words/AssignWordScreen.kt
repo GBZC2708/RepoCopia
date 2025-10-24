@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Face
@@ -49,71 +50,171 @@ private fun determineStudentPerformance(student: Estudiante): String {
     }
 }
 
-@Composable
-fun ChatMessageItem(
-    message: ChatMessage,
-    isFromUser: Boolean,
-    onAssignWord: ((com.example.alphakids.domain.models.Word) -> Unit)? = null,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = if (isFromUser) Arrangement.End else Arrangement.Start
-    ) {
-        Column {
-            Card(
-                modifier = Modifier.widthIn(max = 280.dp),
-                shape = RoundedCornerShape(
-                    topStart = 16.dp,
-                    topEnd = 16.dp,
-                    bottomStart = if (isFromUser) 16.dp else 4.dp,
-                    bottomEnd = if (isFromUser) 4.dp else 16.dp
-                ),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isFromUser) 
-                        MaterialTheme.colorScheme.primary 
-                    else 
-                        MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
+@Composable 
+fun MessageBubble(message: ChatMessage, onAssignClick: (String, String) -> Unit, onAnalyzeClick: () -> Unit = {}, onAssignMultiple: (List<com.example.alphakids.domain.models.Word>) -> Unit = {}) { 
+    val align = if (message.isFromUser) Alignment.End else Alignment.Start 
+    val color = if (message.isFromUser) MaterialTheme.colorScheme.primaryContainer 
+        else MaterialTheme.colorScheme.secondaryContainer 
+ 
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = align) { 
+        Card(
+            shape = RoundedCornerShape(16.dp), 
+            colors = CardDefaults.cardColors(containerColor = color)
+        ) { 
+            Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = message.text,
-                    modifier = Modifier.padding(12.dp),
+                    fontFamily = dmSansFamily,
                     fontSize = 14.sp,
-                    color = if (isFromUser) 
-                        MaterialTheme.colorScheme.onPrimary 
-                    else 
-                        MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontFamily = dmSansFamily
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-            }
-            
-            // Mostrar botón de asignar si hay una palabra recomendada y no es del usuario
-            if (!isFromUser && message.recommendedWord != null && onAssignWord != null) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Button(
-                    onClick = { onAssignWord(message.recommendedWord) },
-                    modifier = Modifier.align(Alignment.End),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.CheckCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Asignar",
-                        fontSize = 12.sp,
-                        fontFamily = dmSansFamily
-                    )
+                
+                // Botón de análisis si está habilitado
+                if (message.showAnalyzeButton) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = onAnalyzeClick,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.SmartToy,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Analizar estudiante")
+                    }
+                }
+                
+                // Palabra individual recomendada
+                message.recommendedWord?.let { word -> 
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button( 
+                        onClick = { onAssignClick("", word.texto) }, 
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) { 
+                        Icon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Asignar \"${word.texto}\"") 
+                    } 
+                }
+                
+                // Múltiples palabras recomendadas del análisis
+                if (message.recommendedWords.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Mostrar las palabras recomendadas
+                    message.recommendedWords.forEach { word ->
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = word.texto,
+                                        fontFamily = dmSansFamily,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 14.sp
+                                    )
+                                    Text(
+                                        text = "${word.categoria} • ${word.nivelDificultad}",
+                                        fontFamily = dmSansFamily,
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                    )
+                                }
+                                IconButton(
+                                    onClick = { onAssignClick("", word.texto) }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.CheckCircle,
+                                        contentDescription = "Asignar",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Botón para asignar todas las palabras
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = { onAssignMultiple(message.recommendedWords) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Asignar todas las palabras (${message.recommendedWords.size})")
+                    }
                 }
             }
-        }
-    }
+        } 
+    } 
+} 
+ 
+@Composable 
+fun MessageInput(message: String, onMessageChange: (String) -> Unit, onSendClick: () -> Unit) { 
+    Row( 
+        Modifier 
+            .fillMaxWidth() 
+            .padding(8.dp) 
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp)) 
+            .padding(8.dp), 
+        verticalAlignment = Alignment.CenterVertically 
+    ) { 
+        TextField( 
+            value = message, 
+            onValueChange = onMessageChange, 
+            modifier = Modifier.weight(1f), 
+            placeholder = { Text("Escribe un mensaje...") }, 
+            maxLines = 3, 
+            colors = TextFieldDefaults.colors( 
+                focusedContainerColor = Color.Transparent, 
+                unfocusedContainerColor = Color.Transparent, 
+                focusedIndicatorColor = Color.Transparent, 
+                unfocusedIndicatorColor = Color.Transparent 
+            ) 
+        ) 
+        IconButton(onClick = onSendClick, enabled = message.isNotBlank()) { 
+            Icon(
+                Icons.Default.Send, 
+                contentDescription = "Enviar", 
+                tint = MaterialTheme.colorScheme.primary
+            ) 
+        } 
+    } 
 }
 
 @Composable
@@ -386,7 +487,7 @@ fun AssignWordScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(400.dp),
+                                .height(500.dp),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.surface
@@ -426,16 +527,26 @@ fun AssignWordScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .weight(1f),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                                    contentPadding = PaddingValues(vertical = 8.dp)
                                 ) {
                                     items(chatMessages) { message ->
-                                        ChatMessageItem(
+                                        MessageBubble(
                                             message = message,
-                                            isFromUser = message.isFromUser,
-                                            onAssignWord = { word ->
+                                            onAssignClick = { userId, word ->
                                                 selectedUser?.let { student ->
-                                                    chatViewModel.assignWordToUser(student.id, word)
+                                                    // Buscar la palabra en la lista de palabras disponibles
+                                                    val wordToAssign = availableWords.find { it.texto == word }
+                                                    wordToAssign?.let { 
+                                                        chatViewModel.assignWordToUser(student.id, it)
+                                                    }
                                                 }
+                                            },
+                                            onAnalyzeClick = {
+                                                chatViewModel.analyzeStudent()
+                                            },
+                                            onAssignMultiple = { words ->
+                                                chatViewModel.assignMultipleWords(words)
                                             }
                                         )
                                     }
@@ -448,12 +559,14 @@ fun AssignWordScreen(
                                             ) {
                                                 CircularProgressIndicator(
                                                     modifier = Modifier.size(20.dp),
-                                                    strokeWidth = 2.dp
+                                                    strokeWidth = 2.dp,
+                                                    color = MaterialTheme.colorScheme.primary
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 Text(
                                                     text = "IA está pensando...",
                                                     fontSize = 12.sp,
+                                                    fontFamily = dmSansFamily,
                                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                                 )
                                             }
@@ -461,47 +574,21 @@ fun AssignWordScreen(
                                     }
                                 }
 
-                                Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(12.dp))
 
-                                // Campo de entrada de mensaje
+                                // Campo de entrada de mensaje usando el componente MessageInput
                                 var messageText by remember { mutableStateOf("") }
                                 
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    OutlinedTextField(
-                                        value = messageText,
-                                        onValueChange = { messageText = it },
-                                        placeholder = { 
-                                            Text(
-                                                text = "Pregunta sobre asignación de palabras...",
-                                                fontSize = 14.sp
-                                            ) 
-                                        },
-                                        modifier = Modifier.weight(1f),
-                                        singleLine = true,
-                                        shape = RoundedCornerShape(24.dp)
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    
-                                    IconButton(
-                                        onClick = {
-                                            if (messageText.isNotBlank()) {
-                                                chatViewModel.sendStudentMessage(messageText)
-                                                messageText = ""
-                                            }
-                                        },
-                                        enabled = messageText.isNotBlank() && !chatIsLoading
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.Send,
-                                            contentDescription = "Enviar",
-                                            tint = if (messageText.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                                        )
+                                MessageInput(
+                                    message = messageText,
+                                    onMessageChange = { messageText = it },
+                                    onSendClick = {
+                                        if (messageText.isNotBlank()) {
+                                            chatViewModel.sendStudentMessage(messageText)
+                                            messageText = ""
+                                        }
                                     }
-                                }
+                                )
                             }
                         }
                     }
