@@ -33,7 +33,7 @@ class AssignedWordsViewModel @Inject constructor(
             try {
                 val assignments = firestore.collection("asignaciones_palabras")
                     .whereEqualTo("id_estudiante", studentId)
-                    .whereEqualTo("estado", "activa") // Solo palabras activas
+                    .whereEqualTo("estado", "activa")
                     .get()
                     .await()
                     .toObjects(AsignacionPalabra::class.java)
