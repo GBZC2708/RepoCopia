@@ -23,7 +23,7 @@ import com.example.alphakids.ui.auth.AuthViewModel
 import com.example.alphakids.ui.word.WordUiState
 import com.example.alphakids.ui.word.WordViewModel
 import com.example.alphakids.ui.components.ActionDialog
-import com.example.alphakids.ui.screens.teacher.words.AssignWordScreen // Importación Corregida
+import com.example.alphakids.ui.screens.teacher.words.AssignWordScreen
 import com.example.alphakids.ui.screens.teacher.words.WordDetailScreen
 import com.example.alphakids.ui.screens.teacher.words.WordsScreen
 import com.example.alphakids.ui.screens.teacher.words.WordEditScreen
@@ -39,6 +39,9 @@ import com.example.alphakids.ui.screens.tutor.games.CameraScreen
 import com.example.alphakids.ui.screens.profile.EditProfileScreen
 import com.example.alphakids.ui.screens.tutor.studentprofile.CreateStudentProfileScreen
 import com.example.alphakids.ui.screens.tutor.studentprofile.EditStudentProfileScreen
+// NUEVAS PANTALLAS DE JUEGO
+import com.example.alphakids.ui.screens.tutor.games.MyGamesScreen
+import com.example.alphakids.ui.screens.tutor.games.GameWordsScreen
 
 
 @Composable
@@ -86,6 +89,8 @@ fun AppNavHost(
         startDestination = startDestination,
         modifier = modifier
     ) {
+        // ... (Rutas de Auth, Perfiles, Dictionary, Achievements, TeacherHome se mantienen igual) ...
+
         // Selección de rol
         composable(Routes.ROLE_SELECTION) {
             com.example.alphakids.ui.screens.common.RoleSelectScreen(
@@ -158,7 +163,7 @@ fun AppNavHost(
                 studentName = studentName,
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
-                onPlayClick = { navController.navigate(Routes.GAME) },
+                onPlayClick = { navController.navigate(Routes.MY_GAMES) }, // <-- NUEVA RUTA DE JUEGOS
                 onDictionaryClick = { navigateToStudentBottomNav(Routes.dictionaryRoute(studentId)) },
                 onAchievementsClick = { navigateToStudentBottomNav(Routes.achievementsRoute(studentId)) },
                 onSettingsClick = { navController.navigate(Routes.editStudentProfileRoute(studentId)) },
@@ -173,6 +178,40 @@ fun AppNavHost(
                 currentRoute = "home"
             )
         }
+
+        // **********************************************
+        // NUEVAS RUTAS DE JUEGOS (Flujo: Home -> MyGames -> GameWords -> Game)
+        // **********************************************
+
+        // 2. Pantalla de Selección de Juego (MyGamesScreen)
+        composable(Routes.MY_GAMES) {
+            MyGamesScreen(
+                onBackClick = { navController.popBackStack() },
+                onWordsGameClick = { navController.navigate(Routes.GAME_WORDS) } // Navega a la lista de palabras
+            )
+        }
+
+        // 3. Pantalla de Palabras Asignadas para Jugar (GameWordsScreen)
+        composable(Routes.GAME_WORDS) {
+            GameWordsScreen(
+                onBackClick = { navController.popBackStack() },
+                onWordClick = { navController.navigate(Routes.GAME) } // Al seleccionar, va al juego
+            )
+        }
+
+        // 4. Pantalla de Juego (GameScreen - ya existente)
+        composable(Routes.GAME) {
+            GameScreen(
+                wordLength = 4,
+                icon = Icons.Rounded.Checkroom,
+                difficulty = "Fácil",
+                onBackClick = { navController.popBackStack() },
+                onCloseClick = { navController.popBackStack(Routes.HOME, inclusive = true) },
+                onTakePhotoClick = { navController.navigate(Routes.CAMERA) }
+            )
+        }
+
+        // ... (Rutas de Teacher, Words, etc. se mantienen igual) ...
 
         // Diccionario
         composable(
@@ -216,18 +255,6 @@ fun AppNavHost(
                     navigateToStudentBottomNav(targetRoute)
                 },
                 currentRoute = "achievements"
-            )
-        }
-
-        // Juego
-        composable(Routes.GAME) {
-            GameScreen(
-                wordLength = 4,
-                icon = Icons.Rounded.Checkroom,
-                difficulty = "Fácil",
-                onBackClick = { navController.popBackStack() },
-                onCloseClick = { navController.popBackStack(Routes.HOME, inclusive = true) },
-                onTakePhotoClick = { navController.navigate(Routes.CAMERA) }
             )
         }
 

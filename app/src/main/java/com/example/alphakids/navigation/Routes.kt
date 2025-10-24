@@ -33,6 +33,10 @@ object Routes {
     fun achievementsRoute(studentId: String) = "achievements/$studentId"
 
     // Rutas de Juego
+
+    const val MY_GAMES = "my_games"
+
+    const val GAME_WORDS = "game_words"
     const val GAME = "game"
     const val CAMERA = "camera"
 
