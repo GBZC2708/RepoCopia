@@ -59,7 +59,7 @@ fun AssignedWordsScreen(
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background
+                containerColor = MaterialTheme.colorScheme.surface
             )
         )
 
@@ -102,16 +102,14 @@ fun AssignedWordsScreen(
             
             else -> {
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp)
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(uiState.assignedWords) { word ->
+                    items(uiState.assignedWords) { assignment ->
                         AssignedWordCard(
-                            word = word,
-                            onClick = { onWordClick(word) }
+                            assignment = assignment,
+                            onClick = { onWordClick(assignment) }
                         )
                     }
                 }
@@ -122,7 +120,7 @@ fun AssignedWordsScreen(
 
 @Composable
 fun AssignedWordCard(
-    word: AsignacionPalabra,
+    assignment: AsignacionPalabra,
     onClick: () -> Unit
 ) {
     Card(
@@ -143,8 +141,8 @@ fun AssignedWordCard(
         ) {
             // Imagen de la palabra
             AsyncImage(
-                model = word.palabraImagen,
-                contentDescription = word.palabraTexto,
+                model = assignment.palabraImagen,
+                contentDescription = assignment.palabraTexto,
                 modifier = Modifier
                     .size(60.dp)
                     .clip(RoundedCornerShape(12.dp))
@@ -158,7 +156,7 @@ fun AssignedWordCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = word.palabraTexto?.uppercase() ?: "PALABRA",
+                    text = assignment.palabraTexto ?: "Palabra",
                     fontFamily = dmSansFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
@@ -168,28 +166,28 @@ fun AssignedWordCard(
                 Spacer(modifier = Modifier.height(4.dp))
                 
                 Text(
-                    text = "Dificultad: ${word.palabraDificultad ?: "Media"}",
+                    text = "Dificultad: ${assignment.palabraDificultad ?: "Normal"}",
                     fontFamily = dmSansFamily,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             
-            // Chip de dificultad
+            // Indicador de dificultad
             Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = when (word.palabraDificultad?.lowercase()) {
+                shape = RoundedCornerShape(8.dp),
+                color = when (assignment.palabraDificultad?.lowercase()) {
                     "fácil" -> Color(0xFF4CAF50)
                     "difícil" -> Color(0xFFF44336)
                     else -> Color(0xFFFF9800)
                 }
             ) {
                 Text(
-                    text = word.palabraDificultad ?: "Media",
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    text = assignment.palabraDificultad ?: "Normal",
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     color = Color.White,
-                    fontFamily = dmSansFamily,
                     fontSize = 12.sp,
+                    fontFamily = dmSansFamily,
                     fontWeight = FontWeight.Medium
                 )
             }
