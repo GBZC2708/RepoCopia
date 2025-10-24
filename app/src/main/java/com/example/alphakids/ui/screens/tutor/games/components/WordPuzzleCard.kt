@@ -46,7 +46,7 @@ fun WordPuzzleCard(
         Spacer(modifier = Modifier.height(30.dp))
 
         Text(
-            text = "¿Qué es esto?",
+            text = "¿   Qué es esto?",
             fontFamily = dmSansFamily,
             fontWeight = FontWeight.Bold,
             fontSize = 32.sp,
