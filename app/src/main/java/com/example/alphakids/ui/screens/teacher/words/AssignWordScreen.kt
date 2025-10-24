@@ -8,12 +8,14 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Face
+import androidx.compose.material.icons.rounded.SmartToy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +32,9 @@ import com.example.alphakids.ui.components.*
 import com.example.alphakids.ui.theme.dmSansFamily
 import com.example.alphakids.ui.word.assign.AssignmentUiState
 import com.example.alphakids.ui.word.assign.AssignWordViewModel
+import com.example.alphakids.ui.chat.ChatViewModel
+import com.example.alphakids.ui.chat.ChatMessage
+import kotlinx.coroutines.launch
 
 val assignmentDifficultiesList = listOf("Fácil", "Medio", "Difícil")
 
@@ -111,14 +116,34 @@ fun AssignWordScreen(
     
     // Estados del chat
     val chatMessages by chatViewModel.messages.collectAsState()
-    val isChatLoading by chatViewModel.isLoading.collectAsState()
-    val chatUiState by chatViewModel.uiState.collectAsState()
+    val chatIsLoading by chatViewModel.isLoading.collectAsState()
+    val selectedUser by chatViewModel.selectedUser.collectAsState()
 
     var showSuccessDialog by remember { mutableStateOf(false) }
     var wordSearchQuery by remember { mutableStateOf("") }
     var selectedMode by remember { mutableStateOf("IA") }
 
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val chatListState = rememberLazyListState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadStudents()
+        viewModel.loadWords()
+        chatViewModel.fetchUsers()
+    }
+
+    val coroutineScope = rememberCoroutineScope()
+    val chatListState = rememberLazyListState()
+
+    // Auto-scroll cuando llegan nuevos mensajes
+    LaunchedEffect(chatMessages.size) {
+        if (chatMessages.isNotEmpty()) {
+            coroutineScope.launch {
+                chatListState.animateScrollToItem(chatMessages.size - 1)
+            }
+        }
+    }
 
     LaunchedEffect(assignmentUiState) {
         when (assignmentUiState) {
