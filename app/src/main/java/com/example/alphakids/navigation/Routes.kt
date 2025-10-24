@@ -32,7 +32,7 @@ object Routes {
     const val ACHIEVEMENTS = "achievements/{studentId}"
     fun achievementsRoute(studentId: String) = "achievements/$studentId"
 
-    // Rutas de Juego
+    // --- Rutas de Juego (actualizadas) ---
     const val MY_GAMES_BASE = "my_games"
     const val MY_GAMES = "$MY_GAMES_BASE/{studentId}"
     fun myGamesRoute(studentId: String) = "$MY_GAMES_BASE/$studentId"
@@ -41,25 +41,23 @@ object Routes {
     const val GAME_WORDS = "$GAME_WORDS_BASE/{studentId}"
     fun gameWordsRoute(studentId: String) = "$GAME_WORDS_BASE/$studentId"
 
-    const val GAME = "game"
-    const val CAMERA = "camera"
-    
-    // OCR Camera routes
-    const val CAMERA_OCR_BASE = "camera_ocr"
-    const val CAMERA_OCR = "$CAMERA_OCR_BASE/{assignmentId}/{targetWord}"
-    fun cameraOCRRoute(assignmentId: String, targetWord: String) = "$CAMERA_OCR_BASE/$assignmentId/$targetWord"
-    
-    // Word History
-    const val WORD_HISTORY = "word_history"
-
-    // Assigned Words and Word Puzzle routes
-    const val ASSIGNED_WORDS_BASE = "assigned_words"
-    const val ASSIGNED_WORDS = "$ASSIGNED_WORDS_BASE/{studentId}"
-    fun assignedWordsRoute(studentId: String) = "$ASSIGNED_WORDS_BASE/$studentId"
+    const val ASSIGNED_WORDS = "assigned_words/{studentId}"
+    fun assignedWordsRoute(studentId: String) = "assigned_words/$studentId"
 
     const val WORD_PUZZLE_BASE = "word_puzzle"
     const val WORD_PUZZLE = "$WORD_PUZZLE_BASE/{assignmentId}"
     fun wordPuzzleRoute(assignmentId: String) = "$WORD_PUZZLE_BASE/$assignmentId"
+
+    const val GAME = "game"
+    const val CAMERA = "camera"
+
+    // OCR Camera routes
+    const val CAMERA_OCR_BASE = "camera_ocr"
+    const val CAMERA_OCR = "$CAMERA_OCR_BASE/{assignmentId}/{targetWord}"
+    fun cameraOCRRoute(assignmentId: String, targetWord: String) = "$CAMERA_OCR_BASE/$assignmentId/$targetWord"
+
+    // Word History
+    const val WORD_HISTORY = "word_history"
 
     // --- 5. Docente (Bottom Navigation) ---
     const val TEACHER_HOME = "teacher_home"

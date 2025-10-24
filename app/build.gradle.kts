@@ -122,5 +122,6 @@ dependencies {
     
     // Text-to-Speech (ya incluido en Android SDK, pero agregamos para claridad)
     // implementation("androidx.core:core-ktx") // Ya incluido arriba
+    implementation("com.google.firebase:firebase-storage")
 
 }
