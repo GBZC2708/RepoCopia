@@ -23,9 +23,13 @@ import com.example.alphakids.ui.auth.AuthViewModel
 import com.example.alphakids.ui.word.WordUiState
 import com.example.alphakids.ui.word.WordViewModel
 import com.example.alphakids.ui.components.ActionDialog
-import com.example.alphakids.ui.screens.teacher.words.*
+import com.example.alphakids.ui.screens.teacher.words.AssignWordScreen // Importación Corregida
+import com.example.alphakids.ui.screens.teacher.words.WordDetailScreen
+import com.example.alphakids.ui.screens.teacher.words.WordsScreen
+import com.example.alphakids.ui.screens.teacher.words.WordEditScreen
 import com.example.alphakids.ui.screens.teacher.home.TeacherHomeScreen
-import com.example.alphakids.ui.screens.teacher.students.*
+import com.example.alphakids.ui.screens.teacher.students.TeacherStudentsScreen
+import com.example.alphakids.ui.screens.teacher.students.StudentDetailScreen
 import com.example.alphakids.ui.screens.tutor.profile_selection.ProfileSelectionScreen
 import com.example.alphakids.ui.screens.tutor.home.StudentHomeScreen
 import com.example.alphakids.ui.screens.tutor.dictionary.StudentDictionaryScreen
@@ -35,6 +39,7 @@ import com.example.alphakids.ui.screens.tutor.games.CameraScreen
 import com.example.alphakids.ui.screens.profile.EditProfileScreen
 import com.example.alphakids.ui.screens.tutor.studentprofile.CreateStudentProfileScreen
 import com.example.alphakids.ui.screens.tutor.studentprofile.EditStudentProfileScreen
+
 
 @Composable
 fun AppNavHost(
@@ -401,7 +406,6 @@ fun AppNavHost(
         composable(Routes.ASSIGN_WORD) {
             AssignWordScreen(
                 onBackClick = { navController.popBackStack() },
-                onAssignWordClick = { _, _ -> },
                 onStudentClick = { }
             )
         }

@@ -32,7 +32,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.alphakids.domain.models.Word
 import com.example.alphakids.ui.components.AppHeader
@@ -44,8 +43,6 @@ import com.example.alphakids.ui.components.MainBottomBar
 import com.example.alphakids.ui.components.PrimaryButton
 import com.example.alphakids.ui.components.SearchBar
 import com.example.alphakids.ui.components.WordListItem
-import com.example.alphakids.ui.theme.AlphakidsTheme
-import com.example.alphakids.ui.word.WordViewModel
 
 val difficultiesList = listOf("Fácil", "Medio", "Difícil")
 

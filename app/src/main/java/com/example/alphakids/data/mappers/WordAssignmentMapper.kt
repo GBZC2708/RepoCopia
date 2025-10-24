@@ -1,12 +1,11 @@
 package com.example.alphakids.data.mappers
 
-import com.example.alphakids.data.firebase.models.AsignacionPalabra as AsignacionDto
+import com.example.alphakids.data.firebase.models.AsignacionPalabra
 import com.example.alphakids.domain.models.WordAssignment
-import com.google.firebase.Timestamp
 
 object WordAssignmentMapper {
 
-    fun toDomain(dto: AsignacionDto): WordAssignment {
+    fun toDomain(dto: AsignacionPalabra): WordAssignment {
         return WordAssignment(
             id = dto.id,
             idDocente = dto.idDocente,
@@ -23,20 +22,20 @@ object WordAssignmentMapper {
         )
     }
 
-    fun fromDomain(domain: WordAssignment): AsignacionDto {
-        return AsignacionDto(
-            id = domain.id,
-            idDocente = domain.idDocente,
-            idEstudiante = domain.idEstudiante,
-            idPalabra = domain.idPalabra,
-            palabraTexto = domain.palabraTexto,
-            palabraImagen = domain.palabraImagenUrl,
-            palabraAudio = domain.palabraAudioUrl,
-            palabraDificultad = domain.palabraDificultad,
-            estudianteNombre = domain.estudianteNombre,
-            // fechaAsignacion se maneja con @ServerTimestamp
-            fechaLimite = domain.fechaLimiteMillis?.let { Timestamp(it / 1000, 0) },
-            estado = domain.estado
+    fun fromDomain(model: WordAssignment): AsignacionPalabra {
+        return AsignacionPalabra(
+            id = model.id,
+            idDocente = model.idDocente,
+            idEstudiante = model.idEstudiante,
+            idPalabra = model.idPalabra,
+            palabraTexto = model.palabraTexto,
+            palabraImagen = model.palabraImagenUrl,
+            palabraAudio = model.palabraAudioUrl,
+            palabraDificultad = model.palabraDificultad,
+            estudianteNombre = model.estudianteNombre,
+            fechaAsignacion = null,
+            fechaLimite = null,
+            estado = model.estado
         )
     }
 }

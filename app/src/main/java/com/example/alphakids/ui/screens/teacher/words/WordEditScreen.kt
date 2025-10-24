@@ -17,13 +17,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.alphakids.domain.models.Word
 import com.example.alphakids.ui.components.*
 import com.example.alphakids.ui.screens.teacher.words.components.ImageUploadBox
-import com.example.alphakids.ui.theme.AlphakidsTheme
 import com.example.alphakids.ui.theme.dmSansFamily
 import com.example.alphakids.ui.word.WordUiState
 import com.example.alphakids.ui.word.WordViewModel

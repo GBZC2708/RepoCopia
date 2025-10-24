@@ -125,6 +125,7 @@ fun StudentDetailScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Corregido: 'onClick' cambiado a 'onClickNavigation'
             StudentListItem(
                 fullname = "Sofia Arenas",
                 age = "3 años",
@@ -132,7 +133,7 @@ fun StudentDetailScreen(
                 icon = Icons.Rounded.Face,
                 chipText = "90%",
                 isSelected = false,
-                onClick = {}
+                onClickNavigation = {}
             )
 
             Spacer(modifier = Modifier.height(16.dp))

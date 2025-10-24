@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -162,14 +163,16 @@ fun TeacherStudentsScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(10) { index ->
+                    val studentId = "id_$index"
+                    // Corregido: 'onClick' cambiado a 'onClickNavigation'
                     StudentListItem(
                         fullname = if (index == 0) "Sofia Arenas" else "Fullname",
                         age = if (index == 0) "3 años" else "Age",
                         numWords = if (index == 0) "18 palabras" else "Num words",
                         icon = Icons.Rounded.Face,
                         chipText = "90%",
-                        isSelected = (selectedStudentId == "id_$index"),
-                        onClick = { selectedStudentId = "id_$index" }
+                        isSelected = (selectedStudentId == studentId),
+                        onClickNavigation = { onStudentClick(studentId) }
                     )
                 }
             }
