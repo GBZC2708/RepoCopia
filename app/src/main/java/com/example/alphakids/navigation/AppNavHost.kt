@@ -42,6 +42,7 @@ import com.example.alphakids.ui.screens.tutor.games.MyGamesScreen
 import com.example.alphakids.ui.screens.tutor.games.GameWordsScreen
 import com.example.alphakids.ui.screens.tutor.games.AssignedWordsScreen
 import com.example.alphakids.ui.screens.tutor.games.WordPuzzleScreen
+import com.example.alphakids.ui.screens.tutor.games.CameraOCRScreen
 
 
 @Composable
@@ -252,7 +253,30 @@ fun AppNavHost(
             WordPuzzleScreen(
                 assignmentId = assignmentId,
                 onBackClick = { navController.popBackStack() },
-                onTakePhotoClick = { navController.navigate(Routes.CAMERA) }
+                onTakePhotoClick = { 
+                    // Necesitamos obtener la palabra objetivo del viewModel
+                    // Por ahora usamos un placeholder, pero esto se debe manejar desde WordPuzzleScreen
+                    navController.navigate(Routes.cameraOCRRoute(assignmentId, "placeholder"))
+                }
+            )
+        }
+
+        // Pantalla de Cámara OCR
+        composable(
+            route = Routes.CAMERA_OCR,
+            arguments = listOf(
+                navArgument("assignmentId") { type = NavType.StringType },
+                navArgument("targetWord") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val assignmentId = backStackEntry.arguments?.getString("assignmentId") ?: ""
+            val targetWord = backStackEntry.arguments?.getString("targetWord") ?: ""
+
+            CameraOCRScreen(
+                assignmentId = assignmentId,
+                targetWord = targetWord,
+                onBackClick = { navController.popBackStack() },
+                onWordCompleted = { navController.popBackStack() }
             )
         }
 
