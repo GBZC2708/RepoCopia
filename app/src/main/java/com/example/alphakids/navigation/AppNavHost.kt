@@ -221,7 +221,7 @@ fun AppNavHost(
                 onBackClick = { navController.popBackStack() },
                 onWordClick = { assignment ->
                     // Navegar al puzzle con los datos de la asignación
-                    navController.navigate(Routes.wordPuzzleRoute(assignment.id ?: ""))
+                    navController.navigate(Routes.wordPuzzleRoute(assignment.id))
                 }
             )
         }
@@ -236,9 +236,15 @@ fun AppNavHost(
             WordPuzzleScreen(
                 assignmentId = assignmentId,
                 onBackClick = { navController.popBackStack() },
-                onTakePhotoClick = { targetWord ->
-                    val encodedWord = Uri.encode(targetWord)
-                    navController.navigate(Routes.cameraOCRRoute(assignmentId, encodedWord))
+                onTakePhotoClick = { targetWord, imageUrl, audioUrl ->
+                    navController.navigate(
+                        Routes.cameraOCRRoute(
+                            assignmentId = assignmentId,
+                            targetWord = targetWord,
+                            imageUrl = imageUrl,
+                            audioUrl = audioUrl
+                        )
+                    )
                 }
             )
         }
@@ -266,12 +272,20 @@ fun AppNavHost(
                 ?.getString("targetWord")
                 ?.let(Uri::decode)
                 ?: ""
+            val encodedImage = backStackEntry.arguments?.getString("imageUrl").orEmpty()
+            val encodedAudio = backStackEntry.arguments?.getString("audioUrl").orEmpty()
+            val targetImageUrl = encodedImage
+                .takeIf { it.isNotEmpty() }
+                ?.let(Uri::decode)
+            val targetAudioUrl = encodedAudio
+                .takeIf { it.isNotEmpty() }
+                ?.let(Uri::decode)
 
             CameraOCRScreen(
                 assignmentId = assignmentId,
                 targetWord = targetWord,
-                targetImageUrl = targetImage,
-                targetAudioUrl = targetAudio,
+                targetImageUrl = targetImageUrl,
+                targetAudioUrl = targetAudioUrl,
                 onBackClick = { navController.popBackStack() },
                 onWordCompleted = { navController.popBackStack() }
             )

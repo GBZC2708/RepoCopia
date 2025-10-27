@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.alphakids.data.firebase.models.AsignacionPalabra
-import com.example.alphakids.ui.screens.tutor.games.components.WordPuzzleCard
 import com.example.alphakids.ui.theme.dmSansFamily
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -188,7 +188,7 @@ fun AssignedWordCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = assignment.palabraTexto ?: "Palabra",
+                    text = assignment.palabraTexto.ifBlank { "Palabra" },
                     fontFamily = dmSansFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
@@ -197,8 +197,9 @@ fun AssignedWordCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
+                val difficultyLabel = assignment.palabraDificultad.ifBlank { "Normal" }
                 Text(
-                    text = "Dificultad: ${assignment.palabraDificultad ?: "Normal"}",
+                    text = "Dificultad: $difficultyLabel",
                     fontFamily = dmSansFamily,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -208,14 +209,14 @@ fun AssignedWordCard(
             // Indicador de dificultad
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = when (assignment.palabraDificultad?.lowercase()) {
+                color = when (assignment.palabraDificultad.lowercase(Locale.getDefault())) {
                     "fácil" -> Color(0xFF4CAF50)
                     "difícil" -> Color(0xFFF44336)
                     else -> Color(0xFFFF9800)
                 }
             ) {
                 Text(
-                    text = assignment.palabraDificultad ?: "Normal",
+                    text = difficultyLabel,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     color = Color.White,
                     fontSize = 12.sp,

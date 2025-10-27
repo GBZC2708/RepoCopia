@@ -30,7 +30,7 @@ import com.example.alphakids.ui.theme.dmSansFamily
 fun WordPuzzleScreen(
     assignmentId: String,
     onBackClick: () -> Unit,
-    onTakePhotoClick: (targetWord: String) -> Unit,
+    onTakePhotoClick: (targetWord: String, imageUrl: String?, audioUrl: String?) -> Unit,
     viewModel: WordPuzzleViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -96,7 +96,15 @@ fun WordPuzzleScreen(
                         wordImage = uiState.assignment?.palabraImagen,
                         difficulty = uiState.assignment?.palabraDificultad ?: "Normal",
                         onTakePhotoClick = {
-                            targetWord?.takeIf { it.isNotBlank() }?.let(onTakePhotoClick)
+                            targetWord
+                                ?.takeIf { it.isNotBlank() }
+                                ?.let { word ->
+                                    onTakePhotoClick(
+                                        word,
+                                        uiState.assignment?.palabraImagen,
+                                        uiState.assignment?.palabraAudio
+                                    )
+                                }
                         },
                         isTakePhotoEnabled = !targetWord.isNullOrBlank()
                     )
