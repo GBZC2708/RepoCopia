@@ -44,7 +44,6 @@ import com.example.alphakids.ui.components.LabeledTextField
 import com.example.alphakids.ui.components.PrimaryButton
 import com.example.alphakids.ui.theme.AlphakidsTheme
 import com.example.alphakids.ui.theme.dmSansFamily
-import com.example.alphakids.ui.student.StudentUiState
 import com.example.alphakids.ui.student.StudentViewModel
 
 @Composable
@@ -57,13 +56,22 @@ fun EditStudentProfileScreen(
 ) {
     val context = LocalContext.current
 
-    val instituciones = listOf("Institución A", "Institución B", "Otra")
-    val grados = listOf("Inicial 3 años", "Inicial 4 años", "Inicial 5 años", "1ro", "2do")
-    val secciones = listOf("A", "B", "C", "D")
+    // Opciones (una sola vez, no duplicadas)
+    val institucionesOpts = listOf("Mi Colegio", "Colegio Nacional", "Colegio Parroquial", "Otra")
+    val gradosOpts = listOf("Inicial 3 años", "Inicial 4 años", "Inicial 5 años", "1ro", "2do", "3ro", "4to", "5to")
+    val seccionesOpts = listOf("A", "B", "C", "D")
 
+    // Estado proveniente del VM
     val selectedStudent by viewModel.selectedStudent.collectAsState()
     val editUiState by viewModel.editUiState.collectAsState()
 
+    // Cargar el alumno si aplica
+    LaunchedEffect(studentId) {
+        // Si tu VM tiene un loader, úsalo (si no, quita este bloque):
+        // viewModel.loadStudentById(studentId)
+    }
+
+    // Estados locales (se inicializan con el alumno seleccionado)
     var nombre by remember(selectedStudent) { mutableStateOf(selectedStudent?.nombre ?: "") }
     var apellido by remember(selectedStudent) { mutableStateOf(selectedStudent?.apellido ?: "") }
     var edad by remember(selectedStudent) { mutableStateOf(selectedStudent?.edad?.toString() ?: "") }
@@ -73,23 +81,60 @@ fun EditStudentProfileScreen(
 
     val latestOnSaveSuccess by rememberUpdatedState(newValue = onSaveSuccess)
 
-    val instituciones = listOf("Mi Colegio", "Colegio Nacional", "Colegio Parroquial")
-    val grados = listOf("1ro", "2do", "3ro", "4to", "5to")
-    val secciones = listOf("A", "B", "C", "D")
-
-            viewModel.updateStudent(
-                id = estudiante.id,
-                nombre = nombre,
-                apellido = apellido,
-                edad = edadInt,
-                grado = grado,
-                seccion = seccion,
-                idInstitucion = institucion,
-                idTutor = estudiante.idTutor,
-                idDocente = estudiante.idDocente,
-                fotoPerfil = estudiante.fotoPerfil
-            )
+    fun onSave() {
+        val alumno = selectedStudent
+        if (alumno == null) {
+            Toast.makeText(context, "No se pudo cargar el estudiante.", Toast.LENGTH_SHORT).show()
+            return
         }
+        if (nombre.isBlank() || apellido.isBlank() || edad.isBlank() || institucion.isBlank() || grado.isBlank() || seccion.isBlank()) {
+            Toast.makeText(context, "Completa todos los campos.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val edadInt = edad.toIntOrNull()
+        if (edadInt == null || edadInt <= 0) {
+            Toast.makeText(context, "Edad inválida.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Llama al update del VM (ajusta nombres de parámetros a tu implementación real)
+        viewModel.updateStudent(
+            id = alumno.id,
+            nombre = nombre,
+            apellido = apellido,
+            edad = edadInt,
+            grado = grado,
+            seccion = seccion,
+            idInstitucion = institucion,
+            idTutor = alumno.idTutor,
+            idDocente = alumno.idDocente,
+            fotoPerfil = alumno.fotoPerfil
+        )
+
+        Toast.makeText(context, "Perfil actualizado.", Toast.LENGTH_SHORT).show()
+        latestOnSaveSuccess()
+    }
+
+    EditStudentProfileContent(
+        nombre = nombre,
+        apellido = apellido,
+        edad = edad,
+        institucion = institucion,
+        grado = grado,
+        seccion = seccion,
+        instituciones = institucionesOpts,
+        grados = gradosOpts,
+        secciones = seccionesOpts,
+        isLoading = editUiState.isLoading, // ajusta según tu UI state
+        onBackClick = onBackClick,
+        onCloseClick = onCloseClick,
+        onNombreChange = { nombre = it },
+        onApellidoChange = { apellido = it },
+        onEdadChange = { edad = it },
+        onInstitucionChange = { institucion = it },
+        onGradoChange = { grado = it },
+        onSeccionChange = { seccion = it },
+        onSaveClick = { onSave() }
     )
 }
 
@@ -153,7 +198,6 @@ private fun EditStudentProfileContent(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Spacer(modifier = Modifier.height(24.dp))
 
                 IconContainer(
@@ -201,33 +245,32 @@ private fun EditStudentProfileContent(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-            LabeledDropdownField(
-                label = "Institución",
-                selectedOption = institucion,
-                options = instituciones,
-                placeholderText = "Selecciona institución",
-                onOptionSelected = { institucion = it }
-            )
+                LabeledTextField(
+                    label = "Edad",
+                    value = edad,
+                    onValueChange = onEdadChange,
+                    placeholderText = "Ej.: 7"
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-            LabeledDropdownField(
-                label = "Grado",
-                selectedOption = grado,
-                options = grados,
-                placeholderText = "Selecciona grado",
-                onOptionSelected = { grado = it }
-            )
+                LabeledDropdownField(
+                    label = "Institución",
+                    selectedOption = institucion,
+                    options = instituciones,
+                    placeholderText = "Selecciona institución",
+                    onOptionSelected = onInstitucionChange
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-            LabeledDropdownField(
-                label = "Sección",
-                selectedOption = seccion,
-                options = secciones,
-                placeholderText = "Selecciona sección",
-                onOptionSelected = { seccion = it }
-            )
+                LabeledDropdownField(
+                    label = "Grado",
+                    selectedOption = grado,
+                    options = grados,
+                    placeholderText = "Selecciona grado",
+                    onOptionSelected = onGradoChange
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -266,10 +309,10 @@ fun EditStudentProfileScreenPreview() {
             nombre = "Sofía",
             apellido = "Arenas",
             edad = "7",
-            institucion = "Institución A",
+            institucion = "Mi Colegio",
             grado = "Inicial 4 años",
             seccion = "A",
-            instituciones = listOf("Institución A", "Institución B"),
+            instituciones = listOf("Mi Colegio", "Colegio Nacional"),
             grados = listOf("Inicial 3 años", "Inicial 4 años"),
             secciones = listOf("A", "B"),
             isLoading = false,
