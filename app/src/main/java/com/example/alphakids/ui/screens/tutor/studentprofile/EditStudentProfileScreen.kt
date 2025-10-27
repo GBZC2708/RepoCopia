@@ -73,115 +73,10 @@ fun EditStudentProfileScreen(
 
     val latestOnSaveSuccess by rememberUpdatedState(newValue = onSaveSuccess)
 
-    LaunchedEffect(studentId) {
-        viewModel.loadStudent(studentId)
-    }
+    val instituciones = listOf("Mi Colegio", "Colegio Nacional", "Colegio Parroquial")
+    val grados = listOf("1ro", "2do", "3ro", "4to", "5to")
+    val secciones = listOf("A", "B", "C", "D")
 
-    LaunchedEffect(editUiState) {
-        when (editUiState) {
-            is StudentUiState.Success -> {
-                Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
-                viewModel.resetEditState()
-                latestOnSaveSuccess()
-            }
-            is StudentUiState.Error -> {
-                Toast.makeText(
-                    context,
-                    (editUiState as StudentUiState.Error).message,
-                    Toast.LENGTH_LONG
-                ).show()
-                viewModel.resetEditState()
-            }
-            else -> Unit
-        }
-    }
-
-    EditStudentProfileContent(
-        nombre = nombre,
-        apellido = apellido,
-        edad = edad,
-        institucion = institucion,
-        grado = grado,
-        seccion = seccion,
-        instituciones = instituciones,
-        grados = grados,
-        secciones = secciones,
-        isLoading = selectedStudent == null || editUiState == StudentUiState.Loading,
-        onBackClick = onBackClick,
-        onCloseClick = onCloseClick,
-        onNombreChange = { nombre = it },
-        onApellidoChange = { apellido = it },
-        onEdadChange = { value -> edad = value.filter { it.isDigit() } },
-        onInstitucionChange = { institucion = it },
-        onGradoChange = { grado = it },
-        onSeccionChange = { seccion = it },
-        onSaveClick = {
-            val estudiante = selectedStudent ?: return@EditStudentProfileContent
-            val edadInt = edad.toIntOrNull()
-
-            if (nombre.isBlank()) {
-                Toast.makeText(context, "Ingresa el nombre", Toast.LENGTH_SHORT).show()
-                return@EditStudentProfileContent
-            }
-            if (apellido.isBlank()) {
-                Toast.makeText(context, "Ingresa el apellido", Toast.LENGTH_SHORT).show()
-                return@EditStudentProfileContent
-            }
-            if (edadInt == null || edadInt <= 0) {
-                Toast.makeText(context, "Ingresa una edad válida", Toast.LENGTH_SHORT).show()
-                return@EditStudentProfileContent
-            }
-            if (institucion.isBlank()) {
-                Toast.makeText(context, "Selecciona la institución", Toast.LENGTH_SHORT).show()
-                return@EditStudentProfileContent
-            }
-            if (grado.isBlank()) {
-                Toast.makeText(context, "Selecciona el grado", Toast.LENGTH_SHORT).show()
-                return@EditStudentProfileContent
-            }
-            if (seccion.isBlank()) {
-                Toast.makeText(context, "Selecciona la sección", Toast.LENGTH_SHORT).show()
-                return@EditStudentProfileContent
-            }
-
-            viewModel.updateStudent(
-                id = estudiante.id,
-                nombre = nombre,
-                apellido = apellido,
-                edad = edadInt,
-                grado = grado,
-                seccion = seccion,
-                idInstitucion = institucion,
-                idTutor = estudiante.idTutor,
-                idDocente = estudiante.idDocente,
-                fotoPerfil = estudiante.fotoPerfil
-            )
-        }
-    )
-}
-
-@Composable
-private fun EditStudentProfileContent(
-    nombre: String,
-    apellido: String,
-    edad: String,
-    institucion: String,
-    grado: String,
-    seccion: String,
-    instituciones: List<String>,
-    grados: List<String>,
-    secciones: List<String>,
-    isLoading: Boolean,
-    onBackClick: () -> Unit,
-    onCloseClick: () -> Unit,
-    onNombreChange: (String) -> Unit,
-    onApellidoChange: (String) -> Unit,
-    onEdadChange: (String) -> Unit,
-    onInstitucionChange: (String) -> Unit,
-    onGradoChange: (String) -> Unit,
-    onSeccionChange: (String) -> Unit,
-    onSaveClick: () -> Unit
-) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
@@ -268,32 +163,33 @@ private fun EditStudentProfileContent(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                LabeledTextField(
-                    label = "Edad",
-                    value = edad,
-                    onValueChange = onEdadChange,
-                    placeholderText = "Edad del niño"
-                )
+            LabeledDropdownField(
+                label = "Institución",
+                selectedOption = institucion,
+                options = instituciones,
+                placeholderText = "Selecciona institución",
+                onOptionSelected = { institucion = it }
+            )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                LabeledDropdownField(
-                    label = "Institución",
-                    selectedOption = institucion,
-                    options = instituciones,
-                    placeholderText = "Selecciona institución",
-                    onOptionSelected = onInstitucionChange
-                )
+            LabeledDropdownField(
+                label = "Grado",
+                selectedOption = grado,
+                options = grados,
+                placeholderText = "Selecciona grado",
+                onOptionSelected = { grado = it }
+            )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                LabeledDropdownField(
-                    label = "Grado",
-                    selectedOption = grado,
-                    options = grados,
-                    placeholderText = "Selecciona grado",
-                    onOptionSelected = onGradoChange
-                )
+            LabeledDropdownField(
+                label = "Sección",
+                selectedOption = seccion,
+                options = secciones,
+                placeholderText = "Selecciona sección",
+                onOptionSelected = { seccion = it }
+            )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
