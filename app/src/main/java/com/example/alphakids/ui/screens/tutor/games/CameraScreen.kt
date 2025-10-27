@@ -45,9 +45,9 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.delay
+import com.example.alphakids.ui.screens.camera.ScannerOverlay
 import com.example.alphakids.ui.screens.tutor.games.components.GameResultDialog
 import com.example.alphakids.ui.screens.tutor.games.components.GameResultState
-import com.example.alphakids.ui.screens.tutor.games.components.ScannerOverlay
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
