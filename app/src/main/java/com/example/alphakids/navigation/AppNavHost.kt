@@ -1,5 +1,6 @@
 package com.example.alphakids.navigation
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -253,10 +254,9 @@ fun AppNavHost(
             WordPuzzleScreen(
                 assignmentId = assignmentId,
                 onBackClick = { navController.popBackStack() },
-                onTakePhotoClick = { 
-                    // Necesitamos obtener la palabra objetivo del viewModel
-                    // Por ahora usamos un placeholder, pero esto se debe manejar desde WordPuzzleScreen
-                    navController.navigate(Routes.cameraOCRRoute(assignmentId, "placeholder"))
+                onTakePhotoClick = { targetWord ->
+                    val encodedWord = Uri.encode(targetWord)
+                    navController.navigate(Routes.cameraOCRRoute(assignmentId, encodedWord))
                 }
             )
         }
@@ -270,7 +270,10 @@ fun AppNavHost(
             )
         ) { backStackEntry ->
             val assignmentId = backStackEntry.arguments?.getString("assignmentId") ?: ""
-            val targetWord = backStackEntry.arguments?.getString("targetWord") ?: ""
+            val targetWord = backStackEntry.arguments
+                ?.getString("targetWord")
+                ?.let(Uri::decode)
+                ?: ""
 
             CameraOCRScreen(
                 assignmentId = assignmentId,
