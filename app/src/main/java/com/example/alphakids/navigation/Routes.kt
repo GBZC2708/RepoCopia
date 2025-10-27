@@ -6,19 +6,19 @@ object Routes {
     const val ROLE_TUTOR = "tutor"
 
     // --- 1. Entrada ---
-    const val ROLE_SELECTION = "role_selection" // Ruta inicial: /
+    const val ROLE_SELECTION = "role_selection"
 
     // --- 2. Autenticación (Rutas Parametrizadas) ---
     const val LOGIN_BASE = "login"
-    const val LOGIN = "$LOGIN_BASE/{role}" // /login/teacher o /login/tutor
+    const val LOGIN = "$LOGIN_BASE/{role}"
     fun loginRoute(role: String) = "$LOGIN_BASE/$role"
 
     const val REGISTER_BASE = "register"
-    const val REGISTER = "$REGISTER_BASE/{role}" // /register/teacher o /register/tutor
+    const val REGISTER = "$REGISTER_BASE/{role}"
     fun registerRoute(role: String) = "$REGISTER_BASE/$role"
 
     // --- 3. Tutor (Post-Auth) ---
-    const val PROFILES = "perfiles" // /perfiles (ProfileSelectionScreen)
+    const val PROFILES = "perfiles"
 
     // --- 4. Home y Navegación del Estudiante ---
     const val HOME_BASE = "home"
@@ -32,14 +32,40 @@ object Routes {
     const val ACHIEVEMENTS = "achievements/{studentId}"
     fun achievementsRoute(studentId: String) = "achievements/$studentId"
 
-    // Rutas de Juego
+    // --- Rutas de Juego (actualizadas) ---
+    const val MY_GAMES_BASE = "my_games"
+    const val MY_GAMES = "$MY_GAMES_BASE/{studentId}"
+    fun myGamesRoute(studentId: String) = "$MY_GAMES_BASE/$studentId"
+
+    const val GAME_WORDS_BASE = "game_words"
+    const val GAME_WORDS = "$GAME_WORDS_BASE/{studentId}"
+    fun gameWordsRoute(studentId: String) = "$GAME_WORDS_BASE/$studentId"
+
+    const val ASSIGNED_WORDS = "assigned_words/{studentId}"
+    fun assignedWordsRoute(studentId: String) = "assigned_words/$studentId"
+
+    const val WORD_PUZZLE_BASE = "word_puzzle"
+    const val WORD_PUZZLE = "$WORD_PUZZLE_BASE/{assignmentId}"
+    fun wordPuzzleRoute(assignmentId: String) = "$WORD_PUZZLE_BASE/$assignmentId"
+
     const val GAME = "game"
     const val CAMERA = "camera"
+
+    // OCR Camera routes
+    const val CAMERA_OCR_BASE = "camera_ocr"
+    const val CAMERA_OCR = "$CAMERA_OCR_BASE/{assignmentId}/{targetWord}"
+    fun cameraOCRRoute(assignmentId: String, targetWord: String) = "$CAMERA_OCR_BASE/$assignmentId/$targetWord"
+
+    // Word History
+    const val WORD_HISTORY = "word_history"
 
     // --- 5. Docente (Bottom Navigation) ---
     const val TEACHER_HOME = "teacher_home"
     const val TEACHER_STUDENTS = "teacher_students"
     const val WORDS = "words"
+
+    // Role constants
+    const val ROLE_TEACHSHORTENED = "teacher_short"
 
     // --- 6. Docente (CRUD y Tareas) ---
     const val TEACHER_STUDENT_DETAIL = "teacher_student_detail/{studentId}"
@@ -56,7 +82,7 @@ object Routes {
 
     // --- 7. Perfiles y Edición ---
     const val EDIT_PROFILE_BASE = "edit_profile"
-    const val EDIT_PROFILE = "$EDIT_PROFILE_BASE/{role}" // role: teacher|tutor
+    const val EDIT_PROFILE = "$EDIT_PROFILE_BASE/{role}"
     fun editProfileRoute(role: String) = "$EDIT_PROFILE_BASE/$role"
 
     const val STUDENT_PROFILE_CREATE = "student_profile_create"

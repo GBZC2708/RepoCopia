@@ -11,6 +11,9 @@ composeBom = "2024.09.00"
 ui = "1.9.3"
 foundation = "1.9.3"
 foundationLayout = "1.9.3"
+firebaseAuthKtx = "24.0.1"
+foundationVersion = "1.9.4"
+uiVersion = "1.9.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,6 +33,9 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
+firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
+androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundationVersion" }
+ui = { group = "androidx.compose.ui", name = "ui", version.ref = "uiVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

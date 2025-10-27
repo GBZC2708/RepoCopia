@@ -1,5 +1,9 @@
 package com.example.alphakids.ui.screens.teacher.words
 
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +31,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,32 +41,68 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import com.example.alphakids.domain.models.Word
 import com.example.alphakids.ui.components.AppHeader
-import com.example.alphakids.ui.components.InfoChip
+import com.example.alphakids.ui.components.LetterBox
 import com.example.alphakids.ui.components.LabeledDropdownField
 import com.example.alphakids.ui.components.LabeledTextField
-import com.example.alphakids.ui.components.LetterBox
 import com.example.alphakids.ui.components.PrimaryButton
 import com.example.alphakids.ui.components.PrimaryIconButton
 import com.example.alphakids.ui.components.SecondaryTonalButton
+import com.example.alphakids.ui.components.InfoChip
 import com.example.alphakids.ui.screens.teacher.words.components.ImageUploadBox
-import com.example.alphakids.ui.theme.AlphakidsTheme
 import com.example.alphakids.ui.theme.dmSansFamily
+import com.example.alphakids.ui.word.WordUiState
+import com.example.alphakids.ui.word.WordViewModel
 
 @Composable
 fun WordEditScreen(
+    viewModel: WordViewModel = hiltViewModel(),
+    word: Word? = null,
+    isEditing: Boolean,
     onCloseClick: () -> Unit,
-    onPrimaryActionClick: () -> Unit,
-    onCancelClick: () -> Unit,
-    isEditing: Boolean = false
+    onCancelClick: () -> Unit
 ) {
-    var palabra by remember { mutableStateOf(if (isEditing) "Palabra Existente" else "") }
-    var categoria by remember { mutableStateOf(if (isEditing) "Categoría X" else "") }
-    var dificultad by remember { mutableStateOf(if (isEditing) "Fácil" else "") }
+    val context = LocalContext.current
+
+    val wordUiState by viewModel.uiState.collectAsState()
+    val selectedImageUri by viewModel.selectedImageUri.collectAsState()
+
+    var texto by remember(word) { mutableStateOf(word?.texto ?: "") }
+    var categoria by remember(word) { mutableStateOf(word?.categoria ?: "") }
+    var dificultad by remember(word) { mutableStateOf(word?.nivelDificultad ?: "") }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            if (uri != null) {
+                viewModel.setSelectedImageUri(uri)
+            }
+        }
+    )
+
+    LaunchedEffect(wordUiState) {
+        when (wordUiState) {
+            is WordUiState.Success -> {
+                Toast.makeText(context, (wordUiState as WordUiState.Success).message, Toast.LENGTH_SHORT).show()
+                viewModel.resetUiState()
+                onCloseClick()
+            }
+            is WordUiState.Error -> {
+                Toast.makeText(context, (wordUiState as WordUiState.Error).message, Toast.LENGTH_SHORT).show()
+                viewModel.resetUiState()
+            }
+            WordUiState.Loading -> {}
+            WordUiState.Idle -> {}
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -91,9 +133,9 @@ fun WordEditScreen(
 
             LabeledTextField(
                 label = "Palabra",
-                value = palabra,
-                onValueChange = { palabra = it },
-                placeholderText = if (isEditing) palabra else "Escribe la palabra"
+                value = texto,
+                onValueChange = { texto = it },
+                placeholderText = "Escribe la palabra"
             )
 
             Text(
@@ -103,20 +145,24 @@ fun WordEditScreen(
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onBackground
             )
-            ImageUploadBox { /* TODO: Lógica subir imagen */ }
+            ImageUploadBox(
+                imageUri = selectedImageUri,
+                imageUrl = word?.imagenUrl,
+                onClick = { imagePickerLauncher.launch("image/*") }
+            )
 
             LabeledDropdownField(
                 label = "Categoría",
                 selectedOption = categoria,
-                placeholderText = "Select option",
-                onClick = { /* TODO: Mostrar dropdown */ }
+                placeholderText = "Selecciona categoría",
+                onClick = { }
             )
 
             LabeledDropdownField(
                 label = "Dificultad",
                 selectedOption = dificultad,
-                placeholderText = "Select option",
-                onClick = { /* TODO: Mostrar dropdown */ }
+                placeholderText = "Selecciona dificultad",
+                onClick = { }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -129,13 +175,30 @@ fun WordEditScreen(
                 PrimaryButton(
                     text = if (isEditing) "Guardar" else "Crear palabra",
                     icon = if (!isEditing) Icons.Rounded.Add else null,
-                    onClick = onPrimaryActionClick
+                    enabled = wordUiState != WordUiState.Loading,
+                    onClick = {
+                        if (isEditing && word != null) {
+                            val updatedWord = word.copy(
+                                texto = texto,
+                                categoria = categoria,
+                                nivelDificultad = dificultad,
+                                imagenUrl = word.imagenUrl
+                            )
+                            viewModel.updateWord(updatedWord)
+                        } else {
+                            viewModel.createWord(
+                                texto = texto,
+                                categoria = categoria,
+                                nivelDificultad = dificultad,
+                                audioUrl = "url_audio_mock"
+                            )
+                        }
+                    }
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Vista Previa ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(28.dp),
@@ -153,18 +216,19 @@ fun WordEditScreen(
                         text = "Vista previa",
                         fontFamily = dmSansFamily,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp, // Asumiendo tamaño
+                        fontSize = 20.sp,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     WordPreview(
-                        word = palabra,
+                        word = texto,
+                        imageUri = selectedImageUri,
+                        imageUrl = word?.imagenUrl,
                         icon = Icons.Rounded.Checkroom,
                         difficulty = dificultad.ifEmpty { "Fácil" }
                     )
                 }
             }
-
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
@@ -173,6 +237,8 @@ fun WordEditScreen(
 @Composable
 private fun WordPreview(
     word: String,
+    imageUri: Uri? = null,
+    imageUrl: String? = null,
     icon: ImageVector,
     difficulty: String
 ) {
@@ -181,17 +247,27 @@ private fun WordPreview(
     ) {
         Box(
             modifier = Modifier
-                .size(84.dp) // Tamaño similar al IconContainer
+                .size(84.dp)
                 .clip(RoundedCornerShape(28.dp))
                 .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
+            val imageSource = imageUri ?: imageUrl
+            if (imageSource != null && (imageSource is Uri || (imageSource is String && imageSource.isNotEmpty()))) {
+                AsyncImage(
+                    model = imageSource,
+                    contentDescription = "Vista previa de la palabra",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -207,9 +283,9 @@ private fun WordPreview(
         Spacer(modifier = Modifier.height(30.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            repeat(word.length.coerceAtLeast(4)) { index ->
+            repeat(word.length.coerceAtLeast(4)) {
                 LetterBox(
-                    letter = null, // En preview no mostramos letras
+                    letter = null,
                     color = MaterialTheme.colorScheme.onBackground
                 )
             }
@@ -219,8 +295,8 @@ private fun WordPreview(
 
         PrimaryIconButton(
             icon = Icons.Rounded.CameraAlt,
-            contentDescription = null, // Es decorativo en preview
-            onClick = {}, // No hace nada en preview
+            contentDescription = null,
+            onClick = {},
             enabled = false
         )
 
@@ -229,33 +305,6 @@ private fun WordPreview(
         InfoChip(
             text = difficulty,
             isSelected = true
-        )
-    }
-}
-
-
-@Preview(showBackground = true, name = "Crear Palabra")
-@Composable
-fun CreateWordScreenPreview() {
-    AlphakidsTheme {
-        WordEditScreen(
-            onCloseClick = {},
-            onPrimaryActionClick = {},
-            onCancelClick = {},
-            isEditing = false
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "Editar Palabra")
-@Composable
-fun EditWordScreenPreview() {
-    AlphakidsTheme {
-        WordEditScreen(
-            onCloseClick = {},
-            onPrimaryActionClick = {},
-            onCancelClick = {},
-            isEditing = true
         )
     }
 }
