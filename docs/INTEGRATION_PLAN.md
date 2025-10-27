@@ -27,7 +27,6 @@ Para cada rama a integrar:
    - Dependencias duplicadas en `app/build.gradle.kts` (ejemplo: unifica versiones de Coil en 2.7.0 para evitar choques con la rama de cámara).【F:app/build.gradle.kts†L1-L116】
 3. **Revisar wiring del flujo tutor**:
    - `AssignedWordsScreen` debe seguir usando `AssignedWordsViewModel.loadAssignedWords` para poblar la lista.【F:app/src/main/java/com/example/alphakids/ui/screens/tutor/games/AssignedWordsViewModel.kt†L1-L91】
-   - `GameWordsScreen` debe propagar el `assignmentId` cuando el estudiante elige una palabra, de modo que la navegación continúe en `Routes.wordPuzzleRoute` y conserve el contexto de la asignación.【F:app/src/main/java/com/example/alphakids/ui/screens/tutor/games/GameWordsScreen.kt†L1-L132】【F:app/src/main/java/com/example/alphakids/navigation/AppNavHost.kt†L200-L236】
    - `WordPuzzleScreen` extrae `palabraTexto` y `palabraImagen` del `WordPuzzleViewModel` y pasa el identificador + la palabra codificada a `Routes.cameraOCRRoute` al invocar `onTakePhotoClick`.
    - `CameraOCRScreen` y `CameraOCRViewModel` deben recibir `assignmentId` + palabra objetivo sin perder la lógica de TTS y guardado de historial.【F:app/src/main/java/com/example/alphakids/ui/screens/tutor/games/CameraOCRViewModel.kt†L1-L114】
 4. **Actualizar módulos Hilt** si la rama introduce nuevos repositorios (ver `data/di/RepositoryModule.kt`).
