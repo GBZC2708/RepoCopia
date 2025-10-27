@@ -32,7 +32,6 @@ import com.example.alphakids.ui.components.InfoChip
 import com.example.alphakids.ui.theme.AlphakidsTheme
 import com.example.alphakids.ui.theme.dmSansFamily
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentListItem(
     modifier: Modifier = Modifier,
@@ -42,12 +41,11 @@ fun StudentListItem(
     icon: ImageVector,
     chipText: String,
     isSelected: Boolean = false,
-    onClick: () -> Unit
+    onClickNavigation: () -> Unit
 ) {
     val shape = RoundedCornerShape(28.dp)
 
     Card(
-        onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
             .border(
@@ -98,7 +96,8 @@ fun StudentListItem(
             }
             InfoChip(
                 text = chipText,
-                isSelected = true
+                isSelected = true,
+                onClick = {}
             )
         }
     }
@@ -134,7 +133,7 @@ fun StudentListItemPreview() {
                 icon = Icons.Rounded.Face,
                 chipText = "90%",
                 isSelected = false,
-                onClick = {}
+                onClickNavigation = {}
             )
             StudentListItem(
                 fullname = "Fullname",
@@ -143,7 +142,7 @@ fun StudentListItemPreview() {
                 icon = Icons.Rounded.Face,
                 chipText = "99%",
                 isSelected = true,
-                onClick = {}
+                onClickNavigation = {}
             )
         }
     }

@@ -1,6 +1,7 @@
 package com.example.alphakids.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +25,8 @@ import com.example.alphakids.ui.theme.dmSansFamily
 fun InfoChip(
     modifier: Modifier = Modifier,
     text: String,
-    isSelected: Boolean = false
+    isSelected: Boolean = false,
+    onClick: () -> Unit = {}
 ) {
     val backgroundColor = if (isSelected) {
         MaterialTheme.colorScheme.tertiaryContainer
@@ -41,6 +43,7 @@ fun InfoChip(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(28.dp))
+            .clickable(onClick = onClick)
             .background(backgroundColor)
             .padding(horizontal = 10.dp, vertical = 5.dp),
         contentAlignment = Alignment.Center
@@ -62,15 +65,18 @@ fun InfoChipPreview() {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             InfoChip(
                 text = "Chip Activo",
-                isSelected = true
+                isSelected = true,
+                onClick = {}
             )
             InfoChip(
                 text = "Chip Inactivo",
-                isSelected = false
+                isSelected = false,
+                onClick = {}
             )
             InfoChip(
                 text = "90%",
-                isSelected = true
+                isSelected = true,
+                onClick = {}
             )
         }
     }

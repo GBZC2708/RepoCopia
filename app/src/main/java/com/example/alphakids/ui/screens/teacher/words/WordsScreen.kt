@@ -11,11 +11,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.rounded.Checkroom
+import androidx.compose.material.icons.rounded.Checkroom // Puedes cambiar este ícono
 import androidx.compose.material.icons.rounded.Groups
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.ListAlt
@@ -31,8 +32,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.alphakids.domain.models.Word
 import com.example.alphakids.ui.components.AppHeader
 import com.example.alphakids.ui.components.BottomNavItem
 import com.example.alphakids.ui.components.CustomFAB
@@ -42,10 +43,14 @@ import com.example.alphakids.ui.components.MainBottomBar
 import com.example.alphakids.ui.components.PrimaryButton
 import com.example.alphakids.ui.components.SearchBar
 import com.example.alphakids.ui.components.WordListItem
-import com.example.alphakids.ui.theme.AlphakidsTheme
+
+val difficultiesList = listOf("Fácil", "Medio", "Difícil")
 
 @Composable
 fun WordsScreen(
+    words: List<Word>,
+    currentDifficultyFilter: String?,
+    onSetDifficultyFilter: (String) -> Unit,
     onBackClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onCreateWordClick: () -> Unit,
@@ -123,22 +128,24 @@ fun WordsScreen(
                     modifier = Modifier.weight(1f),
                     text = "Asignar palabra",
                     icon = Icons.Rounded.ListAlt,
-                    onClick = onAssignWordClick
+                    onClick = onAssignWordClick,
+                    enabled = words.isNotEmpty()
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // TODO: Conectar estos InfoCards a datos reales
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 InfoCard(
                     modifier = Modifier.weight(1f),
-                    title = "Info",
-                    data = "Data"
+                    title = "Total Palabras",
+                    data = words.size.toString()
                 )
                 InfoCard(
                     modifier = Modifier.weight(1f),
-                    title = "Info",
-                    data = "Data"
+                    title = "Categorías",
+                    data = words.map { it.categoria }.distinct().size.toString()
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -159,7 +166,7 @@ fun WordsScreen(
 
             SearchBar(
                 value = searchQuery,
-                onValueChange = { searchQuery = it },
+                onValueChange = { searchQuery = it }, // TODO: Conectar al VM
                 placeholderText = "Buscar"
             )
 
@@ -171,10 +178,13 @@ fun WordsScreen(
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                InfoChip(text = "Chip 1", isSelected = false)
-                InfoChip(text = "Chip 2", isSelected = false)
-                InfoChip(text = "Chip 3", isSelected = false)
-                InfoChip(text = "Chip 4", isSelected = false)
+                difficultiesList.forEach { difficulty ->
+                    InfoChip(
+                        text = difficulty,
+                        isSelected = (currentDifficultyFilter == difficulty),
+                        onClick = { onSetDifficultyFilter(difficulty) }
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -182,33 +192,21 @@ fun WordsScreen(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(10) { index ->
+                items(items = words, key = { it.id }) { word ->
                     WordListItem(
-                        title = "WORD ${index + 1}",
-                        subtitle = "Categoría",
-                        icon = Icons.Rounded.Checkroom,
-                        chipText = "Dificultad",
-                        isSelected = (selectedWordId == "id_$index"),
-                        onClick = { onWordClick("id_$index") }
+                        title = word.texto,
+                        subtitle = word.categoria,
+                        icon = Icons.Rounded.Checkroom, // TODO: Mapear ícono a categoría
+                        chipText = word.nivelDificultad,
+                        isSelected = (selectedWordId == word.id),
+                        onClick = {
+                            selectedWordId = word.id
+                            onWordClick(word.id)
+                        },
+                        imageUrl = word.imagenUrl
                     )
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun WordsScreenPreview() {
-    AlphakidsTheme {
-        WordsScreen(
-            onBackClick = {},
-            onLogoutClick = {},
-            onCreateWordClick = {},
-            onAssignWordClick = {},
-            onWordClick = {},
-            onSettingsClick = {},
-            onBottomNavClick = {}
-        )
     }
 }

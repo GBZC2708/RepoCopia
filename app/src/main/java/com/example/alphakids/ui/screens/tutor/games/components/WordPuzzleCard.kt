@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material.icons.rounded.Checkroom
@@ -14,11 +16,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.alphakids.ui.components.IconContainer
 import com.example.alphakids.ui.components.InfoChip
 import com.example.alphakids.ui.components.LetterBox
@@ -30,23 +35,37 @@ import com.example.alphakids.ui.theme.dmSansFamily
 fun WordPuzzleCard(
     modifier: Modifier = Modifier,
     wordLength: Int,
-    icon: ImageVector,
+    icon: ImageVector? = null,
+    wordImage: String? = null,
     difficulty: String,
-    onTakePhotoClick: () -> Unit
+    onTakePhotoClick: () -> Unit,
+    isTakePhotoEnabled: Boolean = true
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        IconContainer(
-            icon = icon,
-            contentDescription = "Pista"
-        )
+        // Mostrar imagen o icono según lo que esté disponible
+        if (wordImage != null) {
+            AsyncImage(
+                model = wordImage,
+                contentDescription = "Imagen de la palabra",
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(RoundedCornerShape(16.dp)),
+                contentScale = ContentScale.Crop
+            )
+        } else if (icon != null) {
+            IconContainer(
+                icon = icon,
+                contentDescription = "Pista"
+            )
+        }
 
         Spacer(modifier = Modifier.height(30.dp))
 
         Text(
-            text = "¿Qué es esto?",
+            text = "¿   Qué es esto?",
             fontFamily = dmSansFamily,
             fontWeight = FontWeight.Bold,
             fontSize = 32.sp,
@@ -69,7 +88,8 @@ fun WordPuzzleCard(
         PrimaryIconButton(
             icon = Icons.Rounded.CameraAlt,
             contentDescription = "Tomar foto",
-            onClick = onTakePhotoClick
+            onClick = onTakePhotoClick,
+            enabled = isTakePhotoEnabled
         )
 
         Spacer(modifier = Modifier.height(10.dp))
