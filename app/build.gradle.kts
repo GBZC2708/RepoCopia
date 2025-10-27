@@ -2,6 +2,12 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
+
+    // Crashlytics
+    id("com.google.firebase.crashlytics")
+    id("com.google.dagger.hilt.android")
+    id("kotlin-kapt")
 }
 
 android {
@@ -41,6 +47,7 @@ android {
 
 dependencies {
 
+    // --- DEPENDENCIAS BÁSICAS (Usando libs.versions.toml) ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -49,6 +56,9 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.foundation.layout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -57,14 +67,66 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // Material Symbols (Iconos)
-    implementation("androidx.compose.material:material-icons-extended-android:1.6.6")
+    // Hilt
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    kapt("com.google.dagger:hilt-compiler:2.51.1")
+    // Compose integration for HiltViewModel()
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
-    // --- Dependencias de CameraX ---
-    val cameraxVersion = "1.3.1" // Usa la última versión estable que encuentres
-    implementation("androidx.camera:camera-core:${cameraxVersion}")
-    implementation("androidx.camera:camera-camera2:${cameraxVersion}")
-    implementation("androidx.camera:camera-lifecycle:${cameraxVersion}")
-    implementation("androidx.camera:camera-view:${cameraxVersion}")
+    // Iconos
+    implementation("androidx.compose.material:material-icons-extended")
+
+    // --- FIREBASE (Usando BoM para manejar versiones) ---
+    // Importa el BoM MÁS RECIENTE UNA SOLA VEZ
+    implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
+
+    // Añade las dependencias de Firebase SIN especificar versión
+    implementation("com.google.firebase:firebase-analytics") // Analytics (opcional pero común)
+    implementation("com.google.firebase:firebase-ai") // Firebase AI (Gemini)
+    implementation("com.google.firebase:firebase-firestore") // Firestore
+
+    // 1. Crashlytics
+    implementation("com.google.firebase:firebase-crashlytics-ndk")
+
+    // 2. Auth
+    implementation("com.google.firebase:firebase-auth")
+
+    // --- COROUTINES & VIEWMODEL ---
+    // Para la extensión .await() con Tasks de Play Services
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
+    // ViewModels (versiones explícitas o puedes ponerlas en libs.versions.toml)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3") // Para viewModel() en Compose
+
+    // --- NAVEGACIÓN ---
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+
+    // Camera X
+    val cameraXVersion = "1.3.4"
+    implementation("androidx.camera:camera-camera2:$cameraXVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraXVersion")
+    implementation("androidx.camera:camera-view:$cameraXVersion")
+
+    // 1. Accompanist Permissions
+    implementation("com.google.accompanist:accompanist-permissions:0.36.0")
+    implementation("com.google.firebase:firebase-vertexai:16.0.0-beta01")
+
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // ML Kit Text Recognition
+    implementation("com.google.mlkit:text-recognition:16.0.1")
+    
+    // Gson for JSON serialization
+    implementation("com.google.code.gson:gson:2.10.1")
+    
+    // Text-to-Speech (ya incluido en Android SDK, pero agregamos para claridad)
+    implementation("androidx.core:core-ktx") // Ya incluido arriba
+    implementation("com.google.firebase:firebase-storage")
+
+
+    // Coil para cargar imágenes (AsyncImage)
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
 
 }
