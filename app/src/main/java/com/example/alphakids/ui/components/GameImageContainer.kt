@@ -1,50 +1,55 @@
 package com.example.alphakids.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.outlined.Checkroom
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.alphakids.ui.theme.AlphaKidsTextGreen
 import com.example.alphakids.ui.theme.AlphakidsTheme
 
 @Composable
-fun CameraButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+fun GameImageContainer(
+    icon: ImageVector,
+    modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.secondary,
+    iconColor: Color = MaterialTheme.colorScheme.onSecondary
 ) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(28.dp))
-            .background(AlphaKidsTextGreen)
-            .clickable { onClick() }
-            .padding(horizontal = 100.dp, vertical = 10.dp),
+            .background(containerColor)
+            .padding(10.dp),
         contentAlignment = Alignment.Center
     ) {
         Icon(
-            imageVector = Icons.Default.CameraAlt,
-            contentDescription = "Abrir cámara",
-            modifier = Modifier.size(64.dp),
-            tint = Color(0xFFF4FBF8)
+            imageVector = icon,
+            contentDescription = "Imagen del juego",
+            modifier = Modifier.size(128.dp),
+            tint = iconColor
         )
     }
 }
 
 @Preview
 @Composable
-fun CameraButtonPreview() {
+fun GameImageContainerPreview() {
     AlphakidsTheme {
-        CameraButton(onClick = {})
+        GameImageContainer(
+            icon = Icons.Outlined.Checkroom,
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            iconColor = MaterialTheme.colorScheme.error
+        )
     }
 }

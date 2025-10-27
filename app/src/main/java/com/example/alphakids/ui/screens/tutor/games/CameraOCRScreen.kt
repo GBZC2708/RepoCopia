@@ -49,8 +49,8 @@ import java.util.concurrent.Executors
 fun CameraOCRScreen(
     assignmentId: String,
     targetWord: String,
-    targetImageUrl: String? = null,
-    targetAudioUrl: String? = null,
+    targetImageUrl: String?,
+    targetAudioUrl: String?,
     onBackClick: () -> Unit,
     onWordCompleted: () -> Unit,
     viewModel: CameraOCRViewModel = hiltViewModel()

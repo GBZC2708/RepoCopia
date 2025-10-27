@@ -51,9 +51,3 @@ val md_theme_dark_onSurface = Color(0xFFE1E3E2)
 val md_theme_dark_surfaceVariant = Color(0xFF3F4947)
 val md_theme_dark_onSurfaceVariant = Color(0xFFBFC9C6)
 val md_theme_dark_outline = Color(0xFF899391)
-
-// --- Legacy named palette (mantains compatibility with feature branches) ---
-val AlphaKidsTealNav = Color(0xFF0BC5A7)
-val AlphaKidsTealLight = Color(0xFFB7F5EB)
-val AlphaKidsTextGreen = Color(0xFF0B9D6E)
-

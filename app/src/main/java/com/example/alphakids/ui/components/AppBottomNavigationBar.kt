@@ -1,40 +1,62 @@
 package com.example.alphakids.ui.components
 
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.alphakids.ui.theme.AlphaKidsTealNav
+import com.example.alphakids.ui.theme.AlphakidsTheme
 import com.example.alphakids.ui.theme.AlphaKidsTextGreen
 
-/**
- * Legacy wrapper kept for backwards compatibility with screens that still invoke the
- * old `AppBottomNavigationBar` composable. It simply proxies to the shared
- * [MainBottomBar] while preserving the color palette expected by older code paths.
- */
-@Composable
-fun AppBottomNavigationBar(
-    modifier: Modifier = Modifier,
-    items: List<BottomNavItem>,
-    currentRoute: String?,
-    onNavigate: (String) -> Unit
-) {
-    MainBottomBar(
-        modifier = modifier.height(72.dp),
-        items = items,
-        currentRoute = currentRoute,
-        onNavigate = onNavigate
-    )
+sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
+    object Inicio : BottomNavItem("inicio", Icons.Default.Home, "Inicio")
+    object Diccionario : BottomNavItem("diccionario", Icons.Default.MenuBook, "Mi Diccionario")
+    object Logros : BottomNavItem("logros", Icons.Default.EmojiEvents, "Mis Logros")
 }
 
-/**
- * Helper exposing the accent colors that legacy screens were using directly. Modern
- * code should rely on [MaterialTheme], but keeping them here avoids compilation
- * issues on developer machines where stale source files still reference these values.
- */
-object LegacyBottomNavColors {
-    val container get() = AlphaKidsTealNav
-    val content get() = AlphaKidsTextGreen
-    val indicator get() = MaterialTheme.colorScheme.primary
+@Composable
+fun AppBottomNavigationBar(
+    currentRoute: String,
+    onItemSelected: (String) -> Unit
+) {
+    val items = listOf(
+        BottomNavItem.Inicio,
+        BottomNavItem.Diccionario,
+        BottomNavItem.Logros
+    )
+
+    NavigationBar(
+        containerColor = AlphaKidsTealNav
+    ) {
+        items.forEach { item ->
+            NavigationBarItem(
+                selected = currentRoute == item.route,
+                onClick = { onItemSelected(item.route) },
+                icon = { Icon(imageVector = item.icon, contentDescription = item.label) },
+                label = { Text(item.label) },
+
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = AlphaKidsTextGreen,
+                    selectedTextColor = AlphaKidsTextGreen,
+                    unselectedIconColor = Color.Black,
+                    unselectedTextColor = Color.Black,
+
+                    indicatorColor = AlphaKidsTealNav
+                )
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun AppBottomNavigationBarPreview() {
+    AlphakidsTheme {
+        AppBottomNavigationBar(currentRoute = BottomNavItem.Inicio.route, onItemSelected = {})
+    }
 }

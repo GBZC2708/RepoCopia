@@ -1,41 +1,74 @@
 package com.example.alphakids.ui.screens.camera
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Checkroom
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.alphakids.ui.theme.AlphaKidsTextGreen
-import com.example.alphakids.ui.theme.dmSansFamily
+import com.example.alphakids.ui.theme.AlphakidsTheme
 
-/**
- * Simple helper that draws a translucent chip at the top of the camera preview. Older
- * layouts referenced this component directly, so we keep the API stable to prevent build
- * errors when those source files still live in local working copies.
- */
 @Composable
 fun TopHintChip(
-    modifier: Modifier = Modifier,
-    text: String
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    modifier: Modifier = Modifier
 ) {
-    AssistChip(
-        modifier = modifier.padding(8.dp),
-        onClick = {},
-        enabled = false,
-        colors = AssistChipDefaults.assistChipColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
-            disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
-            disabledLabelColor = AlphaKidsTextGreen
-        ),
-        label = {
-            Text(
-                text = text,
-                fontFamily = dmSansFamily,
-                style = MaterialTheme.typography.labelMedium
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(percent = 50), // Forma de píldora
+        color = Color.White,
+        shadowElevation = 4.dp // Una pequeña sombra para que resalte
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = AlphaKidsTextGreen
             )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.Black
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            }
         }
-    )
+    }
+}
+
+@Preview
+@Composable
+fun TopHintChipPreview() {
+    AlphakidsTheme {
+        TopHintChip(
+            icon = Icons.Outlined.Checkroom,
+            title = "Une la palabra",
+            subtitle = "Apunta a las letras"
+        )
+    }
 }

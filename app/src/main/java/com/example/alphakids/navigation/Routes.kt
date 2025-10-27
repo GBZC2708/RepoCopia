@@ -58,8 +58,8 @@ object Routes {
     fun cameraOCRRoute(
         assignmentId: String,
         targetWord: String,
-        imageUrl: String? = null,
-        audioUrl: String? = null
+        imageUrl: String?,
+        audioUrl: String?
     ): String {
         val encodedWord = Uri.encode(targetWord)
         val encodedImage = Uri.encode(imageUrl ?: "")
