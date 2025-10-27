@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.Android
 import androidx.compose.material.icons.rounded.Extension
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +30,8 @@ import com.example.alphakids.ui.theme.dmSansFamily
 @Composable
 fun MyGamesScreen(
     onBackClick: () -> Unit,
-    onWordsGameClick: () -> Unit
+    onWordsGameClick: () -> Unit,
+    onHistoryClick: () -> Unit
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -41,6 +43,14 @@ fun MyGamesScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Regresar"
+                        )
+                    }
+                },
+                actionIcon = {
+                    IconButton(onClick = onHistoryClick) {
+                        Icon(
+                            imageVector = Icons.Rounded.History,
+                            contentDescription = "Historial de palabras"
                         )
                     }
                 }
@@ -88,7 +98,8 @@ fun MyGamesScreenPreview() {
     AlphakidsTheme {
         MyGamesScreen(
             onBackClick = {},
-            onWordsGameClick = {}
+            onWordsGameClick = {},
+            onHistoryClick = {}
         )
     }
 }

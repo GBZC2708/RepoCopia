@@ -48,7 +48,6 @@ object Routes {
     const val WORD_PUZZLE = "$WORD_PUZZLE_BASE/{assignmentId}"
     fun wordPuzzleRoute(assignmentId: String) = "$WORD_PUZZLE_BASE/$assignmentId"
 
-    const val GAME = "game"
     const val CAMERA = "camera"
 
     // OCR Camera routes
