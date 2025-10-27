@@ -25,6 +25,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,14 +33,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.alphakids.domain.models.PersonalDictionaryItem
 import com.example.alphakids.ui.components.AppHeader
 import com.example.alphakids.ui.components.BottomNavItem
 import com.example.alphakids.ui.components.CustomFAB
+import com.example.alphakids.ui.components.InfoCard
 import com.example.alphakids.ui.components.InfoChip
 import com.example.alphakids.ui.components.MainBottomBar
 import com.example.alphakids.ui.components.SearchBar
 import com.example.alphakids.ui.components.WordListItem
 import com.example.alphakids.ui.theme.AlphakidsTheme
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun StudentDictionaryScreen(
@@ -48,7 +55,8 @@ fun StudentDictionaryScreen(
     onWordClick: (String) -> Unit,
     onSettingsClick: () -> Unit,
     onBottomNavClick: (String) -> Unit,
-    currentRoute: String = "dictionary"
+    currentRoute: String = "dictionary",
+    viewModel: StudentDictionaryViewModel = hiltViewModel()
 ) {
     val studentItems = listOf(
         BottomNavItem("home", "Inicio", Icons.Rounded.Home),
@@ -56,8 +64,26 @@ fun StudentDictionaryScreen(
         BottomNavItem("achievements", "Mis Logros", Icons.Rounded.WorkspacePremium)
     )
 
-    var searchQuery by remember { mutableStateOf("") }
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val allItems by viewModel.allItems.collectAsState()
+    val filteredItems by viewModel.filteredItems.collectAsState()
+
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
     var selectedWordId by remember { mutableStateOf<String?>(null) }
+
+    val categories = remember(allItems) {
+        allItems.mapNotNull { item ->
+            item.texto.firstOrNull()?.uppercaseChar()?.toString()
+        }.distinct()
+    }
+
+    val displayedItems = remember(filteredItems, selectedCategory) {
+        filteredItems.filter { item ->
+            selectedCategory == null || item.texto.startsWith(selectedCategory!!, ignoreCase = true)
+        }
+    }
+
+    val completedThisWeek = remember(allItems) { countCompletedThisWeek(allItems) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -109,7 +135,7 @@ fun StudentDictionaryScreen(
 
             SearchBar(
                 value = searchQuery,
-                onValueChange = { searchQuery = it },
+                onValueChange = viewModel::setSearchQuery,
                 placeholderText = "Buscar en mi diccionario"
             )
 
@@ -121,42 +147,127 @@ fun StudentDictionaryScreen(
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                InfoChip(text = "Categoría 1", isSelected = false)
-                InfoChip(text = "Categoría 2", isSelected = false)
-                InfoChip(text = "Categoría 3", isSelected = false)
+                InfoChip(
+                    text = "Todas",
+                    isSelected = selectedCategory == null,
+                    onClick = { selectedCategory = null }
+                )
+                categories.forEach { category ->
+                    InfoChip(
+                        text = category,
+                        isSelected = selectedCategory == category,
+                        onClick = {
+                            selectedCategory = if (selectedCategory == category) null else category
+                        }
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(10) { index ->
-                    WordListItem(
-                        title = "PALABRA ${index + 1}",
-                        subtitle = "Categoría",
-                        icon = Icons.Rounded.Checkroom,
-                        chipText = "Fácil",
-                        isSelected = (selectedWordId == "id_$index"),
-                        onClick = { selectedWordId = "id_$index" },
-                        imageUrl = null // Aquí se pasaría la URL real de la imagen
-                    )
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                InfoCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Palabras aprendidas",
+                    data = allItems.size.toString()
+                )
+                InfoCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Esta semana",
+                    data = completedThisWeek.toString()
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (displayedItems.isEmpty()) {
+                EmptyDictionaryState()
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(displayedItems.size) { index ->
+                        val item = displayedItems[index]
+                        WordListItem(
+                            title = item.texto,
+                            subtitle = formatAddedDate(item.fechaAgregadoMillis),
+                            icon = Icons.Rounded.Checkroom,
+                            chipText = "Aprendida",
+                            isSelected = (selectedWordId == item.idPalabra),
+                            onClick = {
+                                selectedWordId = item.idPalabra
+                                onWordClick(item.idPalabra)
+                            },
+                            imageUrl = item.imagenUrl
+                        )
+                    }
                 }
             }
         }
     }
 }
 
+@Composable
+private fun EmptyDictionaryState() {
+    androidx.compose.material3.Text(
+        text = "Aún no tienes palabras en tu diccionario.",
+        modifier = Modifier.padding(vertical = 48.dp),
+        color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+    )
+}
+
+private fun formatAddedDate(timestamp: Long?): String {
+    if (timestamp == null) return "Agregado recientemente"
+    val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+    return "Agregada el ${formatter.format(Date(timestamp))}"
+}
+
+private fun countCompletedThisWeek(items: List<PersonalDictionaryItem>): Int {
+    if (items.isEmpty()) return 0
+    val now = System.currentTimeMillis()
+    val weekAgo = now - 7 * 24 * 60 * 60 * 1000L
+    return items.count { it.fechaAgregadoMillis != null && it.fechaAgregadoMillis >= weekAgo }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun StudentDictionaryScreenPreview() {
     AlphakidsTheme {
-        StudentDictionaryScreen(
-            onBackClick = {},
-            onLogoutClick = {},
-            onWordClick = {},
-            onSettingsClick = {},
-            onBottomNavClick = {}
+        // Vista previa estática con datos simulados.
+        StudentDictionaryContentPreview()
+    }
+}
+
+@Composable
+private fun StudentDictionaryContentPreview() {
+    val fakeItems = listOf(
+        PersonalDictionaryItem(
+            idPalabra = "1",
+            texto = "Manzana",
+            imagenUrl = "",
+            audioUrl = "",
+            fechaAgregadoMillis = System.currentTimeMillis(),
+            ultimoRepasoMillis = null,
+            vecesJugado = 2,
+            vecesAcertado = 2
+        )
+    )
+
+    Column(modifier = Modifier.padding(24.dp)) {
+        InfoCard(
+            modifier = Modifier.fillMaxWidth(),
+            title = "Palabras aprendidas",
+            data = fakeItems.size.toString()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        WordListItem(
+            title = fakeItems.first().texto,
+            subtitle = "Agregada el hoy",
+            icon = Icons.Rounded.Checkroom,
+            chipText = "Aprendida",
+            isSelected = false,
+            onClick = {},
+            imageUrl = null
         )
     }
 }

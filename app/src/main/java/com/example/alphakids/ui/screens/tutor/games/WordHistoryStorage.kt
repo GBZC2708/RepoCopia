@@ -8,7 +8,10 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 data class CompletedWord(
-    val word: String,
+    val wordId: String = "",
+    val word: String = "",
+    val imageUrl: String? = null,
+    val audioUrl: String? = null,
     val timestamp: Long = System.currentTimeMillis()
 ) {
     fun getFormattedDate(): String {
@@ -27,16 +30,22 @@ object WordHistoryStorage {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
     
-    fun saveCompletedWord(context: Context, word: String) {
+    fun saveCompletedWord(
+        context: Context,
+        wordId: String,
+        word: String,
+        imageUrl: String?,
+        audioUrl: String?
+    ) {
         val completedWords = getCompletedWords(context).toMutableList()
-        val newWord = CompletedWord(word)
-        
+        val newWord = CompletedWord(wordId, word, imageUrl, audioUrl)
+
         // Avoid duplicates by checking if the word was completed recently (within 5 minutes)
         val recentThreshold = System.currentTimeMillis() - (5 * 60 * 1000) // 5 minutes
-        val isDuplicate = completedWords.any { 
-            it.word.equals(word, ignoreCase = true) && it.timestamp > recentThreshold 
+        val isDuplicate = completedWords.any {
+            it.wordId == wordId && it.timestamp > recentThreshold
         }
-        
+
         if (!isDuplicate) {
             completedWords.add(newWord)
             saveCompletedWords(context, completedWords)
@@ -46,7 +55,7 @@ object WordHistoryStorage {
     fun getCompletedWords(context: Context): List<CompletedWord> {
         val prefs = getPreferences(context)
         val json = prefs.getString(KEY_COMPLETED_WORDS, null) ?: return emptyList()
-        
+
         return try {
             val type = object : TypeToken<List<CompletedWord>>() {}.type
             gson.fromJson(json, type) ?: emptyList()
