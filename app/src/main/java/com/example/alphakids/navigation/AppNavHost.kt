@@ -33,6 +33,7 @@ import com.example.alphakids.ui.screens.teacher.students.StudentDetailScreen
 import com.example.alphakids.ui.screens.tutor.profile_selection.ProfileSelectionScreen
 import com.example.alphakids.ui.screens.tutor.home.StudentHomeScreen
 import com.example.alphakids.ui.screens.tutor.dictionary.StudentDictionaryScreen
+import com.example.alphakids.ui.screens.tutor.dictionary.StudentDictionaryViewModel
 import com.example.alphakids.ui.screens.tutor.achievements.StudentAchievementsScreen
 import com.example.alphakids.ui.screens.tutor.games.CameraScreen
 import com.example.alphakids.ui.screens.profile.EditProfileScreen
@@ -247,7 +248,17 @@ fun AppNavHost(
             route = Routes.CAMERA_OCR,
             arguments = listOf(
                 navArgument("assignmentId") { type = NavType.StringType },
-                navArgument("targetWord") { type = NavType.StringType }
+                navArgument("targetWord") { type = NavType.StringType },
+                navArgument("imageUrl") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true
+                },
+                navArgument("audioUrl") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true
+                }
             )
         ) { backStackEntry ->
             val assignmentId = backStackEntry.arguments?.getString("assignmentId") ?: ""
@@ -259,6 +270,8 @@ fun AppNavHost(
             CameraOCRScreen(
                 assignmentId = assignmentId,
                 targetWord = targetWord,
+                targetImageUrl = targetImage,
+                targetAudioUrl = targetAudio,
                 onBackClick = { navController.popBackStack() },
                 onWordCompleted = { navController.popBackStack() }
             )
@@ -279,6 +292,7 @@ fun AppNavHost(
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
         ) { backStackEntry ->
             val studentId = backStackEntry.arguments?.getString("studentId") ?: "default"
+            val viewModel: StudentDictionaryViewModel = hiltViewModel(backStackEntry)
             StudentDictionaryScreen(
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
@@ -292,7 +306,8 @@ fun AppNavHost(
                     }
                     navigateToStudentBottomNav(targetRoute)
                 },
-                currentRoute = "dictionary"
+                currentRoute = "dictionary",
+                viewModel = viewModel
             )
         }
 

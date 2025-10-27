@@ -1,7 +1,6 @@
 package com.example.alphakids.ui.screens.tutor.games
 
 import android.Manifest
-import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.camera.core.*
@@ -50,6 +49,8 @@ import java.util.concurrent.Executors
 fun CameraOCRScreen(
     assignmentId: String,
     targetWord: String,
+    targetImageUrl: String?,
+    targetAudioUrl: String?,
     onBackClick: () -> Unit,
     onWordCompleted: () -> Unit,
     viewModel: CameraOCRViewModel = hiltViewModel()
@@ -63,6 +64,8 @@ fun CameraOCRScreen(
     var detectedText by remember { mutableStateOf("") }
     var showSuccessAnimation by remember { mutableStateOf(false) }
     var isWordCompleted by remember { mutableStateOf(false) }
+    var isCompleting by remember { mutableStateOf(false) }
+    var completionError by remember { mutableStateOf<String?>(null) }
 
     // TTS Setup
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
@@ -82,26 +85,49 @@ fun CameraOCRScreen(
         }
     }
 
+    LaunchedEffect(targetWord) {
+        // Guardamos la palabra objetivo en el ViewModel para reutilizarla en el analizador.
+        viewModel.setTargetWord(targetWord)
+    }
+
     // Check for word completion
     LaunchedEffect(detectedText, targetWord) {
-        if (!isWordCompleted && detectedText.trim().uppercase() == targetWord.trim().uppercase()) {
-            isWordCompleted = true
-            showSuccessAnimation = true
-            
-            // Play TTS
-            tts?.speak(
-                "¡Bien hecho! La palabra es $targetWord",
-                TextToSpeech.QUEUE_FLUSH,
-                null,
-                null
-            )
-            
-            // Save to storage
-            WordHistoryStorage.saveCompletedWord(context, targetWord)
-            
-            // Hide animation after 3 seconds and complete
-            delay(3000)
-            onWordCompleted()
+        val normalizedDetected = detectedText.trim().uppercase()
+        val normalizedTarget = targetWord.trim().uppercase()
+
+        if (!isCompleting && !isWordCompleted && normalizedDetected == normalizedTarget) {
+            isCompleting = true
+
+            val result = viewModel.markAssignmentAsCompleted(assignmentId)
+            if (result.isSuccess) {
+                completionError = null
+                isWordCompleted = true
+                showSuccessAnimation = true
+
+                // Play TTS cuando se confirma el guardado
+                tts?.speak(
+                    "¡Bien hecho! La palabra es $targetWord",
+                    TextToSpeech.QUEUE_FLUSH,
+                    null,
+                    null
+                )
+
+                // Persistimos un registro local para el historial y el diccionario en pantalla.
+                WordHistoryStorage.saveCompletedWord(
+                    context = context,
+                    wordId = assignmentId,
+                    word = targetWord,
+                    imageUrl = targetImageUrl,
+                    audioUrl = targetAudioUrl
+                )
+
+                delay(3000)
+                onWordCompleted()
+            } else {
+                completionError = result.exceptionOrNull()?.localizedMessage
+            }
+
+            isCompleting = false
         }
     }
 
@@ -179,6 +205,23 @@ fun CameraOCRScreen(
                     containerColor = Color.Black.copy(alpha = 0.7f)
                 )
             )
+
+            // Error banner si falló el guardado remoto.
+            AnimatedVisibility(
+                visible = completionError != null,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(horizontal = 16.dp, vertical = 72.dp)
+            ) {
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
+                    Text(
+                        text = completionError ?: "",
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        fontFamily = dmSansFamily,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
 
             // Detected Text Display
             if (detectedText.isNotEmpty()) {
