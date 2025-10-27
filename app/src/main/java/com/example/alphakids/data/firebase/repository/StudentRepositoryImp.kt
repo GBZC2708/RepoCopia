@@ -7,6 +7,7 @@ import com.example.alphakids.domain.repository.StudentRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.snapshots
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -45,6 +46,36 @@ class StudentRepositoryImpl @Inject constructor(
         }.catch { exception ->
             Log.e("StudentRepo", "Error in student flow for tutor $tutorId", exception)
             emit(emptyList())
+        }
+    }
+
+    override suspend fun getStudentById(studentId: String): Estudiante? {
+        return try {
+            // Se consulta el documento específico del estudiante para obtener la versión más reciente.
+            val snapshot = estudiantesCol.document(studentId).get().await()
+            snapshot.toObject(Estudiante::class.java)
+        } catch (e: Exception) {
+            Log.e("StudentRepo", "Error al obtener estudiante con ID: $studentId", e)
+            null
+        }
+    }
+
+    override suspend fun updateStudent(estudiante: Estudiante): Result<Unit> {
+        if (estudiante.id.isBlank()) {
+            // Evitamos intentar guardar documentos sin identificador válido.
+            return Result.failure(IllegalArgumentException("El ID del estudiante no puede estar vacío."))
+        }
+
+        return try {
+            estudiantesCol
+                .document(estudiante.id)
+                .set(estudiante, SetOptions.merge())
+                .await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e("StudentRepo", "Error al actualizar estudiante ${estudiante.id}", e)
+            Result.failure(e)
         }
     }
 }
