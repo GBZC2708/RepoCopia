@@ -150,22 +150,25 @@ fun CreateStudentProfileScreen(
                 LabeledDropdownField(
                     label = "Institución",
                     selectedOption = selectedInstitucion ?: "",
-                    placeholderText = "Selecciona institución (Opcional)",
-                    onClick = { /* TODO: Mostrar menú dropdown real */ }
+                    options = instituciones,
+                    placeholderText = "Selecciona institución",
+                    onOptionSelected = { selectedInstitucion = it }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 LabeledDropdownField(
                     label = "Grado",
                     selectedOption = selectedGrado ?: "",
-                    placeholderText = "Selecciona grado (Opcional)",
-                    onClick = { /* TODO: Mostrar menú dropdown real */ }
+                    options = grados,
+                    placeholderText = "Selecciona grado",
+                    onOptionSelected = { selectedGrado = it }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 LabeledDropdownField(
                     label = "Sección",
                     selectedOption = selectedSeccion ?: "",
-                    placeholderText = "Selecciona sección (Opcional)",
-                    onClick = { /* TODO: Mostrar menú dropdown real */ }
+                    options = secciones,
+                    placeholderText = "Selecciona sección",
+                    onOptionSelected = { selectedSeccion = it }
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -190,6 +193,19 @@ fun CreateStudentProfileScreen(
                             Toast.makeText(context, "Ingresa una edad válida", Toast.LENGTH_SHORT).show()
                             return@PrimaryButton
                         }
+                        // Validamos que la información escolar obligatoria esté presente.
+                        if (selectedInstitucion.isNullOrBlank()) {
+                            Toast.makeText(context, "Selecciona la institución", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
+                        if (selectedGrado.isNullOrBlank()) {
+                            Toast.makeText(context, "Selecciona el grado", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
+                        if (selectedSeccion.isNullOrBlank()) {
+                            Toast.makeText(context, "Selecciona la sección", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
 
                         viewModel.createStudent(
                             nombre = nombre,
@@ -197,7 +213,7 @@ fun CreateStudentProfileScreen(
                             edad = edadInt,
                             grado = selectedGrado ?: "",
                             seccion = selectedSeccion ?: "",
-                            idInstitucion = "" // TODO: Replace "" with actual institution ID
+                            idInstitucion = selectedInstitucion ?: ""
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),

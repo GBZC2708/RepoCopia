@@ -38,6 +38,26 @@ class AssignmentRepositoryImpl @Inject constructor(
             val asignacionMap = WordAssignmentMapper.fromDomain(assignment)
             val docRef = asignacionesCol.add(asignacionMap).await()
             Log.d("AssignmentRepo", "Asignación creada con ID: ${docRef.id}")
+
+            // Asociamos al estudiante con el docente para que aparezca en sus listados.
+            if (assignment.idEstudiante.isNotBlank() && assignment.idDocente.isNotBlank()) {
+                try {
+                    estudiantesCol
+                        .document(assignment.idEstudiante)
+                        .set(
+                            mapOf("id_docente" to assignment.idDocente),
+                            SetOptions.merge()
+                        )
+                        .await()
+                } catch (updateError: Exception) {
+                    Log.e(
+                        "AssignmentRepo",
+                        "Error al vincular estudiante ${assignment.idEstudiante} con docente ${assignment.idDocente}",
+                        updateError
+                    )
+                }
+            }
+
             Result.success(docRef.id)
         } catch (e: Exception) {
             Log.e("AssignmentRepo", "Error al crear asignación", e)
