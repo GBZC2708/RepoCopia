@@ -176,10 +176,13 @@ fun AppNavHost(
                 studentName = studentName,
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
-                onPlayClick = { 
-                    android.util.Log.d("AppNavHost", "Play button clicked, navigating with studentId: $studentId")
-                    navController.navigate(Routes.assignedWordsRoute(studentId)) 
-                }, // <-- NAVEGA A PALABRAS ASIGNADAS
+                onPlayClick = {
+                    android.util.Log.d(
+                        "AppNavHost",
+                        "Play button clicked, navigating to MyGames with studentId: $studentId"
+                    )
+                    navController.navigate(Routes.myGamesRoute(studentId))
+                }, // <-- NAVEGA A LA SELECCIÓN DE JUEGOS
                 onDictionaryClick = { navigateToStudentBottomNav(Routes.dictionaryRoute(studentId)) },
                 onAchievementsClick = { navigateToStudentBottomNav(Routes.achievementsRoute(studentId)) },
                 onSettingsClick = { navController.navigate(Routes.editStudentProfileRoute(studentId)) },
