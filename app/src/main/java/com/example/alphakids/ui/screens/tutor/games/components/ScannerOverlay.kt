@@ -1,3 +1,5 @@
+package com.example.alphakids.ui.screens.tutor.games.components
+
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -11,10 +13,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
@@ -110,24 +110,24 @@ fun ScannerOverlay(
         val cs = cornerStroke.toPx()
         val cr = cornerRadius.toPx()
 
-        fun cornerPath(x0: Float, y0: Float, x1: Float, y1: Float): Path {
-            // Dibuja dos segmentos en L desde la esquina hacia dentro del rectángulo
+        fun cornerPath(originX: Float, originY: Float): Path {
+            // Dibuja dos segmentos en L desde la esquina hacia dentro del rectángulo.
             return Path().apply {
-                moveTo(x0, y0 + cl)
-                lineTo(x0, y0 + cr)
+                moveTo(originX, originY + cl)
+                lineTo(originX, originY + cr)
                 arcTo(
-                    rect = Rect(x0, y0, x0 + 2 * cr, y0 + 2 * cr),
+                    rect = Rect(originX, originY, originX + 2 * cr, originY + 2 * cr),
                     startAngleDegrees = 180f,
                     sweepAngleDegrees = 90f,
                     forceMoveTo = false
                 )
-                lineTo(x0 + cl, y0)
+                lineTo(originX + cl, originY)
             }
         }
 
         // Top-Left
         drawPath(
-            path = cornerPath(left, top, right, bottom),
+            path = cornerPath(left, top),
             color = laserColor,
             style = Stroke(width = cs, cap = StrokeCap.Round, join = StrokeJoin.Round)
         )
