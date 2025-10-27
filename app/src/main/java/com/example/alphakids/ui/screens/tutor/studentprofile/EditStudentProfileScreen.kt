@@ -77,6 +77,44 @@ fun EditStudentProfileScreen(
     val grados = listOf("1ro", "2do", "3ro", "4to", "5to")
     val secciones = listOf("A", "B", "C", "D")
 
+            viewModel.updateStudent(
+                id = estudiante.id,
+                nombre = nombre,
+                apellido = apellido,
+                edad = edadInt,
+                grado = grado,
+                seccion = seccion,
+                idInstitucion = institucion,
+                idTutor = estudiante.idTutor,
+                idDocente = estudiante.idDocente,
+                fotoPerfil = estudiante.fotoPerfil
+            )
+        }
+    )
+}
+
+@Composable
+private fun EditStudentProfileContent(
+    nombre: String,
+    apellido: String,
+    edad: String,
+    institucion: String,
+    grado: String,
+    seccion: String,
+    instituciones: List<String>,
+    grados: List<String>,
+    secciones: List<String>,
+    isLoading: Boolean,
+    onBackClick: () -> Unit,
+    onCloseClick: () -> Unit,
+    onNombreChange: (String) -> Unit,
+    onApellidoChange: (String) -> Unit,
+    onEdadChange: (String) -> Unit,
+    onInstitucionChange: (String) -> Unit,
+    onGradoChange: (String) -> Unit,
+    onSeccionChange: (String) -> Unit,
+    onSaveClick: () -> Unit
+) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
