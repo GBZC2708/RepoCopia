@@ -1,6 +1,5 @@
 package com.example.alphakids.ui.screens.tutor.games
 
-import ScannerOverlay
 import android.Manifest
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.FocusMeteringAction
@@ -46,8 +45,9 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.delay
-import com.example.alphakids.ui.screens.tutor.game.components.GameResultDialog
-import com.example.alphakids.ui.screens.tutor.game.components.GameResultState
+import com.example.alphakids.ui.screens.camera.ScannerOverlay
+import com.example.alphakids.ui.screens.tutor.games.components.GameResultDialog
+import com.example.alphakids.ui.screens.tutor.games.components.GameResultState
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
