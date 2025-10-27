@@ -49,6 +49,10 @@ fun EditStudentProfileScreen(
     var grado by remember { mutableStateOf("1ro") }
     var seccion by remember { mutableStateOf("A") }
 
+    val instituciones = listOf("Mi Colegio", "Colegio Nacional", "Colegio Parroquial")
+    val grados = listOf("1ro", "2do", "3ro", "4to", "5to")
+    val secciones = listOf("A", "B", "C", "D")
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
@@ -134,8 +138,9 @@ fun EditStudentProfileScreen(
             LabeledDropdownField(
                 label = "Institución",
                 selectedOption = institucion,
-                placeholderText = "Select option",
-                onClick = { /* TODO: Mostrar dropdown */ }
+                options = instituciones,
+                placeholderText = "Selecciona institución",
+                onOptionSelected = { institucion = it }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -143,8 +148,9 @@ fun EditStudentProfileScreen(
             LabeledDropdownField(
                 label = "Grado",
                 selectedOption = grado,
-                placeholderText = "Select option",
-                onClick = { /* TODO: Mostrar dropdown */ }
+                options = grados,
+                placeholderText = "Selecciona grado",
+                onOptionSelected = { grado = it }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -152,8 +158,9 @@ fun EditStudentProfileScreen(
             LabeledDropdownField(
                 label = "Sección",
                 selectedOption = seccion,
-                placeholderText = "Select option",
-                onClick = { /* TODO: Mostrar dropdown */ }
+                options = secciones,
+                placeholderText = "Selecciona sección",
+                onOptionSelected = { seccion = it }
             )
 
             Spacer(modifier = Modifier.height(32.dp))
