@@ -1,60 +1,221 @@
 package com.example.alphakids.ui.screens.teacher.words
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Face
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.rounded.SmartToy
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.alphakids.ui.components.AppHeader
-import com.example.alphakids.ui.components.AssignmentCard
-import com.example.alphakids.ui.components.InfoChip
-import com.example.alphakids.ui.components.SearchBar
-import com.example.alphakids.ui.components.StudentListItem
-import com.example.alphakids.ui.theme.AlphakidsTheme
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.alphakids.data.firebase.models.Estudiante
+import com.example.alphakids.ui.components.*
 import com.example.alphakids.ui.theme.dmSansFamily
+import com.example.alphakids.ui.word.assign.AssignmentUiState
+import com.example.alphakids.ui.word.assign.AssignWordViewModel
+import com.example.alphakids.ui.chat.ChatViewModel
+import com.example.alphakids.ui.chat.ChatMessage
+import com.example.alphakids.ui.chat.ChatUiState
+import kotlinx.coroutines.launch
 
-// Importaciones necesarias para el modo IA
-import com.example.alphakids.ui.components.AiMessageBubble
-import com.example.alphakids.ui.components.ChatInputBar
-import com.example.alphakids.ui.components.ChatHeader
-import com.example.alphakids.ui.screens.chat.ChatMessage // Asumiendo que ChatMessage está accesible
+val assignmentDifficultiesList = listOf("Fácil", "Medio", "Difícil")
+
+// Función para determinar el desempeño del estudiante
+private fun determineStudentPerformance(student: Estudiante): String {
+    return when {
+        student.edad <= 4 -> "Principiante"
+        student.edad <= 6 -> "Intermedio"
+        else -> "Avanzado"
+    }
+}
+
+@Composable 
+fun MessageBubble(message: ChatMessage, onAssignClick: (String, String) -> Unit, onAnalyzeClick: () -> Unit = {}, onAssignMultiple: (List<com.example.alphakids.domain.models.Word>) -> Unit = {}) { 
+    val align = if (message.isFromUser) Alignment.End else Alignment.Start 
+    val color = if (message.isFromUser) MaterialTheme.colorScheme.primaryContainer 
+        else MaterialTheme.colorScheme.secondaryContainer 
+ 
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = align) { 
+        Card(
+            shape = RoundedCornerShape(16.dp), 
+            colors = CardDefaults.cardColors(containerColor = color)
+        ) { 
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    text = message.text,
+                    fontFamily = dmSansFamily,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                // Botón de análisis si está habilitado
+                if (message.showAnalyzeButton) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = onAnalyzeClick,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.SmartToy,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Analizar estudiante")
+                    }
+                }
+                
+                // Palabra individual recomendada
+                message.recommendedWord?.let { word -> 
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button( 
+                        onClick = { onAssignClick("", word.texto) }, 
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) { 
+                        Icon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Asignar \"${word.texto}\"") 
+                    } 
+                }
+                
+                // Múltiples palabras recomendadas del análisis
+                if (message.recommendedWords.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Mostrar las palabras recomendadas
+                    message.recommendedWords.forEach { word ->
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = word.texto,
+                                        fontFamily = dmSansFamily,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 14.sp
+                                    )
+                                    Text(
+                                        text = "${word.categoria} • ${word.nivelDificultad}",
+                                        fontFamily = dmSansFamily,
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                    )
+                                }
+                                IconButton(
+                                    onClick = { onAssignClick("", word.texto) }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.CheckCircle,
+                                        contentDescription = "Asignar",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Botón para asignar todas las palabras
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = { onAssignMultiple(message.recommendedWords) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Asignar todas las palabras (${message.recommendedWords.size})")
+                    }
+                }
+            }
+        } 
+    } 
+} 
+ 
+@Composable 
+fun MessageInput(message: String, onMessageChange: (String) -> Unit, onSendClick: () -> Unit) { 
+    Row( 
+        Modifier 
+            .fillMaxWidth() 
+            .padding(8.dp) 
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp)) 
+            .padding(8.dp), 
+        verticalAlignment = Alignment.CenterVertically 
+    ) { 
+        TextField( 
+            value = message, 
+            onValueChange = onMessageChange, 
+            modifier = Modifier.weight(1f), 
+            placeholder = { Text("Escribe un mensaje...") }, 
+            maxLines = 3, 
+            colors = TextFieldDefaults.colors( 
+                focusedContainerColor = Color.Transparent, 
+                unfocusedContainerColor = Color.Transparent, 
+                focusedIndicatorColor = Color.Transparent, 
+                unfocusedIndicatorColor = Color.Transparent 
+            ) 
+        ) 
+        IconButton(onClick = onSendClick, enabled = message.isNotBlank()) { 
+            Icon(
+                Icons.Default.Send, 
+                contentDescription = "Enviar", 
+                tint = MaterialTheme.colorScheme.primary
+            ) 
+        } 
+    } 
+}
 
 @Composable
 fun ModeSelector(
@@ -85,7 +246,6 @@ fun ModeSelector(
                     .weight(1f)
                     .fillMaxHeight(),
                 shape = shape,
-                // Color primario para el modo seleccionado (IA)
                 color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
                 onClick = { onModeSelected(mode) }
             ) {
@@ -120,34 +280,80 @@ fun SectionTitle(text: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun AssignWordScreen(
+    viewModel: AssignWordViewModel = hiltViewModel(),
+    chatViewModel: com.example.alphakids.ui.chat.ChatViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
-    onAssignWordClick: (studentId: String, wordId: String) -> Unit,
     onStudentClick: (studentId: String) -> Unit
 ) {
-    var selectedMode by remember { mutableStateOf("IA") } // Modo "IA" por defecto
-    var selectedStudentId by remember { mutableStateOf("sofia_id") }
-    var searchQuery by remember { mutableStateOf("") }
+    val students by viewModel.students.collectAsState()
+    val selectedStudentId by viewModel.selectedStudentId.collectAsState()
+    val availableWords by viewModel.availableWords.collectAsState()
 
-    val students = listOf(
-        Pair("sofia_id", Triple("Sofia Arenas", "3 años", "18 palabras")),
-        Pair("id_2", Triple("Fullname", "Age", "Num words")),
-        Pair("id_3", Triple("Fullname", "Age", "Num words")),
-        Pair("id_4", Triple("Fullname", "Age", "Num words")),
-        Pair("id_5", Triple("Fullname", "Age", "Num words"))
-    )
-    val words = listOf(
-        "word_1" to Triple("WORD", "Categoría", "Chip"),
-        "word_2" to Triple("WORD", "Categoría", "Chip"),
-        "word_3" to Triple("WORD", "Categoría", "Chip")
-    )
+    val currentFilter by viewModel.wordFilterDifficulty.collectAsState()
 
-    // Contenido simulado del chat para el modo IA
-    val aiMessages = listOf(
-        ChatMessage.Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit luctus egestas. Fusce neque mauris."),
-        ChatMessage.Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit luctus egestas. Fusce neque mauris."),
-        ChatMessage.Recommendation("WORD", "Categoría", "Chip")
-    )
+    val assignmentUiState by viewModel.uiState.collectAsState()
+    
+    // Estados del chat
+    val chatMessages by chatViewModel.messages.collectAsState()
+    val chatIsLoading by chatViewModel.isLoading.collectAsState()
+    val selectedUser by chatViewModel.selectedUser.collectAsState()
+    val chatUiState by chatViewModel.uiState.collectAsState()
 
+    var showSuccessDialog by remember { mutableStateOf(false) }
+    var wordSearchQuery by remember { mutableStateOf("") }
+    var selectedMode by remember { mutableStateOf("IA") }
+
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val chatListState = rememberLazyListState()
+
+    // Los datos se cargan automáticamente a través de StateFlow en el ViewModel
+    // No se necesitan llamadas explícitas a loadStudents() y loadWords()
+
+    // Auto-scroll cuando llegan nuevos mensajes
+    LaunchedEffect(chatMessages.size) {
+        if (chatMessages.isNotEmpty()) {
+            chatListState.animateScrollToItem(chatMessages.size - 1)
+        }
+    }
+
+    LaunchedEffect(assignmentUiState) {
+        when (assignmentUiState) {
+            is AssignmentUiState.Success -> {
+                showSuccessDialog = true
+            }
+            is AssignmentUiState.Error -> {
+                Toast.makeText(context, (assignmentUiState as AssignmentUiState.Error).message, Toast.LENGTH_LONG).show()
+                viewModel.resetUiState()
+            }
+            AssignmentUiState.Loading -> {}
+            AssignmentUiState.Idle -> {}
+        }
+    }
+
+    // Manejar estados del chat (asignaciones desde IA)
+    LaunchedEffect(chatUiState) {
+        when (val currentState = chatUiState) {
+            is ChatUiState.Success -> {
+                Toast.makeText(context, currentState.message, Toast.LENGTH_LONG).show()
+                chatViewModel.resetUiState()
+            }
+            is ChatUiState.Error -> {
+                Toast.makeText(context, currentState.message, Toast.LENGTH_LONG).show()
+                chatViewModel.resetUiState()
+            }
+            ChatUiState.Loading -> {}
+            ChatUiState.Idle -> {}
+        }
+    }
+
+    // Configurar el estudiante seleccionado en el ChatViewModel
+    LaunchedEffect(selectedStudentId) {
+        val selectedStudent = students.find { it.id == selectedStudentId }
+        selectedStudent?.let { student ->
+            chatViewModel.onUserSelected(student)
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -172,152 +378,240 @@ fun AssignWordScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Contenedor fijo para el selector de modo y estudiantes
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
+                    .weight(1f)
                     .padding(horizontal = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(top = 16.dp, bottom = 32.dp)
             ) {
                 // Selector de Modo
-                Text(
-                    text = "Modo",
-                    fontFamily = dmSansFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                ModeSelector(selectedMode = selectedMode, onModeSelected = { selectedMode = it })
+                item {
+                    Text(
+                        text = "Modo",
+                        fontFamily = dmSansFamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    ModeSelector(selectedMode = selectedMode, onModeSelected = { selectedMode = it })
+                }
 
-                Divider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
+                item {
+                    Divider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
+                    SectionTitle(text = "Selecciona a un estudiante")
+                }
 
                 // Selección de Estudiante
-                SectionTitle(text = "Selecciona a un estudiante")
-
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    students.take(5).forEach { (id, data) ->
-                        val (fullname, age, numWords) = data
-                        val isSelected = id == selectedStudentId
-
-                        Surface(
-                            onClick = { selectedStudentId = id },
-                            shape = RoundedCornerShape(28.dp),
-                            border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
-                        ) {
-                            StudentListItem(
-                                fullname = fullname,
-                                age = age,
-                                numWords = numWords,
-                                icon = Icons.Rounded.Face,
-                                chipText = "90%",
-                                onClick = { onStudentClick(id) }
-                            )
-                        }
+                items(
+                    items = students.filter { selectedStudentId == null || it.id == selectedStudentId },
+                    key = { it.id }
+                ) { student: Estudiante ->
+                    val isSelected = student.id == selectedStudentId
+                    Surface(
+                        onClick = { viewModel.selectStudent(student.id) },
+                        shape = RoundedCornerShape(28.dp),
+                        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
+                    ) {
+                        StudentListItem(
+                            fullname = student.nombre,
+                            age = "${student.edad} años",
+                            numWords = "N/A",
+                            icon = Icons.Rounded.Face,
+                            chipText = determineStudentPerformance(student),
+                            onClickNavigation = { onStudentClick(student.id) }
+                        )
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
 
-                // Título de la sección variable
-                if (selectedMode == "IA") {
-                    SectionTitle(text = "Recomendación")
-                } else {
-                    SectionTitle(text = "Elige una palabra")
-                }
-            }
+                // SECCIÓN DE ASIGNACIÓN DE PALABRAS (Solo si se selecciona un estudiante y está en modo Manual)
+                if (selectedStudentId != null && selectedMode == "Manual") {
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        SectionTitle(text = "Elige una palabra")
+                    }
 
-            // Contenido Variable (Manual vs. IA)
-            if (selectedMode == "IA") {
-                // Modo IA: Muestra el ChatHeader, LazyColumn de mensajes y ChatInputBar
-                Column(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                    ChatHeader()
+                    item {
+                        SearchBar(
+                            value = wordSearchQuery,
+                            onValueChange = {
+                                wordSearchQuery = it
+                                viewModel.setWordSearchQuery(it)
+                            },
+                            placeholderText = "Buscar"
+                        )
+                    }
 
-                    LazyColumn(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface) // Fondo de chat
-                            .padding(horizontal = 10.dp),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        items(aiMessages.size) { index ->
-                            val message = aiMessages[index]
-                            when (message) {
-                                is ChatMessage.Text -> {
-                                    AiMessageBubble(message = message.content)
-                                }
-                                is ChatMessage.Recommendation -> {
-                                    AiMessageBubble(message = "") {
-                                        AssignmentCard(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            wordTitle = message.wordTitle,
-                                            wordSubtitle = message.wordSubtitle,
-                                            chipText = message.chipText,
-                                            onClickAssign = { onAssignWordClick(selectedStudentId, "ai_word_id") }
-                                        )
-                                    }
-                                }
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            assignmentDifficultiesList.forEach { difficulty ->
+                                InfoChip(
+                                    text = difficulty,
+                                    isSelected = (currentFilter == difficulty),
+                                    onClick = { viewModel.setWordFilterDifficulty(difficulty) }
+                                )
                             }
                         }
                     }
-                    ChatInputBar(onSendClick = { /* Lógica de chat */ })
-                }
-            } else {
-                // Modo Manual: Muestra la SearchBar y la lista de AssignmentCard
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp), // Padding horizontal para el contenido manual
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    SearchBar(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        placeholderText = "Buscar"
-                    )
 
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        InfoChip(text = "Chip", isSelected = false)
-                        InfoChip(text = "Chip", isSelected = false)
-                        InfoChip(text = "Chip", isSelected = false)
-                        InfoChip(text = "Chip", isSelected = false)
+                    item {
+                        SectionTitle(text = "Palabras disponibles")
                     }
 
-                    SectionTitle(text = "Palabras disponibles")
+                    items(availableWords, key = { it.id }) { word ->
+                        AssignmentCard(
+                            wordTitle = word.texto,
+                            wordSubtitle = word.categoria,
+                            chipText = word.nivelDificultad,
+                            imageUrl = word.imagenUrl,
+                            onClickAssign = {
+                                viewModel.createAssignment(word)
+                            }
+                        )
+                    }
+                }
 
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        words.forEach { (id, data) ->
-                            val (title, subtitle, chip) = data
-                            AssignmentCard(
-                                wordTitle = title,
-                                wordSubtitle = subtitle,
-                                chipText = chip,
-                                onClickAssign = { onAssignWordClick(selectedStudentId, id) }
+                // SECCIÓN DE CHAT IA (Solo si se selecciona un estudiante y está en modo IA)
+                if (selectedStudentId != null && selectedMode == "IA") {
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        SectionTitle(text = "Asistente IA")
+                    }
+
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(500.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
                             )
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp)
+                            ) {
+                                // Encabezado del chat
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.SmartToy,
+                                        contentDescription = "IA",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Asistente IA para asignación de palabras",
+                                        fontFamily = dmSansFamily,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 16.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                // Lista de mensajes del chat
+                                LazyColumn(
+                                    state = chatListState,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                                    contentPadding = PaddingValues(vertical = 8.dp)
+                                ) {
+                                    items(chatMessages) { message ->
+                                        MessageBubble(
+                                            message = message,
+                                            onAssignClick = { userId, word ->
+                                                selectedUser?.let { student ->
+                                                    // Buscar la palabra en la lista de palabras disponibles
+                                                    val wordToAssign = availableWords.find { it.texto == word }
+                                                    wordToAssign?.let { 
+                                                        chatViewModel.assignWordToUser(student.id, it)
+                                                    }
+                                                }
+                                            },
+                                            onAnalyzeClick = {
+                                                chatViewModel.analyzeStudent()
+                                            },
+                                            onAssignMultiple = { words ->
+                                                chatViewModel.assignMultipleWords(words)
+                                            }
+                                        )
+                                    }
+
+                                    if (chatIsLoading) {
+                                        item {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.Start
+                                            ) {
+                                                CircularProgressIndicator(
+                                                    modifier = Modifier.size(20.dp),
+                                                    strokeWidth = 2.dp,
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    text = "IA está pensando...",
+                                                    fontSize = 12.sp,
+                                                    fontFamily = dmSansFamily,
+                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                // Campo de entrada de mensaje usando el componente MessageInput
+                                var messageText by remember { mutableStateOf("") }
+                                
+                                MessageInput(
+                                    message = messageText,
+                                    onMessageChange = { messageText = it },
+                                    onSendClick = {
+                                        if (messageText.isNotBlank()) {
+                                            chatViewModel.sendStudentMessage(messageText)
+                                            messageText = ""
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
-                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
         }
     }
-}
 
-
-@Preview(showBackground = true)
-@Composable
-fun AssignWordScreenPreview() {
-    AlphakidsTheme {
-        AssignWordScreen(
-            onBackClick = {},
-            onAssignWordClick = { _, _ -> },
-            onStudentClick = {}
+    if (showSuccessDialog) {
+        ActionDialog(
+            icon = Icons.Rounded.CheckCircle,
+            message = (assignmentUiState as AssignmentUiState.Success).message,
+            primaryButtonText = "Aceptar",
+            onPrimaryButtonClick = {
+                showSuccessDialog = false
+                viewModel.resetUiState()
+                viewModel.selectStudent(null)
+            },
+            onDismissRequest = {
+                showSuccessDialog = false
+                viewModel.resetUiState()
+            }
         )
     }
 }

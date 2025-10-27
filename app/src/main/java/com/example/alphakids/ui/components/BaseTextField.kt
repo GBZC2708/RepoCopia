@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions // Importar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +36,8 @@ fun BaseTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholderText: String = "Textfield",
-    visualTransformation: VisualTransformation = VisualTransformation.None
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(28.dp)
@@ -56,6 +58,7 @@ fun BaseTextField(
         ),
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         visualTransformation = visualTransformation,
+        keyboardOptions = keyboardOptions,
         decorationBox = { innerTextField ->
             Box(
                 modifier = Modifier

@@ -25,6 +25,7 @@ fun AssignmentCard(
     wordTitle: String,
     wordSubtitle: String,
     chipText: String,
+    imageUrl: String? = null,
     onClickAssign: () -> Unit
 ) {
     val shape = RoundedCornerShape(28.dp)
@@ -47,7 +48,8 @@ fun AssignmentCard(
             icon = Icons.Rounded.Checkroom,
             chipText = chipText,
             isSelected = false,
-            onClick = {}
+            onClick = {},
+            imageUrl = imageUrl
         )
 
         PrimaryButton(
@@ -68,6 +70,7 @@ fun AssignmentCardPreview() {
                 wordTitle = "WORD",
                 wordSubtitle = "Categoría",
                 chipText = "Chip",
+                imageUrl = null,
                 onClickAssign = {}
             )
         }

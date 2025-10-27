@@ -3,6 +3,7 @@ package com.example.alphakids.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,7 +27,8 @@ fun LabeledTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholderText: String = "",
-    visualTransformation: VisualTransformation = VisualTransformation.None
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -44,10 +46,12 @@ fun LabeledTextField(
             value = value,
             onValueChange = onValueChange,
             placeholderText = placeholderText,
-            visualTransformation = visualTransformation
+            visualTransformation = visualTransformation,
+            keyboardOptions = keyboardOptions // Pasar keyboardOptions
         )
     }
 }
+
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable

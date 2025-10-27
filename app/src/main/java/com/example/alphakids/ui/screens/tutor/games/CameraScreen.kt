@@ -3,8 +3,10 @@ package com.example.alphakids.ui.screens.tutor.games
 import ScannerOverlay
 import android.Manifest
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.MeteringPoint
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
@@ -83,6 +85,10 @@ fun CameraScreen(
     var torchOn by remember { mutableStateOf(false) }
     var lensFacingBack by remember { mutableStateOf(true) }
 
+    // PreviewView referencia y ROI normalizado (l,t,r,b)
+    val previewViewRef = remember { mutableStateOf<PreviewView?>(null) }
+    var roiRect by remember { mutableStateOf<FloatArray?>(null) }
+
     // Timer state
     val totalMillis = 60_000L
     var remainingMillis by remember { mutableStateOf(totalMillis) }
@@ -123,6 +129,7 @@ fun CameraScreen(
                     PreviewView(ctx).apply {
                         controller = cameraController
                         scaleType = PreviewView.ScaleType.FILL_CENTER
+                        previewViewRef.value = this
                     }
                 }
             )
@@ -131,51 +138,75 @@ fun CameraScreen(
             Box(modifier = Modifier.fillMaxSize().background(Color.Black))
         }
 
+        // Aplicar enfoque/exposición al centro del ROI cuando cambie
+        LaunchedEffect(roiRect, previewViewRef.value) {
+            val pv = previewViewRef.value
+            val rect = roiRect
+            if (pv != null && rect != null && pv.width > 0 && pv.height > 0) {
+                val cx = ((rect[0] + rect[2]) / 2f) * pv.width
+                val cy = ((rect[1] + rect[3]) / 2f) * pv.height
+                val point: MeteringPoint = pv.meteringPointFactory.createPoint(cx, cy)
+                val action = FocusMeteringAction.Builder(point, FocusMeteringAction.FLAG_AF)
+                    .addPoint(point, FocusMeteringAction.FLAG_AE)
+                    .build()
+                try {
+                    cameraController.cameraControl?.startFocusAndMetering(action)
+                } catch (_: Exception) { }
+            }
+        }
+
         // Scanner overlay on top of preview
         ScannerOverlay(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            boxWidthPercent = 0.8f,
+            boxAspectRatio = 1f,
+            onBoxRectChange = { l, t, r, b ->
+                roiRect = floatArrayOf(l, t, r, b)
+            }
         )
 
-        // Timer at top
-        TimerBar(
+        // Top area: Back button + Timer in a Row to avoid overlap
+        androidx.compose.foundation.layout.Column(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 16.dp),
-            progress = progress,
-            timeText = formatTime(remainingMillis),
-            isWarning = isWarning
-        )
-
-        // Notification card under timer
-        if (showNotification) {
-            NotificationCard(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 64.dp, start = 24.dp, end = 24.dp),
-                title = "Une la palabra",
-                content = "Apunta a las letras",
-                icon = Icons.Rounded.Checkroom,
-                onCloseClick = {
-                    showNotification = false
-                    onCloseNotificationClick()
-                }
-            )
-        }
-
-        // Back button
-        IconButton(
-            onClick = onBackClick,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(8.dp)
+                .padding(horizontal = 24.dp, vertical = 16.dp)
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Regresar",
-                modifier = Modifier.size(24.dp),
-                tint = Color.White
-            )
+            androidx.compose.foundation.layout.Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Regresar",
+                        modifier = Modifier.size(24.dp),
+                        tint = Color.White
+                    )
+                }
+                androidx.compose.foundation.layout.Spacer(modifier = Modifier.size(16.dp))
+                androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f)) {
+                    TimerBar(
+                        modifier = Modifier.fillMaxWidth(),
+                        progress = progress,
+                        timeText = formatTime(remainingMillis),
+                        isWarning = isWarning
+                    )
+                }
+            }
+
+            if (showNotification) {
+                NotificationCard(
+                    modifier = Modifier
+                        .padding(top = 12.dp),
+                    title = "Une la palabra",
+                    content = "Apunta a las letras",
+                    icon = Icons.Rounded.Checkroom,
+                    onCloseClick = {
+                        showNotification = false
+                        onCloseNotificationClick()
+                    }
+                )
+            }
         }
 
         // Action bar
