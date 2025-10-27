@@ -1,22 +1,22 @@
 package com.example.alphakids.navigation
 
+import android.net.Uri
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Checkroom
-import androidx.compose.material.icons.rounded.Warning
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.alphakids.domain.models.UserRole
 import com.example.alphakids.ui.auth.AuthViewModel
@@ -38,11 +38,12 @@ import com.example.alphakids.ui.screens.tutor.games.CameraScreen
 import com.example.alphakids.ui.screens.profile.EditProfileScreen
 import com.example.alphakids.ui.screens.tutor.studentprofile.CreateStudentProfileScreen
 import com.example.alphakids.ui.screens.tutor.studentprofile.EditStudentProfileScreen
-import com.example.alphakids.ui.screens.tutor.games.MyGamesScreen
-import com.example.alphakids.ui.screens.tutor.games.GameWordsScreen
 import com.example.alphakids.ui.screens.tutor.games.AssignedWordsScreen
-import com.example.alphakids.ui.screens.tutor.games.WordPuzzleScreen
 import com.example.alphakids.ui.screens.tutor.games.CameraOCRScreen
+import com.example.alphakids.ui.screens.tutor.games.GameWordsScreen
+import com.example.alphakids.ui.screens.tutor.games.MyGamesScreen
+import com.example.alphakids.ui.screens.tutor.games.WordHistoryScreen
+import com.example.alphakids.ui.screens.tutor.games.WordPuzzleScreen
 
 
 @Composable
@@ -70,19 +71,11 @@ fun AppNavHost(
             "words" -> Routes.WORDS
             else -> Routes.TEACHER_HOME
         }
-        navController.navigate(targetRoute) {
-            popUpTo(Routes.TEACHER_HOME) { saveState = true }
-            launchSingleTop = true
-            restoreState = true
-        }
+        navController.navigateSingleTopTo(targetRoute, Routes.TEACHER_HOME)
     }
 
     val navigateToStudentBottomNav: (String) -> Unit = { route ->
-        navController.navigate(route) {
-            popUpTo(Routes.HOME) { saveState = true }
-            launchSingleTop = true
-            restoreState = true
-        }
+        navController.navigateSingleTopTo(route, Routes.HOME)
     }
 
     NavHost(
@@ -106,14 +99,11 @@ fun AppNavHost(
             val role = backStackEntry.arguments?.getString("role") ?: Routes.ROLE_TEACHER
             val isTutor = role == Routes.ROLE_TUTOR
             
-            android.util.Log.d("AppNavHost", "Login screen loaded for role: $role, isTutor: $isTutor")
-            
             com.example.alphakids.ui.auth.LoginScreen(
                 onBackClick = { navController.popBackStack() },
                 onCloseClick = { navController.popBackStack() },
                 onLoginSuccess = {
                     val nextRoute = if (isTutor) Routes.PROFILES else Routes.TEACHER_HOME
-                    android.util.Log.d("AppNavHost", "Login success, navigating to: $nextRoute (isTutor: $isTutor)")
                     navController.navigate(nextRoute) {
                         popUpTo(Routes.ROLE_SELECTION) { inclusive = true }
                     }
@@ -147,9 +137,8 @@ fun AppNavHost(
         // Perfiles del tutor
         composable(Routes.PROFILES) {
             ProfileSelectionScreen(
-                onProfileClick = { profileId -> 
-                    android.util.Log.d("AppNavHost", "Profile selected: $profileId, navigating to home")
-                    navController.navigate(Routes.homeRoute(profileId)) 
+                onProfileClick = { profileId ->
+                    navController.navigate(Routes.homeRoute(profileId))
                 },
                 onAddProfileClick = { navController.navigate(Routes.STUDENT_PROFILE_CREATE) },
                 onSettingsClick = { navController.navigate(Routes.editProfileRoute(Routes.ROLE_TUTOR)) },
@@ -163,22 +152,16 @@ fun AppNavHost(
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
         ) { backStackEntry ->
             val studentId = backStackEntry.arguments?.getString("studentId") ?: "default"
-            
-            // Log para debug - verificar qué studentId se está usando
-            LaunchedEffect(studentId) {
-                android.util.Log.d("AppNavHost", "StudentHomeScreen loaded with studentId: $studentId")
-            }
-            
+
             val studentName = if (studentId == "sofia_id") "Sofía" else "Estudiante"
 
             StudentHomeScreen(
                 studentName = studentName,
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
-                onPlayClick = { 
-                    android.util.Log.d("AppNavHost", "Play button clicked, navigating with studentId: $studentId")
-                    navController.navigate(Routes.assignedWordsRoute(studentId)) 
-                }, // <-- NAVEGA A PALABRAS ASIGNADAS
+                onPlayClick = {
+                    navController.navigate(Routes.myGamesRoute(studentId))
+                }, // <-- NAVEGA A LA SELECCIÓN DE JUEGOS
                 onDictionaryClick = { navigateToStudentBottomNav(Routes.dictionaryRoute(studentId)) },
                 onAchievementsClick = { navigateToStudentBottomNav(Routes.achievementsRoute(studentId)) },
                 onSettingsClick = { navController.navigate(Routes.editStudentProfileRoute(studentId)) },
@@ -204,7 +187,8 @@ fun AppNavHost(
 
             MyGamesScreen(
                 onBackClick = { navController.popBackStack() },
-                onWordsGameClick = { navController.navigate(Routes.gameWordsRoute(studentId)) } // PASA EL ID
+                onWordsGameClick = { navController.navigate(Routes.gameWordsRoute(studentId)) }, // PASA EL ID
+                onHistoryClick = { navController.navigate(Routes.WORD_HISTORY) }
             )
         }
 
@@ -216,7 +200,9 @@ fun AppNavHost(
             // El VM ahora lo obtendrá de SavedStateHandle
             GameWordsScreen(
                 onBackClick = { navController.popBackStack() },
-                onWordClick = { navController.navigate(Routes.GAME) }
+                onWordClick = { assignmentId ->
+                    navController.navigate(Routes.wordPuzzleRoute(assignmentId))
+                }
             )
         }
         // Pantalla de Palabras Asignadas
@@ -225,14 +211,6 @@ fun AppNavHost(
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
         ) { backStackEntry ->
             val studentId = backStackEntry.arguments?.getString("studentId") ?: "default"
-
-            // Log detallado para debug
-            LaunchedEffect(studentId) {
-                android.util.Log.d("AppNavHost", "=== ASSIGNED WORDS SCREEN ===")
-                android.util.Log.d("AppNavHost", "Received studentId: $studentId")
-                android.util.Log.d("AppNavHost", "Route arguments: ${backStackEntry.arguments}")
-            }
-
             AssignedWordsScreen(
                 studentId = studentId,
                 onBackClick = { navController.popBackStack() },
@@ -253,10 +231,9 @@ fun AppNavHost(
             WordPuzzleScreen(
                 assignmentId = assignmentId,
                 onBackClick = { navController.popBackStack() },
-                onTakePhotoClick = { 
-                    // Necesitamos obtener la palabra objetivo del viewModel
-                    // Por ahora usamos un placeholder, pero esto se debe manejar desde WordPuzzleScreen
-                    navController.navigate(Routes.cameraOCRRoute(assignmentId, "placeholder"))
+                onTakePhotoClick = { targetWord ->
+                    val encodedWord = Uri.encode(targetWord)
+                    navController.navigate(Routes.cameraOCRRoute(assignmentId, encodedWord))
                 }
             )
         }
@@ -270,13 +247,23 @@ fun AppNavHost(
             )
         ) { backStackEntry ->
             val assignmentId = backStackEntry.arguments?.getString("assignmentId") ?: ""
-            val targetWord = backStackEntry.arguments?.getString("targetWord") ?: ""
+            val targetWord = backStackEntry.arguments
+                ?.getString("targetWord")
+                ?.let(Uri::decode)
+                ?: ""
 
             CameraOCRScreen(
                 assignmentId = assignmentId,
                 targetWord = targetWord,
                 onBackClick = { navController.popBackStack() },
                 onWordCompleted = { navController.popBackStack() }
+            )
+        }
+
+        // Historial de palabras completadas (flujo tutor)
+        composable(Routes.WORD_HISTORY) {
+            WordHistoryScreen(
+                onBackClick = { navController.popBackStack() }
             )
         }
 
@@ -539,5 +526,20 @@ fun AppNavHost(
                 onSaveClick = { navController.popBackStack() }
             )
         }
+    }
+}
+
+private fun NavHostController.navigateSingleTopTo(
+    route: String,
+    popUpToRoute: String,
+    inclusive: Boolean = false
+) {
+    navigate(route) {
+        popUpTo(popUpToRoute) {
+            saveState = true
+            this.inclusive = inclusive
+        }
+        launchSingleTop = true
+        restoreState = true
     }
 }
