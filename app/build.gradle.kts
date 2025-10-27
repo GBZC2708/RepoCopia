@@ -111,4 +111,22 @@ dependencies {
     implementation("com.google.accompanist:accompanist-permissions:0.36.0")
     implementation("com.google.firebase:firebase-vertexai:16.0.0-beta01")
 
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // ML Kit Text Recognition
+    implementation("com.google.mlkit:text-recognition:16.0.1")
+    
+    // Gson for JSON serialization
+    implementation("com.google.code.gson:gson:2.10.1")
+    
+    // Text-to-Speech (ya incluido en Android SDK, pero agregamos para claridad)
+    implementation("androidx.core:core-ktx") // Ya incluido arriba
+    implementation("com.google.firebase:firebase-storage")
+
+
+    // Coil para cargar imágenes (AsyncImage)
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
+
 }

@@ -1,26 +1,62 @@
 package com.example.alphakids.ui.screens.teacher.words
 
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.CameraAlt
+import androidx.compose.material.icons.rounded.Checkroom
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.alphakids.domain.models.Word
-import com.example.alphakids.ui.components.*
+import com.example.alphakids.ui.components.AppHeader
+import com.example.alphakids.ui.components.LetterBox
+import com.example.alphakids.ui.components.LabeledDropdownField
+import com.example.alphakids.ui.components.LabeledTextField
+import com.example.alphakids.ui.components.PrimaryButton
+import com.example.alphakids.ui.components.PrimaryIconButton
+import com.example.alphakids.ui.components.SecondaryTonalButton
+import com.example.alphakids.ui.components.InfoChip
 import com.example.alphakids.ui.screens.teacher.words.components.ImageUploadBox
 import com.example.alphakids.ui.theme.dmSansFamily
 import com.example.alphakids.ui.word.WordUiState
@@ -28,33 +64,42 @@ import com.example.alphakids.ui.word.WordViewModel
 
 @Composable
 fun WordEditScreen(
-    viewModel: WordViewModel,
-    wordUiState: WordUiState,
-    word: Word?,
+    viewModel: WordViewModel = hiltViewModel(),
+    word: Word? = null,
     isEditing: Boolean,
     onCloseClick: () -> Unit,
     onCancelClick: () -> Unit
 ) {
     val context = LocalContext.current
 
+    val wordUiState by viewModel.uiState.collectAsState()
+    val selectedImageUri by viewModel.selectedImageUri.collectAsState()
+
     var texto by remember(word) { mutableStateOf(word?.texto ?: "") }
     var categoria by remember(word) { mutableStateOf(word?.categoria ?: "") }
     var dificultad by remember(word) { mutableStateOf(word?.nivelDificultad ?: "") }
 
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            if (uri != null) {
+                viewModel.setSelectedImageUri(uri)
+            }
+        }
+    )
+
     LaunchedEffect(wordUiState) {
         when (wordUiState) {
             is WordUiState.Success -> {
-                Toast.makeText(context, wordUiState.message, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, (wordUiState as WordUiState.Success).message, Toast.LENGTH_SHORT).show()
                 viewModel.resetUiState()
                 onCloseClick()
             }
             is WordUiState.Error -> {
-                Toast.makeText(context, wordUiState.message, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, (wordUiState as WordUiState.Error).message, Toast.LENGTH_SHORT).show()
                 viewModel.resetUiState()
             }
-            WordUiState.Loading -> {
-
-            }
+            WordUiState.Loading -> {}
             WordUiState.Idle -> {}
         }
     }
@@ -100,7 +145,11 @@ fun WordEditScreen(
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onBackground
             )
-            ImageUploadBox { }
+            ImageUploadBox(
+                imageUri = selectedImageUri,
+                imageUrl = word?.imagenUrl,
+                onClick = { imagePickerLauncher.launch("image/*") }
+            )
 
             LabeledDropdownField(
                 label = "Categoría",
@@ -132,7 +181,8 @@ fun WordEditScreen(
                             val updatedWord = word.copy(
                                 texto = texto,
                                 categoria = categoria,
-                                nivelDificultad = dificultad
+                                nivelDificultad = dificultad,
+                                imagenUrl = word.imagenUrl
                             )
                             viewModel.updateWord(updatedWord)
                         } else {
@@ -140,7 +190,6 @@ fun WordEditScreen(
                                 texto = texto,
                                 categoria = categoria,
                                 nivelDificultad = dificultad,
-                                imagenUrl = "url_imagen_mock",
                                 audioUrl = "url_audio_mock"
                             )
                         }
@@ -173,6 +222,8 @@ fun WordEditScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     WordPreview(
                         word = texto,
+                        imageUri = selectedImageUri,
+                        imageUrl = word?.imagenUrl,
                         icon = Icons.Rounded.Checkroom,
                         difficulty = dificultad.ifEmpty { "Fácil" }
                     )
@@ -186,6 +237,8 @@ fun WordEditScreen(
 @Composable
 private fun WordPreview(
     word: String,
+    imageUri: Uri? = null,
+    imageUrl: String? = null,
     icon: ImageVector,
     difficulty: String
 ) {
@@ -199,12 +252,22 @@ private fun WordPreview(
                 .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
+            val imageSource = imageUri ?: imageUrl
+            if (imageSource != null && (imageSource is Uri || (imageSource is String && imageSource.isNotEmpty()))) {
+                AsyncImage(
+                    model = imageSource,
+                    contentDescription = "Vista previa de la palabra",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -220,7 +283,7 @@ private fun WordPreview(
         Spacer(modifier = Modifier.height(30.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            repeat(word.length.coerceAtLeast(4)) { index ->
+            repeat(word.length.coerceAtLeast(4)) {
                 LetterBox(
                     letter = null,
                     color = MaterialTheme.colorScheme.onBackground
