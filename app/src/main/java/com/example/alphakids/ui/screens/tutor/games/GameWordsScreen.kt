@@ -102,11 +102,14 @@ fun GameWordsScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(assignedWords, key = { it.id }) { assignment ->
-                    AssignmentImageItem(
-                        imageUrl = assignment.palabraImagenUrl,
-                        difficulty = assignment.palabraDificultad,
-                        status = assignment.estado,
-                        onClick = { onWordClick(assignment.id) }
+                    WordListItem(
+                        title = assignment.palabraTexto,
+                        subtitle = "Categoría: ${assignment.palabraDificultad}",
+                        icon = Icons.Rounded.Checkroom, // TODO: Reemplazar con el ícono correcto
+                        chipText = assignment.estado,
+                        isSelected = false,
+                        onClick = { onWordClick(assignment.id) },
+                        imageUrl = assignment.palabraImagenUrl // Asumiendo que existe esta propiedad
                     )
                 }
             }

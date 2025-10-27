@@ -1,8 +1,6 @@
 package com.example.alphakids.navigation
 
 import android.net.Uri
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -11,6 +9,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Warning
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -161,6 +161,10 @@ fun AppNavHost(
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
                 onPlayClick = {
+                    android.util.Log.d(
+                        "AppNavHost",
+                        "Play button clicked, navigating to MyGames with studentId: $studentId"
+                    )
                     navController.navigate(Routes.myGamesRoute(studentId))
                 }, // <-- NAVEGA A LA SELECCIÓN DE JUEGOS
                 onDictionaryClick = { navigateToStudentBottomNav(Routes.dictionaryRoute(studentId)) },
@@ -232,15 +236,9 @@ fun AppNavHost(
             WordPuzzleScreen(
                 assignmentId = assignmentId,
                 onBackClick = { navController.popBackStack() },
-                onTakePhotoClick = { targetWord, imageUrl, audioUrl ->
-                    navController.navigate(
-                        Routes.cameraOCRRoute(
-                            assignmentId = assignmentId,
-                            targetWord = targetWord,
-                            imageUrl = imageUrl,
-                            audioUrl = audioUrl
-                        )
-                    )
+                onTakePhotoClick = { targetWord ->
+                    val encodedWord = Uri.encode(targetWord)
+                    navController.navigate(Routes.cameraOCRRoute(assignmentId, encodedWord))
                 }
             )
         }
@@ -268,14 +266,6 @@ fun AppNavHost(
                 ?.getString("targetWord")
                 ?.let(Uri::decode)
                 ?: ""
-            val targetImage = backStackEntry.arguments
-                ?.getString("imageUrl")
-                ?.takeUnless { it.isNullOrBlank() }
-                ?.let(Uri::decode)
-            val targetAudio = backStackEntry.arguments
-                ?.getString("audioUrl")
-                ?.takeUnless { it.isNullOrBlank() }
-                ?.let(Uri::decode)
 
             CameraOCRScreen(
                 assignmentId = assignmentId,
