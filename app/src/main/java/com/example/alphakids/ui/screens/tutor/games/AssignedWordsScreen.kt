@@ -165,6 +165,13 @@ fun AssignedWordCard(
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
+        val difficultyLabel = assignment.palabraDificultad.ifBlank { "Normal" }
+        val difficultyColor = when (difficultyLabel.lowercase(Locale.getDefault())) {
+            "fácil" -> Color(0xFF4CAF50)
+            "difícil" -> Color(0xFFF44336)
+            else -> Color(0xFFFF9800)
+        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -197,7 +204,6 @@ fun AssignedWordCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                val difficultyLabel = assignment.palabraDificultad.ifBlank { "Normal" }
                 Text(
                     text = "Dificultad: $difficultyLabel",
                     fontFamily = dmSansFamily,
@@ -209,11 +215,7 @@ fun AssignedWordCard(
             // Indicador de dificultad
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = when (assignment.palabraDificultad.lowercase(Locale.getDefault())) {
-                    "fácil" -> Color(0xFF4CAF50)
-                    "difícil" -> Color(0xFFF44336)
-                    else -> Color(0xFFFF9800)
-                }
+                color = difficultyColor
             ) {
                 Text(
                     text = difficultyLabel,
