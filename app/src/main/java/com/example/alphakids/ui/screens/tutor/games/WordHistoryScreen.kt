@@ -11,11 +11,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.alphakids.ui.theme.dmSansFamily
 import java.text.SimpleDateFormat
 import java.util.*
@@ -144,15 +146,26 @@ private fun WordHistoryItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = null,
-                tint = Color.Green,
-                modifier = Modifier.size(24.dp)
-            )
-            
+            if (!completedWord.imageUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = completedWord.imageUrl,
+                    contentDescription = completedWord.word,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = Color.Green,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.width(16.dp))
-            
+
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -162,7 +175,7 @@ private fun WordHistoryItem(
                     fontWeight = FontWeight.Bold,
                     fontFamily = dmSansFamily
                 )
-                
+
                 Text(
                     text = formatTimestamp(completedWord.timestamp),
                     fontSize = 14.sp,

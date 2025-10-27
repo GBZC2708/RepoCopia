@@ -4,13 +4,11 @@ import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.google.firebase.firestore.FirebaseFirestore
+import com.example.alphakids.domain.usecases.CompleteAssignmentUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
@@ -24,7 +22,7 @@ data class CameraOCRUiState(
 
 @HiltViewModel
 class CameraOCRViewModel @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val completeAssignmentUseCase: CompleteAssignmentUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CameraOCRUiState())
@@ -69,14 +67,11 @@ class CameraOCRViewModel @Inject constructor(
             // Word detected for the first time
             wordDetectedTime = System.currentTimeMillis()
             _uiState.value = _uiState.value.copy(isWordDetected = true)
-            
+
             // Speak success message
             val successMessage = "¡Bien hecho! La palabra es $targetWord"
             speakText(successMessage)
-            
-            // Save completion to history
-            saveWordCompletion(targetWord)
-            
+
             Log.d("CameraOCR", "Word '$targetWord' detected successfully!")
         } else if (!isWordFound && _uiState.value.isWordDetected) {
             // Word no longer detected, reset after a delay
@@ -95,26 +90,12 @@ class CameraOCRViewModel @Inject constructor(
         }
     }
 
-    private fun saveWordCompletion(word: String) {
-        viewModelScope.launch {
-            try {
-                // Save to Firestore (optional)
-                val completedWordData = hashMapOf(
-                    "word" to word,
-                    "timestamp" to System.currentTimeMillis()
-                )
-                
-                firestore.collection("completed_words")
-                    .add(completedWordData)
-                    .addOnSuccessListener {
-                        Log.d("CameraOCRViewModel", "Word saved to Firestore: $word")
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("CameraOCRViewModel", "Error saving to Firestore", e)
-                    }
-            } catch (e: Exception) {
-                Log.e("CameraOCRViewModel", "Error in saveWordCompletion", e)
-            }
+    suspend fun markAssignmentAsCompleted(assignmentId: String): Result<Unit> {
+        return try {
+            completeAssignmentUseCase(assignmentId)
+        } catch (e: Exception) {
+            Log.e("CameraOCRViewModel", "Error completing assignment", e)
+            Result.failure(e)
         }
     }
 

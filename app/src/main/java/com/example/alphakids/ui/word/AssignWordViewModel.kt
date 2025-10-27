@@ -11,6 +11,7 @@ import com.example.alphakids.domain.usecases.CreateAssignmentUseCase
 import com.example.alphakids.domain.usecases.GetCurrentUserUseCase
 import com.example.alphakids.domain.usecases.GetFilteredWordsUseCase
 import com.example.alphakids.domain.usecases.GetStudentsForDocenteUseCase
+import com.example.alphakids.domain.usecases.IsWordAlreadyAssignedUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -29,7 +30,8 @@ class AssignWordViewModel @Inject constructor(
     private val createAssignmentUseCase: CreateAssignmentUseCase,
     private val getStudentsForDocenteUseCase: GetStudentsForDocenteUseCase,
     private val getFilteredWordsUseCase: GetFilteredWordsUseCase,
-    private val getCurrentUserUseCase: GetCurrentUserUseCase
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val isWordAlreadyAssignedUseCase: IsWordAlreadyAssignedUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<AssignmentUiState>(AssignmentUiState.Idle)
@@ -106,6 +108,13 @@ class AssignWordViewModel @Inject constructor(
 
             if (docente == null || student == null) {
                 _uiState.value = AssignmentUiState.Error("Faltan datos de usuario o estudiante.")
+                return@launch
+            }
+
+            // Validamos si la palabra ya fue asignada para evitar duplicados.
+            val isDuplicated = isWordAlreadyAssignedUseCase(student.id, word.id)
+            if (isDuplicated) {
+                _uiState.value = AssignmentUiState.Error("Esta palabra ya fue asignada a ${student.nombre}.")
                 return@launch
             }
 
