@@ -2,7 +2,6 @@ package com.example.alphakids.data.mappers
 
 import com.example.alphakids.data.firebase.models.Palabra as PalabraDto
 import com.example.alphakids.domain.models.Word
-import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -49,17 +48,8 @@ object WordMapper {
             return trimmed
         }
 
-        val normalizedPath = trimmed
-            .removePrefix("gs://$STORAGE_BUCKET/")
-            .removePrefix("gs://$STORAGE_BUCKET")
-            .removePrefix("/")
-
-        // Decodificamos primero para evitar el doble encode cuando Firestore ya almacena %2F.
-        val decodedPath = URLDecoder.decode(normalizedPath, StandardCharsets.UTF_8.toString())
-        val encodedPath = URLEncoder
-            .encode(decodedPath, StandardCharsets.UTF_8.toString())
-            .replace("+", "%20")
-
+        val normalizedPath = trimmed.removePrefix("/")
+        val encodedPath = URLEncoder.encode(normalizedPath, StandardCharsets.UTF_8.toString())
         return "https://firebasestorage.googleapis.com/v0/b/$STORAGE_BUCKET/o/$encodedPath?alt=media"
     }
 }

@@ -28,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,11 +47,6 @@ import com.example.alphakids.ui.theme.dmSansFamily
 import com.example.alphakids.ui.student.StudentUiState
 import com.example.alphakids.ui.student.StudentViewModel
 
-// Listas base reutilizadas por el formulario y la vista previa para evitar declaraciones duplicadas.
-private val DefaultInstituciones = listOf("Institución A", "Institución B", "Otra")
-private val DefaultGrados = listOf("Inicial 3 años", "Inicial 4 años", "Inicial 5 años", "1ro", "2do")
-private val DefaultSecciones = listOf("A", "B", "C", "D")
-
 @Composable
 fun EditStudentProfileScreen(
     studentId: String,
@@ -63,124 +57,25 @@ fun EditStudentProfileScreen(
 ) {
     val context = LocalContext.current
 
-    // Opciones base para los desplegables. Se memorizan para mantener la misma instancia.
-    val institucionesDisponibles = remember { DefaultInstituciones }
-    val gradosDisponibles = remember { DefaultGrados }
-    val seccionesDisponibles = remember { DefaultSecciones }
+    val instituciones = listOf("Institución A", "Institución B", "Otra")
+    val grados = listOf("Inicial 3 años", "Inicial 4 años", "Inicial 5 años", "1ro", "2do")
+    val secciones = listOf("A", "B", "C", "D")
 
     val selectedStudent by viewModel.selectedStudent.collectAsState()
     val editUiState by viewModel.editUiState.collectAsState()
 
-    // Estados del formulario. Se usan rememberSaveable para conservar valores tras recomposiciones
-    // y para soportar giros de pantalla durante la edición.
-    var nombre by rememberSaveable { mutableStateOf("") }
-    var apellido by rememberSaveable { mutableStateOf("") }
-    var edad by rememberSaveable { mutableStateOf("") }
-    var institucion by rememberSaveable { mutableStateOf("") }
-    var grado by rememberSaveable { mutableStateOf("") }
-    var seccion by rememberSaveable { mutableStateOf("") }
-
-    // Bandera para indicar que los datos del estudiante ya se cargaron en los campos.
-    var camposInicializados by remember { mutableStateOf(false) }
+    var nombre by remember(selectedStudent) { mutableStateOf(selectedStudent?.nombre ?: "") }
+    var apellido by remember(selectedStudent) { mutableStateOf(selectedStudent?.apellido ?: "") }
+    var edad by remember(selectedStudent) { mutableStateOf(selectedStudent?.edad?.toString() ?: "") }
+    var institucion by remember(selectedStudent) { mutableStateOf(selectedStudent?.idInstitucion ?: "") }
+    var grado by remember(selectedStudent) { mutableStateOf(selectedStudent?.grado ?: "") }
+    var seccion by remember(selectedStudent) { mutableStateOf(selectedStudent?.seccion ?: "") }
 
     val latestOnSaveSuccess by rememberUpdatedState(newValue = onSaveSuccess)
 
-    LaunchedEffect(studentId) {
-        // Se solicita al ViewModel el estudiante que se desea editar.
-        viewModel.loadStudent(studentId)
-    }
-
-    LaunchedEffect(selectedStudent) {
-        // Cuando llega la información del estudiante, rellenamos los campos del formulario
-        // únicamente la primera vez para evitar pisar cambios que el usuario haga manualmente.
-        if (!camposInicializados) {
-            selectedStudent?.let { estudiante ->
-                nombre = estudiante.nombre
-                apellido = estudiante.apellido
-                edad = estudiante.edad.takeIf { it > 0 }?.toString().orEmpty()
-                institucion = estudiante.idInstitucion
-                grado = estudiante.grado
-                seccion = estudiante.seccion
-                camposInicializados = true
-            }
-        }
-    }
-
-    LaunchedEffect(editUiState) {
-        when (editUiState) {
-            is StudentUiState.Success -> {
-                Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
-                viewModel.resetEditState()
-                latestOnSaveSuccess()
-            }
-            is StudentUiState.Error -> {
-                Toast.makeText(
-                    context,
-                    (editUiState as StudentUiState.Error).message,
-                    Toast.LENGTH_LONG
-                ).show()
-                viewModel.resetEditState()
-            }
-            else -> Unit
-        }
-    }
-
-    // Indicador combinado: se muestra loading mientras no se cargan los datos iniciales o la actualización está en curso.
-    val isFormLoading = !camposInicializados || editUiState is StudentUiState.Loading
-
-    EditStudentProfileContent(
-        nombre = nombre,
-        apellido = apellido,
-        edad = edad,
-        institucion = institucion,
-        grado = grado,
-        seccion = seccion,
-        instituciones = institucionesDisponibles,
-        grados = gradosDisponibles,
-        secciones = seccionesDisponibles,
-        isLoading = isFormLoading,
-        onBackClick = onBackClick,
-        onCloseClick = onCloseClick,
-        onNombreChange = { nombre = it },
-        onApellidoChange = { apellido = it },
-        onEdadChange = { value -> edad = value.filter { it.isDigit() } },
-        onInstitucionChange = { institucion = it },
-        onGradoChange = { grado = it },
-        onSeccionChange = { seccion = it },
-        onSaveClick = {
-            val estudiante = selectedStudent
-
-            if (!camposInicializados || estudiante == null) {
-                Toast.makeText(context, "Cargando información del estudiante...", Toast.LENGTH_SHORT).show()
-                return@onSaveClick
-            }
-
-            val edadInt = edad.toIntOrNull()
-
-            if (nombre.isBlank()) {
-                Toast.makeText(context, "Ingresa el nombre", Toast.LENGTH_SHORT).show()
-                return@onSaveClick
-            }
-            if (apellido.isBlank()) {
-                Toast.makeText(context, "Ingresa el apellido", Toast.LENGTH_SHORT).show()
-                return@onSaveClick
-            }
-            if (edadInt == null || edadInt <= 0) {
-                Toast.makeText(context, "Ingresa una edad válida", Toast.LENGTH_SHORT).show()
-                return@onSaveClick
-            }
-            if (institucion.isBlank()) {
-                Toast.makeText(context, "Selecciona la institución", Toast.LENGTH_SHORT).show()
-                return@onSaveClick
-            }
-            if (grado.isBlank()) {
-                Toast.makeText(context, "Selecciona el grado", Toast.LENGTH_SHORT).show()
-                return@onSaveClick
-            }
-            if (seccion.isBlank()) {
-                Toast.makeText(context, "Selecciona la sección", Toast.LENGTH_SHORT).show()
-                return@onSaveClick
-            }
+    val instituciones = listOf("Mi Colegio", "Colegio Nacional", "Colegio Parroquial")
+    val grados = listOf("1ro", "2do", "3ro", "4to", "5to")
+    val secciones = listOf("A", "B", "C", "D")
 
             viewModel.updateStudent(
                 id = estudiante.id,
@@ -306,32 +201,33 @@ private fun EditStudentProfileContent(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                LabeledTextField(
-                    label = "Edad",
-                    value = edad,
-                    onValueChange = onEdadChange,
-                    placeholderText = "Edad del niño"
-                )
+            LabeledDropdownField(
+                label = "Institución",
+                selectedOption = institucion,
+                options = instituciones,
+                placeholderText = "Selecciona institución",
+                onOptionSelected = { institucion = it }
+            )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                LabeledDropdownField(
-                    label = "Institución",
-                    selectedOption = institucion,
-                    options = instituciones,
-                    placeholderText = "Selecciona institución",
-                    onOptionSelected = onInstitucionChange
-                )
+            LabeledDropdownField(
+                label = "Grado",
+                selectedOption = grado,
+                options = grados,
+                placeholderText = "Selecciona grado",
+                onOptionSelected = { grado = it }
+            )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                LabeledDropdownField(
-                    label = "Grado",
-                    selectedOption = grado,
-                    options = grados,
-                    placeholderText = "Selecciona grado",
-                    onOptionSelected = onGradoChange
-                )
+            LabeledDropdownField(
+                label = "Sección",
+                selectedOption = seccion,
+                options = secciones,
+                placeholderText = "Selecciona sección",
+                onOptionSelected = { seccion = it }
+            )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -370,12 +266,12 @@ fun EditStudentProfileScreenPreview() {
             nombre = "Sofía",
             apellido = "Arenas",
             edad = "7",
-            institucion = DefaultInstituciones.first(),
-            grado = DefaultGrados[1],
-            seccion = DefaultSecciones.first(),
-            instituciones = DefaultInstituciones,
-            grados = DefaultGrados,
-            secciones = DefaultSecciones,
+            institucion = "Institución A",
+            grado = "Inicial 4 años",
+            seccion = "A",
+            instituciones = listOf("Institución A", "Institución B"),
+            grados = listOf("Inicial 3 años", "Inicial 4 años"),
+            secciones = listOf("A", "B"),
             isLoading = false,
             onBackClick = {},
             onCloseClick = {},
