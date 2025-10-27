@@ -217,7 +217,9 @@ fun AppNavHost(
             // El VM ahora lo obtendrá de SavedStateHandle
             GameWordsScreen(
                 onBackClick = { navController.popBackStack() },
-                onWordClick = { navController.navigate(Routes.GAME) }
+                onWordClick = { assignmentId ->
+                    navController.navigate(Routes.wordPuzzleRoute(assignmentId))
+                }
             )
         }
         // Pantalla de Palabras Asignadas
