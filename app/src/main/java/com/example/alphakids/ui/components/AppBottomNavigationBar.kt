@@ -4,20 +4,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MenuBook
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.alphakids.ui.theme.AlphaKidsTealNav
 import com.example.alphakids.ui.theme.AlphakidsTheme
 import com.example.alphakids.ui.theme.AlphaKidsTextGreen
-
-sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
-    object Inicio : BottomNavItem("inicio", Icons.Default.Home, "Inicio")
-    object Diccionario : BottomNavItem("diccionario", Icons.Default.MenuBook, "Mi Diccionario")
-    object Logros : BottomNavItem("logros", Icons.Default.EmojiEvents, "Mis Logros")
-}
 
 @Composable
 fun AppBottomNavigationBar(
@@ -25,9 +22,21 @@ fun AppBottomNavigationBar(
     onItemSelected: (String) -> Unit
 ) {
     val items = listOf(
-        BottomNavItem.Inicio,
-        BottomNavItem.Diccionario,
-        BottomNavItem.Logros
+        BottomNavItem(
+            route = "inicio",
+            label = "Inicio",
+            icon = Icons.Default.Home
+        ),
+        BottomNavItem(
+            route = "diccionario",
+            label = "Mi Diccionario",
+            icon = Icons.Default.MenuBook
+        ),
+        BottomNavItem(
+            route = "logros",
+            label = "Mis Logros",
+            icon = Icons.Default.EmojiEvents
+        )
     )
 
     NavigationBar(
@@ -57,6 +66,6 @@ fun AppBottomNavigationBar(
 @Composable
 fun AppBottomNavigationBarPreview() {
     AlphakidsTheme {
-        AppBottomNavigationBar(currentRoute = BottomNavItem.Inicio.route, onItemSelected = {})
+        AppBottomNavigationBar(currentRoute = "inicio", onItemSelected = {})
     }
 }
