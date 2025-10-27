@@ -187,7 +187,8 @@ fun StudentDetailScreen(
                         icon = Icons.Rounded.Checkroom,
                         chipText = if (index == 0) "3 intentos" else "Chip",
                         isSelected = (selectedWordId == "id_$index"),
-                        onClick = { selectedWordId = "id_$index" }
+                        onClick = { selectedWordId = "id_$index" },
+                        imageUrl = null // Aquí se pasaría la URL real de la imagen
                     )
                 }
             }

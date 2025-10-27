@@ -29,7 +29,7 @@ class WordPuzzleViewModel @Inject constructor(
     fun loadWordData(assignmentId: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            
+
             try {
                 val assignment = firestore.collection("asignaciones")
                     .document(assignmentId)

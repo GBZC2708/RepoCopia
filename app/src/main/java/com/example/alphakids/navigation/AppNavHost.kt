@@ -34,7 +34,6 @@ import com.example.alphakids.ui.screens.tutor.profile_selection.ProfileSelection
 import com.example.alphakids.ui.screens.tutor.home.StudentHomeScreen
 import com.example.alphakids.ui.screens.tutor.dictionary.StudentDictionaryScreen
 import com.example.alphakids.ui.screens.tutor.achievements.StudentAchievementsScreen
-import com.example.alphakids.ui.screens.tutor.games.GameScreen
 import com.example.alphakids.ui.screens.tutor.games.CameraScreen
 import com.example.alphakids.ui.screens.profile.EditProfileScreen
 import com.example.alphakids.ui.screens.tutor.studentprofile.CreateStudentProfileScreen
@@ -43,6 +42,7 @@ import com.example.alphakids.ui.screens.tutor.games.MyGamesScreen
 import com.example.alphakids.ui.screens.tutor.games.GameWordsScreen
 import com.example.alphakids.ui.screens.tutor.games.AssignedWordsScreen
 import com.example.alphakids.ui.screens.tutor.games.WordPuzzleScreen
+import com.example.alphakids.ui.screens.tutor.games.CameraOCRScreen
 
 
 @Composable
@@ -194,6 +194,7 @@ fun AppNavHost(
             )
         }
 
+
         // 2. Pantalla de Selección de Juego (MY_GAMES - PIVOTE)
         composable(
             route = Routes.MY_GAMES,
@@ -218,21 +219,20 @@ fun AppNavHost(
                 onWordClick = { navController.navigate(Routes.GAME) }
             )
         }
-
         // Pantalla de Palabras Asignadas
         composable(
             route = Routes.ASSIGNED_WORDS,
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
         ) { backStackEntry ->
             val studentId = backStackEntry.arguments?.getString("studentId") ?: "default"
-            
+
             // Log detallado para debug
             LaunchedEffect(studentId) {
                 android.util.Log.d("AppNavHost", "=== ASSIGNED WORDS SCREEN ===")
                 android.util.Log.d("AppNavHost", "Received studentId: $studentId")
                 android.util.Log.d("AppNavHost", "Route arguments: ${backStackEntry.arguments}")
             }
-            
+
             AssignedWordsScreen(
                 studentId = studentId,
                 onBackClick = { navController.popBackStack() },
@@ -249,41 +249,38 @@ fun AppNavHost(
             arguments = listOf(navArgument("assignmentId") { type = NavType.StringType })
         ) { backStackEntry ->
             val assignmentId = backStackEntry.arguments?.getString("assignmentId") ?: ""
-            
-            // Get the assignment data to pass the target word
-            val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(Routes.ASSIGNED_WORDS)
-            }
-            val viewModel: com.example.alphakids.ui.screens.tutor.games.WordPuzzleViewModel = hiltViewModel(parentEntry)
-            val uiState by viewModel.uiState.collectAsState()
-            
-            LaunchedEffect(assignmentId) {
-                viewModel.loadWordData(assignmentId)
-            }
-            
+
             WordPuzzleScreen(
                 assignmentId = assignmentId,
                 onBackClick = { navController.popBackStack() },
                 onTakePhotoClick = { 
-                    val targetWord = uiState.assignment?.palabraTexto ?: ""
-                    if (targetWord.isNotEmpty()) {
-                        navController.navigate(Routes.cameraOCRRoute(assignmentId, targetWord))
-                    }
+                    // Necesitamos obtener la palabra objetivo del viewModel
+                    // Por ahora usamos un placeholder, pero esto se debe manejar desde WordPuzzleScreen
+                    navController.navigate(Routes.cameraOCRRoute(assignmentId, "placeholder"))
                 }
             )
         }
 
-        // 4. Pantalla de Juego (GameScreen - ya existente)
-        composable(Routes.GAME) {
-            GameScreen(
-                wordLength = 4,
-                icon = Icons.Rounded.Checkroom,
-                difficulty = "Fácil",
+        // Pantalla de Cámara OCR
+        composable(
+            route = Routes.CAMERA_OCR,
+            arguments = listOf(
+                navArgument("assignmentId") { type = NavType.StringType },
+                navArgument("targetWord") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val assignmentId = backStackEntry.arguments?.getString("assignmentId") ?: ""
+            val targetWord = backStackEntry.arguments?.getString("targetWord") ?: ""
+
+            CameraOCRScreen(
+                assignmentId = assignmentId,
+                targetWord = targetWord,
                 onBackClick = { navController.popBackStack() },
-                onCloseClick = { navController.popBackStack(Routes.HOME, inclusive = true) },
-                onTakePhotoClick = { navController.navigate(Routes.CAMERA) }
+                onWordCompleted = { navController.popBackStack() }
             )
         }
+
+
 
         // Diccionario
         composable(
@@ -344,7 +341,6 @@ fun AppNavHost(
         // Docente: pantalla principal
         composable(Routes.TEACHER_HOME) {
             TeacherHomeScreen(
-                teacherName = "Profesor/a",
                 onAssignWordsClick = { navController.navigate(Routes.ASSIGN_WORD) },
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
@@ -427,7 +423,6 @@ fun AppNavHost(
 
             WordEditScreen(
                 viewModel = viewModel,
-                wordUiState = wordUiState,
                 word = wordToEdit,
                 isEditing = isEditing,
                 onCloseClick = { navController.popBackStack() },

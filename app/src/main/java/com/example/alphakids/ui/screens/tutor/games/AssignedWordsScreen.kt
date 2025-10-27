@@ -74,7 +74,7 @@ fun AssignedWordsScreen(
                     CircularProgressIndicator()
                 }
             }
-            
+
             uiState.error != null -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -131,7 +131,7 @@ fun AssignedWordsScreen(
                     }
                 }
             }
-            
+
             else -> {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -181,9 +181,9 @@ fun AssignedWordCard(
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentScale = ContentScale.Crop
             )
-            
+
             Spacer(modifier = Modifier.width(16.dp))
-            
+
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -194,9 +194,9 @@ fun AssignedWordCard(
                     fontSize = 18.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                
+
                 Spacer(modifier = Modifier.height(4.dp))
-                
+
                 Text(
                     text = "Dificultad: ${assignment.palabraDificultad ?: "Normal"}",
                     fontFamily = dmSansFamily,
@@ -204,7 +204,7 @@ fun AssignedWordCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            
+
             // Indicador de dificultad
             Surface(
                 shape = RoundedCornerShape(8.dp),
