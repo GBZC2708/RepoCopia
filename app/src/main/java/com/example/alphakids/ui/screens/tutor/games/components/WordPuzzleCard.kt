@@ -38,7 +38,8 @@ fun WordPuzzleCard(
     icon: ImageVector? = null,
     wordImage: String? = null,
     difficulty: String,
-    onTakePhotoClick: () -> Unit
+    onTakePhotoClick: () -> Unit,
+    isTakePhotoEnabled: Boolean = true
 ) {
     Column(
         modifier = modifier,
@@ -87,7 +88,8 @@ fun WordPuzzleCard(
         PrimaryIconButton(
             icon = Icons.Rounded.CameraAlt,
             contentDescription = "Tomar foto",
-            onClick = onTakePhotoClick
+            onClick = onTakePhotoClick,
+            enabled = isTakePhotoEnabled
         )
 
         Spacer(modifier = Modifier.height(10.dp))
