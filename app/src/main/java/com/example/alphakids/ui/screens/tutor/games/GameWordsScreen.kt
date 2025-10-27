@@ -106,7 +106,7 @@ fun GameWordsScreen(
                         icon = Icons.Rounded.Checkroom, // TODO: Reemplazar con el ícono correcto
                         chipText = assignment.estado,
                         isSelected = false,
-                        onClick = { onWordClick(assignment.idPalabra) },
+                        onClick = { onWordClick(assignment.id) },
                         imageUrl = assignment.palabraImagenUrl // Asumiendo que existe esta propiedad
                     )
                 }

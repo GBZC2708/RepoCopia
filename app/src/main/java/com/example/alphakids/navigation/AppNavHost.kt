@@ -1,5 +1,6 @@
 package com.example.alphakids.navigation
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -175,10 +176,13 @@ fun AppNavHost(
                 studentName = studentName,
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
-                onPlayClick = { 
-                    android.util.Log.d("AppNavHost", "Play button clicked, navigating with studentId: $studentId")
-                    navController.navigate(Routes.assignedWordsRoute(studentId)) 
-                }, // <-- NAVEGA A PALABRAS ASIGNADAS
+                onPlayClick = {
+                    android.util.Log.d(
+                        "AppNavHost",
+                        "Play button clicked, navigating to MyGames with studentId: $studentId"
+                    )
+                    navController.navigate(Routes.myGamesRoute(studentId))
+                }, // <-- NAVEGA A LA SELECCIÓN DE JUEGOS
                 onDictionaryClick = { navigateToStudentBottomNav(Routes.dictionaryRoute(studentId)) },
                 onAchievementsClick = { navigateToStudentBottomNav(Routes.achievementsRoute(studentId)) },
                 onSettingsClick = { navController.navigate(Routes.editStudentProfileRoute(studentId)) },
@@ -216,7 +220,9 @@ fun AppNavHost(
             // El VM ahora lo obtendrá de SavedStateHandle
             GameWordsScreen(
                 onBackClick = { navController.popBackStack() },
-                onWordClick = { navController.navigate(Routes.GAME) }
+                onWordClick = { assignmentId ->
+                    navController.navigate(Routes.wordPuzzleRoute(assignmentId))
+                }
             )
         }
         // Pantalla de Palabras Asignadas
@@ -253,10 +259,9 @@ fun AppNavHost(
             WordPuzzleScreen(
                 assignmentId = assignmentId,
                 onBackClick = { navController.popBackStack() },
-                onTakePhotoClick = { 
-                    // Necesitamos obtener la palabra objetivo del viewModel
-                    // Por ahora usamos un placeholder, pero esto se debe manejar desde WordPuzzleScreen
-                    navController.navigate(Routes.cameraOCRRoute(assignmentId, "placeholder"))
+                onTakePhotoClick = { targetWord ->
+                    val encodedWord = Uri.encode(targetWord)
+                    navController.navigate(Routes.cameraOCRRoute(assignmentId, encodedWord))
                 }
             )
         }
@@ -270,7 +275,10 @@ fun AppNavHost(
             )
         ) { backStackEntry ->
             val assignmentId = backStackEntry.arguments?.getString("assignmentId") ?: ""
-            val targetWord = backStackEntry.arguments?.getString("targetWord") ?: ""
+            val targetWord = backStackEntry.arguments
+                ?.getString("targetWord")
+                ?.let(Uri::decode)
+                ?: ""
 
             CameraOCRScreen(
                 assignmentId = assignmentId,
