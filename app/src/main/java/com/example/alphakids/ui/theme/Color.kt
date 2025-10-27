@@ -51,3 +51,19 @@ val md_theme_dark_onSurface = Color(0xFFE1E3E2)
 val md_theme_dark_surfaceVariant = Color(0xFF3F4947)
 val md_theme_dark_onSurfaceVariant = Color(0xFFBFC9C6)
 val md_theme_dark_outline = Color(0xFF899391)
+
+// App-specific palette extensions
+/**
+ * Color corporativo principal utilizado en botones y acentos de texto.
+ */
+val AlphaKidsTextGreen = Color(0xFF1EB980)
+
+/**
+ * Variante clara del tono turquesa empleada en chips y superficies resaltadas.
+ */
+val AlphaKidsTealLight = Color(0xFF66E5CF)
+
+/**
+ * Color de fondo del contenedor de navegación inferior.
+ */
+val AlphaKidsTealNav = Color(0xFF018786)
