@@ -42,7 +42,9 @@ fun AssignmentCard(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         WordListItem(
-            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
             title = wordTitle,
             subtitle = wordSubtitle,
             icon = Icons.Rounded.Checkroom,

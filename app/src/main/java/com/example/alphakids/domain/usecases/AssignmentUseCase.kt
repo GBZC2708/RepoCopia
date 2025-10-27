@@ -15,6 +15,14 @@ class CreateAssignmentUseCase @Inject constructor(
     }
 }
 
+class IsWordAlreadyAssignedUseCase @Inject constructor(
+    private val repository: AssignmentRepository
+) {
+    suspend operator fun invoke(studentId: String, wordId: String): Boolean {
+        return repository.isWordAlreadyAssigned(studentId, wordId)
+    }
+}
+
 class GetStudentsForDocenteUseCase @Inject constructor(
     private val repository: AssignmentRepository
 ) {
@@ -29,4 +37,18 @@ class GetStudentsAssignedToWordUseCase @Inject constructor(
     operator fun invoke(wordId: String): Flow<List<Estudiante>> {
         return repository.getStudentsAssignedToWord(wordId)
     }
+}
+
+class CompleteAssignmentUseCase @Inject constructor(
+    private val repository: AssignmentRepository
+) {
+    suspend operator fun invoke(assignmentId: String): Result<Unit> {
+        return repository.completeAssignment(assignmentId)
+    }
+}
+
+class ObserveStudentDictionaryUseCase @Inject constructor(
+    private val repository: AssignmentRepository
+) {
+    operator fun invoke(studentId: String) = repository.observeStudentDictionary(studentId)
 }

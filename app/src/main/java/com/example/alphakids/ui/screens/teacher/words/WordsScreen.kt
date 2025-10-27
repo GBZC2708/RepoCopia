@@ -16,7 +16,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.rounded.Checkroom // Puedes cambiar este ícono
 import androidx.compose.material.icons.rounded.Groups
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.ListAlt
@@ -68,6 +67,22 @@ fun WordsScreen(
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedWordId by remember { mutableStateOf<String?>(null) }
+
+    val displayedWords = remember(words, searchQuery) {
+        if (searchQuery.isBlank()) {
+            words
+        } else {
+            words.filter { word ->
+                word.texto.contains(searchQuery, ignoreCase = true) ||
+                    word.categoria.contains(searchQuery, ignoreCase = true)
+            }
+        }
+    }
+
+    val totalWords = words.size
+    val totalCategories = words.map { it.categoria }.filter { it.isNotBlank() }.distinct().size
+    val easyCount = words.count { it.nivelDificultad.equals("Fácil", ignoreCase = true) }
+    val hardCount = words.count { it.nivelDificultad.equals("Difícil", ignoreCase = true) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -135,30 +150,29 @@ fun WordsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // TODO: Conectar estos InfoCards a datos reales
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 InfoCard(
                     modifier = Modifier.weight(1f),
                     title = "Total Palabras",
-                    data = words.size.toString()
+                    data = totalWords.toString()
                 )
                 InfoCard(
                     modifier = Modifier.weight(1f),
                     title = "Categorías",
-                    data = words.map { it.categoria }.distinct().size.toString()
+                    data = totalCategories.toString()
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 InfoCard(
                     modifier = Modifier.weight(1f),
-                    title = "Info",
-                    data = "Data"
+                    title = "Fáciles",
+                    data = easyCount.toString()
                 )
                 InfoCard(
                     modifier = Modifier.weight(1f),
-                    title = "Info",
-                    data = "Data"
+                    title = "Difíciles",
+                    data = hardCount.toString()
                 )
             }
 
@@ -166,7 +180,7 @@ fun WordsScreen(
 
             SearchBar(
                 value = searchQuery,
-                onValueChange = { searchQuery = it }, // TODO: Conectar al VM
+                onValueChange = { searchQuery = it },
                 placeholderText = "Buscar"
             )
 
@@ -192,11 +206,11 @@ fun WordsScreen(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(items = words, key = { it.id }) { word ->
+                items(items = displayedWords, key = { it.id }) { word ->
                     WordListItem(
                         title = word.texto,
                         subtitle = word.categoria,
-                        icon = Icons.Rounded.Checkroom, // TODO: Mapear ícono a categoría
+                        icon = Icons.Rounded.Spellcheck,
                         chipText = word.nivelDificultad,
                         isSelected = (selectedWordId == word.id),
                         onClick = {
