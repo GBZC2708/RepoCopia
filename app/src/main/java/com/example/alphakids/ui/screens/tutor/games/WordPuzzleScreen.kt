@@ -22,7 +22,7 @@ import com.example.alphakids.ui.theme.dmSansFamily
 fun WordPuzzleScreen(
     assignmentId: String,
     onBackClick: () -> Unit,
-    onTakePhotoClick: () -> Unit,
+    onTakePhotoClick: (targetWord: String) -> Unit,
     viewModel: WordPuzzleViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -82,11 +82,15 @@ fun WordPuzzleScreen(
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
+                    val targetWord = uiState.assignment?.palabraTexto
                     WordPuzzleCard(
-                        wordLength = uiState.assignment?.palabraTexto?.length ?: 4,
+                        wordLength = targetWord?.length ?: 4,
                         wordImage = uiState.assignment?.palabraImagen,
                         difficulty = uiState.assignment?.palabraDificultad ?: "Normal",
-                        onTakePhotoClick = onTakePhotoClick
+                        onTakePhotoClick = {
+                            targetWord?.takeIf { it.isNotBlank() }?.let(onTakePhotoClick)
+                        },
+                        isTakePhotoEnabled = !targetWord.isNullOrBlank()
                     )
                 }
             }
