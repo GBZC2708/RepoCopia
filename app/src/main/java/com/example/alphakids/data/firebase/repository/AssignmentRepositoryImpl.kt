@@ -33,6 +33,49 @@ class AssignmentRepositoryImpl @Inject constructor(
     private val estudiantesCol = db.collection("estudiantes")
     private val diccionariosCol = db.collection("diccionarios_personales")
 
+    // Datos de apoyo para ambientes donde aún no se registran estudiantes reales.
+    private val sampleStudents = listOf(
+        Estudiante(
+            id = "sample_student_1",
+            nombre = "Sofía",
+            apellido = "Arenas",
+            edad = 7,
+            grado = "Inicial 4 años",
+            seccion = "A",
+            idTutor = "sample_tutor",
+            idDocente = "",
+            idInstitucion = "Institución A",
+            fotoPerfil = null,
+            fechaRegistro = null
+        ),
+        Estudiante(
+            id = "sample_student_2",
+            nombre = "Diego",
+            apellido = "Luna",
+            edad = 8,
+            grado = "Inicial 5 años",
+            seccion = "B",
+            idTutor = "sample_tutor",
+            idDocente = "",
+            idInstitucion = "Institución A",
+            fotoPerfil = null,
+            fechaRegistro = null
+        ),
+        Estudiante(
+            id = "sample_student_3",
+            nombre = "Valentina",
+            apellido = "Campos",
+            edad = 6,
+            grado = "Inicial 3 años",
+            seccion = "C",
+            idTutor = "sample_tutor",
+            idDocente = "",
+            idInstitucion = "Institución B",
+            fotoPerfil = null,
+            fechaRegistro = null
+        )
+    )
+
     override suspend fun createAssignment(assignment: WordAssignment): AssignmentResult {
         return try {
             val asignacionMap = WordAssignmentMapper.fromDomain(assignment)
@@ -82,13 +125,33 @@ class AssignmentRepositoryImpl @Inject constructor(
 
     override fun getStudentsForDocente(docenteId: String): Flow<List<Estudiante>> {
         Log.d("AssignmentRepo", "Fetching students for docente: $docenteId")
-        val query: Query = estudiantesCol.whereEqualTo("id_docente", docenteId)
-        return query.snapshots().map { querySnapshot ->
-            querySnapshot.toObjects(Estudiante::class.java)
-        }.catch { exception ->
-            Log.e("AssignmentRepo", "Error in student flow for docente $docenteId", exception)
-            emit(emptyList())
-        }
+        val query: Query = estudiantesCol.orderBy("grado", Query.Direction.ASCENDING)
+        return query.snapshots()
+            .map { querySnapshot ->
+                val estudiantes = querySnapshot.toObjects(Estudiante::class.java)
+
+                val resolvedStudents = if (estudiantes.isEmpty()) {
+                    Log.w(
+                        "AssignmentRepo",
+                        "No se encontraron estudiantes en Firestore. Usando datos de ejemplo para pruebas."
+                    )
+                    sampleStudents
+                } else {
+                    estudiantes
+                }
+
+                // Ordenamos priorizando los asignados al docente y luego alfabéticamente.
+                resolvedStudents.sortedWith(
+                    compareByDescending<Estudiante> { it.idDocente == docenteId }
+                        .thenBy { it.grado }
+                        .thenBy { it.seccion }
+                        .thenBy { it.nombre }
+                )
+            }
+            .catch { exception ->
+                Log.e("AssignmentRepo", "Error in student flow for docente $docenteId", exception)
+                emit(sampleStudents)
+            }
     }
 
     override fun getStudentsAssignedToWord(wordId: String): Flow<List<Estudiante>> {

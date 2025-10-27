@@ -553,10 +553,12 @@ fun AppNavHost(
             route = Routes.STUDENT_PROFILE_EDIT,
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
         ) {
+            val studentId = it.arguments?.getString("studentId") ?: ""
             EditStudentProfileScreen(
+                studentId = studentId,
                 onBackClick = { navController.popBackStack() },
                 onCloseClick = { navController.popBackStack() },
-                onSaveClick = { navController.popBackStack() }
+                onSaveSuccess = { navController.popBackStack() }
             )
         }
     }
