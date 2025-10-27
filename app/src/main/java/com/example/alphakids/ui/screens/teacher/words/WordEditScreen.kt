@@ -74,10 +74,33 @@ fun WordEditScreen(
 
     val wordUiState by viewModel.uiState.collectAsState()
     val selectedImageUri by viewModel.selectedImageUri.collectAsState()
+    val availableWords by viewModel.words.collectAsState()
 
     var texto by remember(word) { mutableStateOf(word?.texto ?: "") }
     var categoria by remember(word) { mutableStateOf(word?.categoria ?: "") }
     var dificultad by remember(word) { mutableStateOf(word?.nivelDificultad ?: "") }
+
+    // Opciones base para sugerir categorías en caso no existan palabras registradas.
+    val defaultCategories = remember {
+        listOf("Animales", "Objetos", "Comida", "Personas", "Acciones", "Colores")
+    }
+    val dynamicCategories = remember(availableWords) {
+        availableWords.map { it.categoria }
+            .filter { it.isNotBlank() }
+            .distinct()
+            .sorted()
+    }
+    val categoryOptions = remember(dynamicCategories, categoria) {
+        val baseOptions = if (dynamicCategories.isNotEmpty()) dynamicCategories else defaultCategories
+        if (categoria.isNotBlank() && !baseOptions.contains(categoria)) {
+            (baseOptions + categoria).sorted()
+        } else {
+            baseOptions
+        }
+    }
+    val difficultyOptions = remember {
+        listOf("Fácil", "Medio", "Difícil")
+    }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -154,15 +177,17 @@ fun WordEditScreen(
             LabeledDropdownField(
                 label = "Categoría",
                 selectedOption = categoria,
+                options = categoryOptions,
                 placeholderText = "Selecciona categoría",
-                onClick = { }
+                onOptionSelected = { categoria = it }
             )
 
             LabeledDropdownField(
                 label = "Dificultad",
                 selectedOption = dificultad,
+                options = difficultyOptions,
                 placeholderText = "Selecciona dificultad",
-                onClick = { }
+                onOptionSelected = { dificultad = it }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -177,6 +202,18 @@ fun WordEditScreen(
                     icon = if (!isEditing) Icons.Rounded.Add else null,
                     enabled = wordUiState != WordUiState.Loading,
                     onClick = {
+                        if (texto.isBlank()) {
+                            Toast.makeText(context, "Ingresa la palabra", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
+                        if (categoria.isBlank()) {
+                            Toast.makeText(context, "Selecciona la categoría", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
+                        if (dificultad.isBlank()) {
+                            Toast.makeText(context, "Selecciona la dificultad", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
                         if (isEditing && word != null) {
                             val updatedWord = word.copy(
                                 texto = texto,

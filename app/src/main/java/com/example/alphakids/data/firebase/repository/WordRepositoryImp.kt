@@ -25,6 +25,40 @@ class WordRepositoryImpl @Inject constructor(
 
     private val palabrasCol = db.collection("palabras")
 
+    // Colección de apoyo para probar la interfaz incluso sin datos reales.
+    private val sampleWords = listOf(
+        Word(
+            id = "sample_word_1",
+            texto = "Gato",
+            categoria = "Animales",
+            nivelDificultad = "Fácil",
+            imagenUrl = "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=400",
+            audioUrl = "https://samplelib.com/lib/preview/mp3/sample-3s.mp3",
+            fechaCreacionMillis = System.currentTimeMillis(),
+            creadoPor = ""
+        ),
+        Word(
+            id = "sample_word_2",
+            texto = "Lápiz",
+            categoria = "Objetos",
+            nivelDificultad = "Medio",
+            imagenUrl = "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400",
+            audioUrl = "https://samplelib.com/lib/preview/mp3/sample-6s.mp3",
+            fechaCreacionMillis = System.currentTimeMillis(),
+            creadoPor = ""
+        ),
+        Word(
+            id = "sample_word_3",
+            texto = "Manzana",
+            categoria = "Comida",
+            nivelDificultad = "Difícil",
+            imagenUrl = "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=400",
+            audioUrl = "https://samplelib.com/lib/preview/mp3/sample-9s.mp3",
+            fechaCreacionMillis = System.currentTimeMillis(),
+            creadoPor = ""
+        )
+    )
+
     override suspend fun createWord(word: Word): WordResult {
         return try {
             val palabraDto = WordMapper.fromDomain(word)
@@ -186,11 +220,19 @@ class WordRepositoryImpl @Inject constructor(
                     word
                 }
 
-                words
+                if (words.isEmpty()) {
+                    Log.w(
+                        "WordRepo",
+                        "No se encontraron palabras en Firestore. Se devolverán palabras de ejemplo."
+                    )
+                    sampleWords
+                } else {
+                    words
+                }
             }
             .catch { exception ->
                 Log.e("WordRepo", "❌ $errorMessage", exception)
-                emit(emptyList())
+                emit(sampleWords)
             }
     }
 }
