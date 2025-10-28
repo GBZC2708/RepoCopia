@@ -44,6 +44,7 @@ import com.example.alphakids.ui.components.LabeledTextField
 import com.example.alphakids.ui.components.PrimaryButton
 import com.example.alphakids.ui.theme.AlphakidsTheme
 import com.example.alphakids.ui.theme.dmSansFamily
+import com.example.alphakids.ui.student.StudentUiState
 import com.example.alphakids.ui.student.StudentViewModel
 
 @Composable
@@ -125,7 +126,7 @@ fun EditStudentProfileScreen(
         instituciones = institucionesOpts,
         grados = gradosOpts,
         secciones = seccionesOpts,
-        isLoading = editUiState.isLoading, // ajusta según tu UI state
+        isLoading = editUiState is StudentUiState.Loading,
         onBackClick = onBackClick,
         onCloseClick = onCloseClick,
         onNombreChange = { nombre = it },

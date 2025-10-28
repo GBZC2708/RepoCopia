@@ -1,4 +1,4 @@
-package com.example.alphakids.ui.screens.tutor.game.components
+package com.example.alphakids.ui.screens.tutor.games.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
