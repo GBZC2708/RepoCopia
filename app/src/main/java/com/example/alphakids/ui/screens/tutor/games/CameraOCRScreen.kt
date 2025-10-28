@@ -92,10 +92,16 @@ fun CameraOCRScreen(
 
     // Check for word completion
     LaunchedEffect(detectedText, targetWord) {
-        val normalizedDetected = detectedText.trim().uppercase()
-        val normalizedTarget = targetWord.trim().uppercase()
+        // Normalizamos ambos textos para permitir coincidencias aun con tildes o caracteres extra.
+        val normalizedDetected = normalizeTextForComparison(detectedText)
+        val normalizedTarget = normalizeTextForComparison(targetWord)
 
-        if (!isCompleting && !isWordCompleted && normalizedDetected == normalizedTarget) {
+        if (
+            normalizedTarget.isNotEmpty() &&
+            normalizedDetected.contains(normalizedTarget) &&
+            !isCompleting &&
+            !isWordCompleted
+        ) {
             isCompleting = true
 
             val result = viewModel.markAssignmentAsCompleted(assignmentId)

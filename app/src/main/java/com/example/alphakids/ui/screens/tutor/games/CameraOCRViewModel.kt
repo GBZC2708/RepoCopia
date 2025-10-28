@@ -55,13 +55,14 @@ class CameraOCRViewModel @Inject constructor(
     }
 
     fun processDetectedText(detectedText: String) {
-        val cleanText = detectedText.trim().uppercase()
-        val targetWord = _uiState.value.targetWord
-        
-        _uiState.value = _uiState.value.copy(detectedText = cleanText)
-        
-        // Check if target word is found in detected text
-        val isWordFound = cleanText.contains(targetWord) && targetWord.isNotEmpty()
+        // Usamos la misma normalización que la UI para que ambas capas coincidan en el criterio.
+        val normalizedDetected = normalizeTextForComparison(detectedText)
+        val normalizedTarget = normalizeTextForComparison(_uiState.value.targetWord)
+
+        _uiState.value = _uiState.value.copy(detectedText = detectedText)
+
+        // Verificamos si la palabra objetivo aparece en el texto detectado ya normalizado.
+        val isWordFound = normalizedTarget.isNotEmpty() && normalizedDetected.contains(normalizedTarget)
         
         if (isWordFound && !_uiState.value.isWordDetected) {
             // Word detected for the first time
