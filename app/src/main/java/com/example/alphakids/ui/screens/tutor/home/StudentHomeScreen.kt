@@ -1,6 +1,7 @@
 package com.example.alphakids.ui.screens.tutor.home
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.SportsEsports
 import androidx.compose.material.icons.rounded.WorkspacePremium
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -35,12 +37,13 @@ import com.example.alphakids.ui.components.BottomNavItem
 import com.example.alphakids.ui.components.CustomFAB
 import com.example.alphakids.ui.components.DashboardActionCard
 import com.example.alphakids.ui.components.MainBottomBar
+import com.example.alphakids.ui.components.PrimaryButton
 import com.example.alphakids.ui.theme.AlphakidsTheme
 import com.example.alphakids.ui.theme.dmSansFamily
 
 @Composable
 fun StudentHomeScreen(
-    studentName: String,
+    uiState: StudentHomeUiState,
     onBackClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onPlayClick: () -> Unit,
@@ -48,6 +51,7 @@ fun StudentHomeScreen(
     onAchievementsClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onBottomNavClick: (String) -> Unit,
+    onRetryLoadProfile: () -> Unit,
     currentRoute: String = "home"
 ) {
     val studentItems = listOf(
@@ -106,50 +110,109 @@ fun StudentHomeScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                text = "¡Hola, $studentName!",
-                fontFamily = dmSansFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
 
-            Spacer(modifier = Modifier.height(5.dp))
+                uiState.error != null -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = uiState.error,
+                            fontFamily = dmSansFamily,
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        PrimaryButton(
+                            text = "Reintentar",
+                            onClick = onRetryLoadProfile
+                        )
+                    }
+                }
 
-            Text(
-                text = "¿Qué quieres hacer hoy?",
-                fontFamily = dmSansFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                else -> {
+                    val studentName = uiState.studentName ?: "Estudiante"
+                    val coins = uiState.coins ?: 0
 
-            Spacer(modifier = Modifier.height(32.dp))
+                    Text(
+                        text = "¡Hola, $studentName!",
+                        fontFamily = dmSansFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                DashboardActionCard(
-                    modifier = Modifier.weight(1f),
-                    text = "Jugar",
-                    icon = Icons.Rounded.SportsEsports,
-                    onClick = onPlayClick
-                )
-                DashboardActionCard(
-                    modifier = Modifier.weight(1f),
-                    text = "Mi Diccionario",
-                    icon = Icons.Rounded.Book,
-                    onClick = onDictionaryClick
-                )
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    uiState.profileLabel?.let { profile ->
+                        Text(
+                            text = "Perfil actual: $profile",
+                            fontFamily = dmSansFamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                    }
+
+                    Text(
+                        text = "Monedas disponibles: $coins",
+                        fontFamily = dmSansFamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "¿Qué quieres hacer hoy?",
+                        fontFamily = dmSansFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        DashboardActionCard(
+                            modifier = Modifier.weight(1f),
+                            text = "Jugar",
+                            icon = Icons.Rounded.SportsEsports,
+                            onClick = onPlayClick
+                        )
+                        DashboardActionCard(
+                            modifier = Modifier.weight(1f),
+                            text = "Mi Diccionario",
+                            icon = Icons.Rounded.Book,
+                            onClick = onDictionaryClick
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    DashboardActionCard(
+                        text = "Mis Logros",
+                        icon = Icons.Rounded.WorkspacePremium,
+                        onClick = onAchievementsClick
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            DashboardActionCard(
-                text = "Mis Logros",
-                icon = Icons.Rounded.WorkspacePremium,
-                onClick = onAchievementsClick
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
@@ -159,14 +222,19 @@ fun StudentHomeScreen(
 fun StudentHomeScreenPreview() {
     AlphakidsTheme {
         StudentHomeScreen(
-            studentName = "Sofía",
+            uiState = StudentHomeUiState(
+                studentName = "Sofía",
+                profileLabel = "Inicial 5 años - B",
+                coins = 42
+            ),
             onBackClick = {},
             onLogoutClick = {},
             onPlayClick = {},
             onDictionaryClick = {},
             onAchievementsClick = {},
             onSettingsClick = {},
-            onBottomNavClick = {}
+            onBottomNavClick = {},
+            onRetryLoadProfile = {}
         )
     }
 }

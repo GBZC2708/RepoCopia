@@ -39,7 +39,9 @@ fun WordPuzzleCard(
     wordImage: String? = null,
     difficulty: String,
     onTakePhotoClick: () -> Unit,
-    isTakePhotoEnabled: Boolean = true
+    isTakePhotoEnabled: Boolean = true,
+    questionText: String? = "¿Qué es esto?",
+    showLetterPlaceholders: Boolean = true
 ) {
     Column(
         modifier = modifier,
@@ -64,26 +66,30 @@ fun WordPuzzleCard(
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        Text(
-            text = "¿   Qué es esto?",
-            fontFamily = dmSansFamily,
-            fontWeight = FontWeight.Bold,
-            fontSize = 32.sp,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        questionText?.let { prompt ->
+            Text(
+                text = prompt,
+                fontFamily = dmSansFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 28.sp,
+                color = MaterialTheme.colorScheme.onBackground
+            )
 
-        Spacer(modifier = Modifier.height(30.dp))
-
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            repeat(wordLength) {
-                LetterBox(
-                    letter = null,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
-        Spacer(modifier = Modifier.height(30.dp))
+        if (showLetterPlaceholders) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                repeat(wordLength) {
+                    LetterBox(
+                        letter = null,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(30.dp))
+        }
 
         PrimaryIconButton(
             icon = Icons.Rounded.CameraAlt,
