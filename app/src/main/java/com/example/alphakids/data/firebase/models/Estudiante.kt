@@ -29,10 +29,11 @@ data class Estudiante(
     @get:PropertyName("institucion")
     val institucion: String? = null,
 
-    @get:PropertyName("grado")
+    // Soporte para estructuras previas donde el grado y la sección se guardaban con nombres alternos.
+    @get:PropertyName("grado_academico")
     val gradoAcademico: String? = null,
 
-    @get:PropertyName("seccion")
+    @get:PropertyName("seccion_academica")
     val seccionAcademica: String? = null,
 
     @get:PropertyName("docenteId")

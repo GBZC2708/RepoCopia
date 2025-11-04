@@ -19,6 +19,7 @@ import com.google.firebase.firestore.snapshots
 import com.google.firebase.firestore.toObjects
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -85,10 +86,15 @@ class AssignmentRepositoryImpl @Inject constructor(
             // Asociamos al estudiante con el docente para que aparezca en sus listados.
             if (assignment.idEstudiante.isNotBlank() && assignment.idDocente.isNotBlank()) {
                 try {
+                    val docenteFields = mapOf(
+                        "id_docente" to assignment.idDocente,
+                        "docenteId" to assignment.idDocente
+                    )
+
                     estudiantesCol
                         .document(assignment.idEstudiante)
                         .set(
-                            mapOf("id_docente" to assignment.idDocente),
+                            docenteFields,
                             SetOptions.merge()
                         )
                         .await()
@@ -125,32 +131,55 @@ class AssignmentRepositoryImpl @Inject constructor(
 
     override fun getStudentsForDocente(docenteId: String): Flow<List<Estudiante>> {
         Log.d("AssignmentRepo", "Fetching students for docente: $docenteId")
-        return estudiantesCol
-            // Antes solo ordenábamos por grado, lo que impedía que el docente viera a todos sus alumnos.
-            // Al filtrar explícitamente por id_docente garantizamos que reciba el listado completo correcto.
+        // Algunos entornos guardaron el identificador del docente como "id_docente" y otros como "docenteId".
+        // Consultamos ambas variantes y unificamos los resultados para evitar perder estudiantes existentes.
+        val legacyFlow = estudiantesCol
             .whereEqualTo("id_docente", docenteId)
             .snapshots()
-            .map { querySnapshot ->
-                val estudiantes = querySnapshot.toObjects(Estudiante::class.java)
-
-                if (estudiantes.isEmpty()) {
-                    Log.w(
-                        "AssignmentRepo",
-                        "Sin coincidencias reales para el docente, devolviendo datos de ejemplo."
-                    )
-                    sampleStudents
-                } else {
-                    estudiantes.sortedWith(
-                        compareBy<Estudiante> { it.grado ?: "" }
-                            .thenBy { it.seccion ?: "" }
-                            .thenBy { it.nombre }
-                    )
-                }
+            .map { snapshot ->
+                snapshot.toObjects(Estudiante::class.java)
             }
             .catch { exception ->
-                Log.e("AssignmentRepo", "Error in student flow for docente $docenteId", exception)
-                emit(sampleStudents)
+                Log.e("AssignmentRepo", "Error leyendo estudiantes legacy para $docenteId", exception)
+                emit(emptyList())
             }
+
+        val camelCaseFlow = estudiantesCol
+            .whereEqualTo("docenteId", docenteId)
+            .snapshots()
+            .map { snapshot ->
+                snapshot.toObjects(Estudiante::class.java)
+            }
+            .catch { exception ->
+                Log.e("AssignmentRepo", "Error leyendo estudiantes camelCase para $docenteId", exception)
+                emit(emptyList())
+            }
+
+        return combine(legacyFlow, camelCaseFlow) { legacy, camelCase ->
+            val merged = (legacy + camelCase)
+                .distinctBy { estudiante ->
+                    estudiante.id.ifBlank {
+                        "${estudiante.nombre}-${estudiante.apellido}-${estudiante.grado}-${estudiante.seccion}"
+                    }
+                }
+
+            if (merged.isEmpty()) {
+                Log.w(
+                    "AssignmentRepo",
+                    "Sin coincidencias reales para el docente $docenteId, devolviendo datos de ejemplo."
+                )
+                sampleStudents
+            } else {
+                merged.sortedWith(
+                    compareBy<Estudiante> { it.grado ?: "" }
+                        .thenBy { it.seccion ?: "" }
+                        .thenBy { it.nombre }
+                )
+            }
+        }.catch { exception ->
+            Log.e("AssignmentRepo", "Error combinando listados de estudiantes para $docenteId", exception)
+            emit(sampleStudents)
+        }
     }
 
     override fun getStudentsAssignedToWord(wordId: String): Flow<List<Estudiante>> {
