@@ -24,10 +24,6 @@ class StudentRepositoryImpl @Inject constructor(
 
     private val estudiantesCol = db.collection("estudiantes")
 
-    /**
-     * Lista mock utilizada cuando el tutor aún no tiene estudiantes registrados en Firestore.
-     * Sirve para mantener la experiencia de usuario mientras se prueban las pantallas.
-     */
     private val sampleTutorStudents = listOf(
         Estudiante(
             id = "sample_student_tutor_1",
@@ -95,7 +91,6 @@ class StudentRepositoryImpl @Inject constructor(
 
     override suspend fun getStudentById(studentId: String): Estudiante? {
         return try {
-            // Se consulta el documento específico del estudiante para obtener la versión más reciente.
             val snapshot = estudiantesCol.document(studentId).get().await()
             snapshot.toObject(Estudiante::class.java)
         } catch (e: Exception) {
@@ -106,7 +101,6 @@ class StudentRepositoryImpl @Inject constructor(
 
     override suspend fun updateStudent(estudiante: Estudiante): Result<Unit> {
         if (estudiante.id.isBlank()) {
-            // Evitamos intentar guardar documentos sin identificador válido.
             return Result.failure(IllegalArgumentException("El ID del estudiante no puede estar vacío."))
         }
 
@@ -125,17 +119,16 @@ class StudentRepositoryImpl @Inject constructor(
 
     override suspend fun adjustStudentCoins(studentId: String, delta: Int): Result<Int> {
         return try {
-            val newBalance = db.runTransaction { transaction ->
+            val newBalance: Int = db.runTransaction { transaction ->
                 val docRef = estudiantesCol.document(studentId)
                 val snapshot = transaction.get(docRef)
 
                 val currentCoins = snapshot.getLong("monedas")?.toInt() ?: 0
                 val updatedCoins = (currentCoins + delta).coerceAtLeast(0)
 
-                // Guardamos el saldo actualizado directamente en Firestore para mantener sincronía con la app.
                 transaction.update(docRef, mapOf("monedas" to updatedCoins))
                 updatedCoins
-            }
+            }.await() // <- importante: obtener Int, no Task<Int>
 
             Log.d(TAG, "Balance actualizado para estudiante $studentId: $newBalance")
             Result.success(newBalance)

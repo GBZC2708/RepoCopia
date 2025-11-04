@@ -8,12 +8,17 @@ import com.google.firebase.firestore.ServerTimestamp
 data class PalabraEncontrada(
     @DocumentId
     val id: String = "",
-    @get:PropertyName("id_estudiante") @set:PropertyName("id_estudiante")
+
+    @get:PropertyName("id_estudiante")
     val studentId: String = "",
-    @get:PropertyName("id_palabra") @set:PropertyName("id_palabra")
+
+    @get:PropertyName("id_palabra")
     val wordId: String = "",
-    @get:PropertyName("palabra") @set:PropertyName("palabra")
+
+    @get:PropertyName("palabra")
     val wordText: String = "",
-    @get:PropertyName("fecha") @set:PropertyName("fecha") @ServerTimestamp
+
+    @get:PropertyName("fecha")
+    @ServerTimestamp
     val timestamp: Timestamp? = null
 )
