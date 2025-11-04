@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Warning
@@ -36,7 +37,6 @@ import com.example.alphakids.ui.screens.tutor.home.StudentHomeScreen
 import com.example.alphakids.ui.screens.tutor.dictionary.StudentDictionaryScreen
 import com.example.alphakids.ui.screens.tutor.dictionary.StudentDictionaryViewModel
 import com.example.alphakids.ui.screens.tutor.achievements.StudentAchievementsScreen
-import com.example.alphakids.ui.screens.tutor.games.CameraScreen
 import com.example.alphakids.ui.screens.profile.EditProfileScreen
 import com.example.alphakids.ui.screens.tutor.studentprofile.CreateStudentProfileScreen
 import com.example.alphakids.ui.screens.tutor.studentprofile.EditStudentProfileScreen
@@ -49,6 +49,7 @@ import com.example.alphakids.ui.screens.tutor.games.MyGamesScreen
 import com.example.alphakids.ui.screens.tutor.games.WordHistoryScreen
 import com.example.alphakids.ui.screens.tutor.games.WordPuzzleScreen
 import com.example.alphakids.ui.screens.tutor.home.StudentHomeViewModel
+import com.example.alphakids.domain.sample.DefaultWords
 
 
 @Composable
@@ -226,22 +227,40 @@ fun AppNavHost(
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
         ) { backStackEntry ->
             val studentId = backStackEntry.arguments?.getString("studentId") ?: return@composable
+            val dictionary = remember { DefaultWords.discoverWords }
+            var currentIndex by rememberSaveable { mutableStateOf(0) }
+            val currentWord = dictionary.getOrNull(currentIndex)
 
             DiscoverGameScreen(
                 isLoading = false,
+                currentWord = currentWord,
                 onBackClick = { navController.popBackStack() },
-                onScanClick = { navController.navigate(Routes.discoverCameraRoute(studentId)) }
+                onScanClick = {
+                    currentWord?.let { word ->
+                        navController.navigate(Routes.discoverCameraRoute(studentId, word.id))
+                    }
+                },
+                onNextWord = {
+                    if (dictionary.isNotEmpty()) {
+                        currentIndex = (currentIndex + 1) % dictionary.size
+                    }
+                }
             )
         }
 
         composable(
             route = Routes.DISCOVER_CAMERA,
-            arguments = listOf(navArgument("studentId") { type = NavType.StringType })
+            arguments = listOf(
+                navArgument("studentId") { type = NavType.StringType },
+                navArgument("wordId") { type = NavType.StringType }
+            )
         ) { backStackEntry ->
             val studentId = backStackEntry.arguments?.getString("studentId") ?: ""
+            val wordId = backStackEntry.arguments?.getString("wordId")
 
             DiscoverCameraScreen(
                 studentId = studentId,
+                targetWordId = wordId,
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -379,17 +398,6 @@ fun AppNavHost(
                     navigateToStudentBottomNav(targetRoute)
                 },
                 currentRoute = "achievements"
-            )
-        }
-
-        // Cámara
-        composable(Routes.CAMERA) {
-            CameraScreen(
-                onBackClick = { navController.popBackStack() },
-                onShutterClick = { },
-                onCloseNotificationClick = { },
-                onFlashClick = { },
-                onFlipCameraClick = { }
             )
         }
 

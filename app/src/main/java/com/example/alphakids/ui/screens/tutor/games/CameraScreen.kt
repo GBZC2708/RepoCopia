@@ -1,3 +1,8 @@
+@file:Suppress("unused")
+
+// Modo de cámara experimental basado en realidad virtual deshabilitado
+// para evitar interferencias durante las pruebas de los minijuegos.
+
 package com.example.alphakids.ui.screens.tutor.games
 
 import android.Manifest

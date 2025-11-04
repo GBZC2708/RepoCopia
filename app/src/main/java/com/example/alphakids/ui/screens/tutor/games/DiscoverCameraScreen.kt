@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
@@ -48,7 +49,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.core.content.ContextCompat
+import coil.compose.AsyncImage
+import com.example.alphakids.domain.sample.DefaultWords
+import com.example.alphakids.ui.components.LetterBox
 import com.example.alphakids.ui.components.PrimaryButton
 import com.example.alphakids.ui.screens.camera.ScannerOverlay
 import com.example.alphakids.ui.theme.dmSansFamily
@@ -74,6 +80,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 @Composable
 fun DiscoverCameraScreen(
     studentId: String,
+    targetWordId: String?,
     onBackClick: () -> Unit,
     viewModel: DiscoverCameraViewModel = hiltViewModel()
 ) {
@@ -81,6 +88,7 @@ fun DiscoverCameraScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA)
     val coroutineScope = rememberCoroutineScope()
+    val targetWord = remember(targetWordId) { DefaultWords.findById(targetWordId) }
 
     // El estado representa intentos restantes, moneda ganada y mensajes hablados.
     val uiState by viewModel.uiState.collectAsState()
@@ -103,6 +111,10 @@ fun DiscoverCameraScreen(
                 tts?.setSpeechRate(0.95f)
             }
         }
+    }
+
+    LaunchedEffect(targetWord) {
+        viewModel.setTargetWord(targetWord)
     }
 
     DisposableEffect(Unit) {
@@ -295,6 +307,51 @@ private fun BoxScope.DiscoverStatusPanel(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        if (uiState.targetWordImageUrl != null) {
+            AsyncImage(
+                model = uiState.targetWordImageUrl,
+                contentDescription = "Imagen de la palabra objetivo",
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+                    .clip(RoundedCornerShape(16.dp))
+                    .height(140.dp),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        if (uiState.targetWordLength > 0) {
+            Text(
+                text = "Palabra objetivo",
+                fontFamily = dmSansFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                repeat(uiState.targetWordLength) {
+                    LetterBox(letter = null, color = MaterialTheme.colorScheme.onBackground)
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Número de letras: ${uiState.targetWordLength}",
+                fontFamily = dmSansFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        } else {
+            Text(
+                text = "Selecciona una palabra antes de escanear",
+                fontFamily = dmSansFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.error
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
         Text(
             text = uiState.statusMessage,
             fontFamily = dmSansFamily,
@@ -340,7 +397,7 @@ private fun BoxScope.DiscoverStatusPanel(
                 uiState.isProcessing -> "Escaneando..."
                 else -> "Escanear"
             },
-            enabled = !uiState.isProcessing && uiState.attemptsLeft > 0,
+            enabled = !uiState.isProcessing && uiState.attemptsLeft > 0 && uiState.targetWordLength > 0,
             onClick = onScanClick
         )
     }
