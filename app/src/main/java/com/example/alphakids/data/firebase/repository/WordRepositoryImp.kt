@@ -34,6 +34,7 @@ class WordRepositoryImpl @Inject constructor(
             nivelDificultad = "Fácil",
             imagenUrl = "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=400",
             audioUrl = "https://samplelib.com/lib/preview/mp3/sample-3s.mp3",
+            recompensaMonedas = 5,
             fechaCreacionMillis = System.currentTimeMillis(),
             creadoPor = ""
         ),
@@ -41,9 +42,10 @@ class WordRepositoryImpl @Inject constructor(
             id = "sample_word_2",
             texto = "Lápiz",
             categoria = "Objetos",
-            nivelDificultad = "Medio",
+            nivelDificultad = "Intermedio",
             imagenUrl = "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400",
             audioUrl = "https://samplelib.com/lib/preview/mp3/sample-6s.mp3",
+            recompensaMonedas = 5,
             fechaCreacionMillis = System.currentTimeMillis(),
             creadoPor = ""
         ),
@@ -54,6 +56,7 @@ class WordRepositoryImpl @Inject constructor(
             nivelDificultad = "Difícil",
             imagenUrl = "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=400",
             audioUrl = "https://samplelib.com/lib/preview/mp3/sample-9s.mp3",
+            recompensaMonedas = 5,
             fechaCreacionMillis = System.currentTimeMillis(),
             creadoPor = ""
         )

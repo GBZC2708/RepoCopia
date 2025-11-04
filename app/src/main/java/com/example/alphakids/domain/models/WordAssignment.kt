@@ -12,5 +12,6 @@ data class WordAssignment(
     val estudianteNombre: String?,
     val fechaAsignacionMillis: Long?,
     val fechaLimiteMillis: Long?,
-    val estado: String
+    val estado: String,
+    val recompensaMonedas: Int = 5
 )

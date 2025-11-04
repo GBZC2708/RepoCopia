@@ -40,7 +40,7 @@ import com.example.alphakids.ui.components.WordListItem
 import com.example.alphakids.ui.theme.AlphakidsTheme
 import com.example.alphakids.ui.word.GameWordsViewModel
 
-private val filters = listOf("Todos", "Pendientes", "Fácil", "Medio", "Difícil")
+private val filters = listOf("Todos", "Pendientes", "Fácil", "Intermedio", "Difícil")
 
 @Composable
 fun GameWordsScreen(

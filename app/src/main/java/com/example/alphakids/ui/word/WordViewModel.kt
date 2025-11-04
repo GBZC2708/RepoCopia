@@ -90,7 +90,8 @@ class WordViewModel @Inject constructor(
         texto: String,
         categoria: String,
         nivelDificultad: String,
-        audioUrl: String
+        audioUrl: String,
+        recompensaMonedas: Int = 5
     ) {
         viewModelScope.launch {
             _uiState.value = WordUiState.Loading
@@ -106,6 +107,7 @@ class WordViewModel @Inject constructor(
                 nivelDificultad = nivelDificultad,
                 imagenUrl = "",
                 audioUrl = audioUrl,
+                recompensaMonedas = recompensaMonedas.coerceIn(1, 50),
                 fechaCreacionMillis = null,
                 creadoPor = currentUser.uid
             )

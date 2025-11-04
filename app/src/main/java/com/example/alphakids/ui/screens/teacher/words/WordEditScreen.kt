@@ -79,10 +79,11 @@ fun WordEditScreen(
     var texto by remember(word) { mutableStateOf(word?.texto ?: "") }
     var categoria by remember(word) { mutableStateOf(word?.categoria ?: "") }
     var dificultad by remember(word) { mutableStateOf(word?.nivelDificultad ?: "") }
+    var recompensa by remember(word) { mutableStateOf((word?.recompensaMonedas ?: 5).toString()) }
 
     // Opciones base para sugerir categorías en caso no existan palabras registradas.
     val defaultCategories = remember {
-        listOf("Animales", "Objetos", "Comida", "Personas", "Acciones", "Colores")
+        listOf("Animales", "Objetos")
     }
     val dynamicCategories = remember(availableWords) {
         availableWords.map { it.categoria }
@@ -99,7 +100,7 @@ fun WordEditScreen(
         }
     }
     val difficultyOptions = remember {
-        listOf("Fácil", "Medio", "Difícil")
+        listOf("Fácil", "Intermedio", "Difícil")
     }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -190,6 +191,16 @@ fun WordEditScreen(
                 onOptionSelected = { dificultad = it }
             )
 
+            LabeledTextField(
+                label = "Recompensa de monedas",
+                value = recompensa,
+                onValueChange = { newValue ->
+                    val sanitized = newValue.filter { it.isDigit() }
+                    recompensa = sanitized.take(2)
+                },
+                placeholderText = "Ej. 5"
+            )
+
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
@@ -214,12 +225,14 @@ fun WordEditScreen(
                             Toast.makeText(context, "Selecciona la dificultad", Toast.LENGTH_SHORT).show()
                             return@PrimaryButton
                         }
+                        val recompensaInt = recompensa.toIntOrNull()?.coerceIn(1, 50) ?: 5
                         if (isEditing && word != null) {
                             val updatedWord = word.copy(
                                 texto = texto,
                                 categoria = categoria,
                                 nivelDificultad = dificultad,
-                                imagenUrl = word.imagenUrl
+                                imagenUrl = word.imagenUrl,
+                                recompensaMonedas = recompensaInt
                             )
                             viewModel.updateWord(updatedWord)
                         } else {
@@ -227,7 +240,8 @@ fun WordEditScreen(
                                 texto = texto,
                                 categoria = categoria,
                                 nivelDificultad = dificultad,
-                                audioUrl = "url_audio_mock"
+                                audioUrl = "url_audio_mock",
+                                recompensaMonedas = recompensaInt
                             )
                         }
                     }

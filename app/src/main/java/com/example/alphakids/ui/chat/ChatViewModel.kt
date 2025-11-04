@@ -222,7 +222,7 @@ class ChatViewModel @Inject constructor(
 
         NIVELES DE DIFICULTAD:
         - Fácil: Para estudiantes con desempeño bajo o que están comenzando
-        - Medio: Para estudiantes con desempeño intermedio
+        - Intermedio: Para estudiantes con desempeño intermedio
         - Difícil: Para estudiantes con desempeño alto que necesitan desafíos
 
         PREGUNTA DEL DOCENTE: $userMessage
@@ -316,7 +316,8 @@ class ChatViewModel @Inject constructor(
                             estudianteNombre = currentUser.nombre,
                             fechaAsignacionMillis = null,
                             fechaLimiteMillis = null,
-                            estado = "PENDIENTE"
+                            estado = "pendiente",
+                            recompensaMonedas = word.recompensaMonedas
                         )
 
                         val result = createAssignmentUseCase(newAssignment)
@@ -397,7 +398,8 @@ class ChatViewModel @Inject constructor(
                     estudianteNombre = student.nombre,
                     fechaAsignacionMillis = null,
                     fechaLimiteMillis = null,
-                    estado = "PENDIENTE"
+                    estado = "pendiente",
+                    recompensaMonedas = word.recompensaMonedas
                 )
 
                 val result = createAssignmentUseCase(newAssignment)

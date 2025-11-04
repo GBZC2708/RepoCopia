@@ -28,6 +28,7 @@ object UsuarioMapper {
                 "pendiente" -> UserStatus.PENDIENTE
                 else -> UserStatus.UNKNOWN
             },
+            monedas = dto.monedas.takeIf { it >= 0 } ?: 0,
             creadoEn = dto.creadoEn?.toDate()?.time,
             actualizadoEn = dto.actualizadoEn?.toDate()?.time
         )

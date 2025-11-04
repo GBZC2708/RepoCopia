@@ -22,6 +22,8 @@ data class Usuario(
 
     val estado: String = "activo", // "activo" | "inactivo" | "pendiente"
 
+    val monedas: Int = 0,
+
     @PropertyName("creadoEn")
     @ServerTimestamp
     val creadoEn: Timestamp? = null,

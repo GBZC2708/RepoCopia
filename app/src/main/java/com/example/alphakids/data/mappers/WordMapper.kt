@@ -16,6 +16,7 @@ object WordMapper {
             nivelDificultad = dto.nivelDificultad,
             imagenUrl = sanitizedImageUrl,
             audioUrl = dto.audio,
+            recompensaMonedas = dto.recompensaMonedas.takeIf { it > 0 } ?: 5,
             fechaCreacionMillis = dto.fechaCreacion?.toDate()?.time,
             creadoPor = dto.creadoPor
         )
@@ -27,6 +28,7 @@ object WordMapper {
             texto = domain.texto,
             categoria = domain.categoria,
             nivelDificultad = domain.nivelDificultad,
+            recompensaMonedas = domain.recompensaMonedas,
             imagen = domain.imagenUrl,
             audio = domain.audioUrl,
             creadoPor = domain.creadoPor

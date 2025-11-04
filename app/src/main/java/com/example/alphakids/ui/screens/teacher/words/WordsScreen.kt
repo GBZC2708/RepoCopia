@@ -43,7 +43,7 @@ import com.example.alphakids.ui.components.PrimaryButton
 import com.example.alphakids.ui.components.SearchBar
 import com.example.alphakids.ui.components.WordListItem
 
-val difficultiesList = listOf("Fácil", "Medio", "Difícil")
+val difficultiesList = listOf("Fácil", "Intermedio", "Difícil")
 
 @Composable
 fun WordsScreen(

@@ -9,6 +9,7 @@ data class User(
     val fotoPerfil: String? = null,
     val rol: UserRole,
     val estado: UserStatus,
+    val monedas: Int = 0,
     val creadoEn: Long? = null,
     val actualizadoEn: Long? = null
 )
