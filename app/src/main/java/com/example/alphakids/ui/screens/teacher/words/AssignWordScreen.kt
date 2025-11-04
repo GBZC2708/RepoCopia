@@ -38,7 +38,7 @@ import com.example.alphakids.ui.chat.ChatViewModel
 import com.example.alphakids.ui.chat.ChatUiState
 import kotlinx.coroutines.launch
 
-val assignmentDifficultiesList = listOf("Fácil", "Medio", "Difícil")
+val assignmentDifficultiesList = listOf("Fácil", "Intermedio", "Difícil")
 
 // Función para determinar el desempeño del estudiante
 private fun determineStudentPerformance(student: Estudiante): String {

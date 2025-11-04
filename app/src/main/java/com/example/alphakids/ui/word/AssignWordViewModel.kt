@@ -130,7 +130,8 @@ class AssignWordViewModel @Inject constructor(
                 estudianteNombre = student.nombre,
                 fechaAsignacionMillis = null,
                 fechaLimiteMillis = null,
-                estado = "PENDIENTE"
+                estado = "pendiente",
+                recompensaMonedas = word.recompensaMonedas
             )
 
             val result = createAssignmentUseCase(newAssignment)

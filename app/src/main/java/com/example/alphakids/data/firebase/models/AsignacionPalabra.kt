@@ -28,5 +28,7 @@ data class AsignacionPalabra(
     var fechaAsignacion: Timestamp? = null,
     @get:PropertyName("fecha_limite") @set:PropertyName("fecha_limite")
     var fechaLimite: Timestamp? = null,
-    var estado: String = ""
+    var estado: String = "pendiente",
+    @get:PropertyName("recompensaMonedas") @set:PropertyName("recompensaMonedas")
+    var recompensaMonedas: Int = 5
 )

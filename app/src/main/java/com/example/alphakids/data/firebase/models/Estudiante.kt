@@ -11,14 +11,22 @@ data class Estudiante(
     val nombre: String = "",
     val apellido: String = "",
     val edad: Int = 0,
-    val grado: String = "",
-    val seccion: String = "",
+    val grado: String? = null,
+    val seccion: String? = null,
     @get:PropertyName("id_tutor")
     val idTutor: String = "",
     @get:PropertyName("id_docente")
-    val idDocente: String = "",
+    val idDocente: String? = null,
     @get:PropertyName("id_institucion")
-    val idInstitucion: String = "",
+    val idInstitucion: String? = null,
+    @get:PropertyName("institucion")
+    val institucion: String? = null,
+    @get:PropertyName("grado")
+    val gradoAcademico: String? = null,
+    @get:PropertyName("seccion")
+    val seccionAcademica: String? = null,
+    @get:PropertyName("docenteId")
+    val docenteId: String? = null,
     @get:PropertyName("foto_perfil")
     val fotoPerfil: String? = null,
     @get:PropertyName("fecha_registro") @ServerTimestamp

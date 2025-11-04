@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(docPath) {
+      return isSignedIn() && request.auth.uid == docPath.id;
+    }
+
+    match /usuarios/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /estudiantes/{studentId} {
+      allow read, write: if isSignedIn() &&
+        (request.auth.uid == resource.data.id_tutor ||
+         request.auth.uid == resource.data.docenteId ||
+         request.auth.uid == request.resource.data.id_tutor ||
+         request.auth.uid == request.resource.data.docenteId);
+    }
+
+    match /palabras/{wordId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    match /asignaciones/{assignmentId} {
+      allow read, write: if isSignedIn() &&
+        (request.auth.uid == resource.data.id_docente ||
+         request.auth.uid == resource.data.id_estudiante ||
+         request.auth.uid == request.resource.data.id_docente ||
+         request.auth.uid == request.resource.data.id_estudiante);
+    }
+
+    match /diccionarios_personales/{studentId}/palabras/{wordId} {
+      allow read, write: if isSignedIn() &&
+        (request.auth.uid == studentId ||
+         request.auth.uid == request.resource.data.ownerId);
+    }
+  }
+}

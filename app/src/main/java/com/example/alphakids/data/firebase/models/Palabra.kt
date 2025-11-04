@@ -16,6 +16,10 @@ data class Palabra(
     @set:PropertyName("nivelDificultad")
     var nivelDificultad: String = "",
 
+    @get:PropertyName("recompensaMonedas")
+    @set:PropertyName("recompensaMonedas")
+    var recompensaMonedas: Int = 5,
+
     @get:PropertyName("imagen")
     @set:PropertyName("imagen")
     var imagen: String = "",

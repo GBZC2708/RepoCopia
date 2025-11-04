@@ -1,0 +1,21 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "asignaciones",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "id_estudiante", "order": "ASCENDING" },
+        { "fieldPath": "estado", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "palabras",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "creadoPor", "order": "ASCENDING" },
+        { "fieldPath": "nivelDificultad", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

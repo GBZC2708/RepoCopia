@@ -11,11 +11,15 @@ object StudentMapper {
             nombre = dto.nombre,
             apellido = dto.apellido,
             edad = dto.edad,
-            grado = dto.grado,
-            seccion = dto.seccion,
+            grado = dto.grado ?: "",
+            seccion = dto.seccion ?: "",
             idTutor = dto.idTutor,
-            idDocente = dto.idDocente,
-            idInstitucion = dto.idInstitucion,
+            idDocente = dto.idDocente ?: "",
+            idInstitucion = dto.idInstitucion ?: "",
+            institucion = dto.institucion,
+            gradoAcademico = dto.gradoAcademico,
+            seccionAcademica = dto.seccionAcademica,
+            docenteId = dto.docenteId,
             fotoPerfilUrl = dto.fotoPerfil,
             fechaRegistroMillis = dto.fechaRegistro?.toDate()?.time
         )
@@ -32,6 +36,10 @@ object StudentMapper {
             idTutor = model.idTutor,
             idDocente = model.idDocente,
             idInstitucion = model.idInstitucion,
+            institucion = model.institucion,
+            gradoAcademico = model.gradoAcademico,
+            seccionAcademica = model.seccionAcademica,
+            docenteId = model.docenteId,
             fotoPerfil = model.fotoPerfilUrl,
             fechaRegistro = null
         )

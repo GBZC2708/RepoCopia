@@ -57,7 +57,7 @@ class AssignedWordsViewModel @Inject constructor(
                 // Intentar buscar asignaciones directamente
                 val assignments = firestore.collection("asignaciones")
                     .whereEqualTo("id_estudiante", studentId)
-                    .whereEqualTo("estado", "PENDIENTE")
+                    .whereEqualTo("estado", "pendiente")
                     .get()
                     .await()
                     .toObjects(AsignacionPalabra::class.java)

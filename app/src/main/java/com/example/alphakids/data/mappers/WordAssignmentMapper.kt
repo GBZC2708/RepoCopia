@@ -21,7 +21,8 @@ object WordAssignmentMapper {
             estudianteNombre = dto.estudianteNombre,
             fechaAsignacionMillis = dto.fechaAsignacion?.toDate()?.time,
             fechaLimiteMillis = dto.fechaLimite?.toDate()?.time,
-            estado = dto.estado
+            estado = dto.estado.ifBlank { "pendiente" },
+            recompensaMonedas = dto.recompensaMonedas.takeIf { it > 0 } ?: 5
         )
     }
 
@@ -35,7 +36,8 @@ object WordAssignmentMapper {
             "palabra_audio" to model.palabraAudioUrl,
             "palabra_dificultad" to model.palabraDificultad.ifEmpty { "Desconocida" },
             "estudiante_nombre" to model.estudianteNombre,
-            "estado" to model.estado
+            "estado" to model.estado,
+            "recompensaMonedas" to model.recompensaMonedas
         )
 
         if (model.fechaAsignacionMillis == null) {
