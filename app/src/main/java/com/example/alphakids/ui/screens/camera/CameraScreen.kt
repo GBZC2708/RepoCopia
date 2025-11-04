@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.example.alphakids.ui.screens.camera
 
 import androidx.camera.core.CameraSelector
@@ -14,6 +16,7 @@ import com.example.alphakids.ui.screens.game.FailureResultScreen
 import com.example.alphakids.ui.screens.game.SuccessResultScreen
 import kotlin.random.Random
 
+// Flujo de cámara clásico sin OCR deshabilitado temporalmente.
 // Definimos los posibles estados del juego
 sealed class GameState {
     object Scanning : GameState()

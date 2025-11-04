@@ -41,7 +41,11 @@ data class DiscoverCameraUiState(
     val gameFinished: Boolean = false,
     val error: String? = null,
     val discoveredWordIds: Set<String> = emptySet(),
-    val studentName: String = ""
+    val studentName: String = "",
+    val targetWordId: String? = null,
+    val targetWordText: String = "",
+    val targetWordImageUrl: String? = null,
+    val targetWordLength: Int = 0
 )
 
 @HiltViewModel
@@ -109,10 +113,27 @@ class DiscoverCameraViewModel @Inject constructor(
         _uiState.value = DiscoverCameraUiState(
             studentName = current.studentName,
             totalCoins = current.totalCoins,
-            discoveredWordIds = current.discoveredWordIds
+            discoveredWordIds = current.discoveredWordIds,
+            targetWordId = current.targetWordId,
+            targetWordText = current.targetWordText,
+            targetWordImageUrl = current.targetWordImageUrl,
+            targetWordLength = current.targetWordLength
         )
         lastProcessedWord = ""
         lastProcessTime = 0L
+    }
+
+    fun setTargetWord(word: Word?) {
+        _uiState.update { state ->
+            state.copy(
+                targetWordId = word?.id,
+                targetWordText = word?.texto ?: "",
+                targetWordImageUrl = word?.imagenUrl,
+                targetWordLength = word?.texto?.length ?: 0,
+                statusMessage = if (state.statusMessage.isBlank()) INITIAL_STATUS else state.statusMessage,
+                error = null
+            )
+        }
     }
 
     fun handleDetectedWord(normalizedWord: String) {
@@ -127,6 +148,17 @@ class DiscoverCameraViewModel @Inject constructor(
         lastProcessedWord = normalizedWord
         lastProcessTime = now
 
+        if (_uiState.value.targetWordId.isNullOrBlank()) {
+            _uiState.update {
+                it.copy(
+                    isProcessing = false,
+                    statusMessage = "Selecciona una palabra antes de escanear",
+                    error = "Sin palabra objetivo"
+                )
+            }
+            return
+        }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isProcessing = true, error = null) }
 
@@ -136,6 +168,10 @@ class DiscoverCameraViewModel @Inject constructor(
                     // La palabra no existe en la base: penalizamos.
                     applyPenalty(student, normalizedWord)
                 } else {
+                    if (!isMatchingTarget(word)) {
+                        handleMismatchedWord(word)
+                        return@launch
+                    }
                     // Existe en el diccionario: verificamos si es nueva.
                     processFoundWord(student, word)
                 }
@@ -222,6 +258,38 @@ class DiscoverCameraViewModel @Inject constructor(
         }
     }
 
+    private fun handleMismatchedWord(word: Word) {
+        val attemptsLeft = (_uiState.value.attemptsLeft - 1).coerceAtLeast(0)
+        _uiState.update {
+            it.copy(
+                attemptsLeft = attemptsLeft,
+                lastDetectedWord = word.texto,
+                statusMessage = "Esa no es la palabra objetivo (${it.targetWordText})",
+                lastCoinsDelta = 0,
+                isProcessing = false,
+                error = null,
+                gameFinished = attemptsLeft == 0
+            )
+        }
+    }
+
+    private fun isMatchingTarget(word: Word): Boolean {
+        val targetId = _uiState.value.targetWordId
+        if (targetId != null && word.id == targetId) {
+            return true
+        }
+        val targetText = _uiState.value.targetWordText
+        if (targetText.isBlank()) return false
+        val normalizedWord = word.texto.lowercase().normalizeForComparison()
+        val normalizedTarget = targetText.lowercase().normalizeForComparison()
+        return normalizedWord == normalizedTarget
+    }
+
+    private fun String.normalizeForComparison(): String {
+        val decomposed = java.text.Normalizer.normalize(this, java.text.Normalizer.Form.NFD)
+        return decomposed.replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
+    }
+
     /**
      * Valida si todavía se puede escanear y actualiza el estado para informar a la UI.
      */
@@ -231,6 +299,16 @@ class DiscoverCameraViewModel @Inject constructor(
             return false
         }
         if (current.gameFinished) {
+            return false
+        }
+
+        if (current.targetWordId.isNullOrBlank()) {
+            _uiState.update {
+                it.copy(
+                    statusMessage = "Selecciona una palabra antes de escanear",
+                    error = "Sin palabra objetivo"
+                )
+            }
             return false
         }
 
@@ -273,4 +351,5 @@ class DiscoverCameraViewModel @Inject constructor(
         discoveredWordsJob?.cancel()
         studentObserverJob?.cancel()
     }
+
 }

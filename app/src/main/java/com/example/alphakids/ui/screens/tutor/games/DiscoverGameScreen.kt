@@ -13,6 +13,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.alphakids.domain.models.Word
 import com.example.alphakids.ui.screens.tutor.games.components.WordPuzzleCard
 import com.example.alphakids.ui.theme.dmSansFamily
 
@@ -32,8 +34,10 @@ import com.example.alphakids.ui.theme.dmSansFamily
 @Composable
 fun DiscoverGameScreen(
     isLoading: Boolean,
+    currentWord: Word?,
     onBackClick: () -> Unit,
-    onScanClick: () -> Unit
+    onScanClick: () -> Unit,
+    onNextWord: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
@@ -74,15 +78,47 @@ fun DiscoverGameScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    val wordLength = currentWord?.texto?.length ?: 0
                     WordPuzzleCard(
-                        wordLength = 6,
+                        wordLength = wordLength.coerceAtLeast(1),
                         icon = Icons.Rounded.Explore,
-                        difficulty = "Libre",
-                        // Reutilizamos el mismo botón de "Escanear" para saltar a la cámara.
+                        wordImage = currentWord?.imagenUrl,
+                        difficulty = currentWord?.nivelDificultad ?: "Libre",
                         onTakePhotoClick = onScanClick,
-                        questionText = null,
-                        showLetterPlaceholders = false
+                        isTakePhotoEnabled = currentWord != null,
+                        questionText = currentWord?.let { "Encuentra esta palabra" } ?: "Selecciona una palabra",
+                        showLetterPlaceholders = true
                     )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    if (currentWord != null) {
+                        Text(
+                            text = "Número de letras: $wordLength",
+                            fontFamily = dmSansFamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    } else {
+                        Text(
+                            text = "Necesitamos una palabra para comenzar",
+                            fontFamily = dmSansFamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    TextButton(onClick = onNextWord) {
+                        Text(
+                            text = "Cambiar palabra",
+                            fontFamily = dmSansFamily,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
         }

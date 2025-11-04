@@ -81,9 +81,9 @@ object Routes {
     fun discoverGameRoute(studentId: String) = "$DISCOVER_GAME_BASE/$studentId"
 
     const val DISCOVER_CAMERA_BASE = "discover_camera"
-    const val DISCOVER_CAMERA = "$DISCOVER_CAMERA_BASE/{studentId}"
+    const val DISCOVER_CAMERA = "$DISCOVER_CAMERA_BASE/{studentId}/{wordId}"
 
-    fun discoverCameraRoute(studentId: String) = "$DISCOVER_CAMERA_BASE/$studentId"
+    fun discoverCameraRoute(studentId: String, wordId: String) = "$DISCOVER_CAMERA_BASE/$studentId/$wordId"
 
     const val ASSIGNED_WORDS = "assigned_words/{studentId}"
 
@@ -100,6 +100,7 @@ object Routes {
      */
     fun wordPuzzleRoute(assignmentId: String) = "$WORD_PUZZLE_BASE/$assignmentId"
 
+    @Deprecated("VR camera route disabled for testing stability")
     const val CAMERA = "camera"
 
     // OCR Camera routes

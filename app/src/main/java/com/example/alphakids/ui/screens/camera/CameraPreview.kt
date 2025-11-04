@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.example.alphakids.ui.screens.camera
 
 import androidx.camera.core.Camera

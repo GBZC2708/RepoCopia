@@ -7,6 +7,7 @@ import com.example.alphakids.domain.models.Word
 import com.example.alphakids.domain.repository.WordRepository
 import com.example.alphakids.domain.repository.WordResult
 import com.example.alphakids.domain.repository.WordSortOrder
+import com.example.alphakids.domain.sample.DefaultWords
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
@@ -26,41 +27,8 @@ class WordRepositoryImpl @Inject constructor(
     private val palabrasCol = db.collection("palabras")
 
     // Colección de apoyo para probar la interfaz incluso sin datos reales.
-    private val sampleWords = listOf(
-        Word(
-            id = "sample_word_1",
-            texto = "Gato",
-            categoria = "Animales",
-            nivelDificultad = "Fácil",
-            imagenUrl = "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=400",
-            audioUrl = "https://samplelib.com/lib/preview/mp3/sample-3s.mp3",
-            recompensaMonedas = 5,
-            fechaCreacionMillis = System.currentTimeMillis(),
-            creadoPor = ""
-        ),
-        Word(
-            id = "sample_word_2",
-            texto = "Lápiz",
-            categoria = "Objetos",
-            nivelDificultad = "Intermedio",
-            imagenUrl = "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400",
-            audioUrl = "https://samplelib.com/lib/preview/mp3/sample-6s.mp3",
-            recompensaMonedas = 5,
-            fechaCreacionMillis = System.currentTimeMillis(),
-            creadoPor = ""
-        ),
-        Word(
-            id = "sample_word_3",
-            texto = "Manzana",
-            categoria = "Comida",
-            nivelDificultad = "Difícil",
-            imagenUrl = "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=400",
-            audioUrl = "https://samplelib.com/lib/preview/mp3/sample-9s.mp3",
-            recompensaMonedas = 5,
-            fechaCreacionMillis = System.currentTimeMillis(),
-            creadoPor = ""
-        )
-    )
+    private val sampleWords: List<Word>
+        get() = DefaultWords.discoverWords
 
     override suspend fun createWord(word: Word): WordResult {
         return try {
@@ -250,7 +218,7 @@ class WordRepositoryImpl @Inject constructor(
 
         if (sanitized.isEmpty()) return null
 
-        return try {
+        val firestoreMatch = try {
             val snapshot = palabrasCol
                 .whereIn("texto", sanitized)
                 .limit(1)
@@ -264,5 +232,21 @@ class WordRepositoryImpl @Inject constructor(
             Log.e("WordRepo", "Error buscando palabra por texto", e)
             null
         }
+
+        if (firestoreMatch != null) {
+            return firestoreMatch
+        }
+
+        val normalizedOptions = sanitized.map { normalize(it) }
+        return sampleWords.firstOrNull { word ->
+            val normalizedWord = normalize(word.texto)
+            normalizedOptions.any { it == normalizedWord }
+        }
+    }
+
+    private fun normalize(value: String): String {
+        val lower = value.lowercase()
+        val decomposed = java.text.Normalizer.normalize(lower, java.text.Normalizer.Form.NFD)
+        return decomposed.replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
     }
 }
