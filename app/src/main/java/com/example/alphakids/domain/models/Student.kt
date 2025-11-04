@@ -15,5 +15,6 @@ data class Student(
     val seccionAcademica: String? = null,
     val docenteId: String? = null,
     val fotoPerfilUrl: String?,
-    val fechaRegistroMillis: Long?
+    val fechaRegistroMillis: Long?,
+    val monedas: Int = 0
 )
