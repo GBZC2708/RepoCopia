@@ -262,7 +262,7 @@ fun TeacherStudentsScreen(
                                 age = "${estudiante.edad} años",
                                 numWords = "0 palabras", // Esto podría venir de otra fuente de datos
                                 icon = Icons.Rounded.Face,
-                                chipText = estudiante.grado,
+                                chipText = estudiante.grado ?: "—",
                                 isSelected = (uiState.selectedStudentId == estudiante.id),
                                 onClickNavigation = { 
                                     viewModel.selectStudent(estudiante.id)

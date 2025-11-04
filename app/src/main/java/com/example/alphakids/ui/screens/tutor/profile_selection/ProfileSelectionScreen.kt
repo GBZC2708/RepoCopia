@@ -111,7 +111,7 @@ fun ProfileSelectionScreen(
                 items(students, key = { it.id }) { student ->
                     StudentProfileCard(
                         title = student.nombre,
-                        description = student.grado,
+                        description = student.grado ?: "",
                         icon = Icons.Rounded.Face, // TODO: Usar student.fotoPerfil
                         onClick = { onProfileClick(student.id) }
                     )

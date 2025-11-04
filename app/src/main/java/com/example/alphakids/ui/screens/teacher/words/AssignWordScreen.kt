@@ -37,6 +37,7 @@ import com.example.alphakids.ui.word.assign.AssignWordViewModel
 import com.example.alphakids.ui.chat.ChatViewModel
 import com.example.alphakids.ui.chat.ChatUiState
 import kotlinx.coroutines.launch
+import androidx.compose.material3.HorizontalDivider
 
 val assignmentDifficultiesList = listOf("Fácil", "Intermedio", "Difícil")
 
@@ -232,7 +233,7 @@ fun AssignWordScreen(
                 }
 
                 item {
-                    Divider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
+                    HorizontalDivider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
                     SectionTitle(text = "Selecciona a un estudiante")
                 }
 

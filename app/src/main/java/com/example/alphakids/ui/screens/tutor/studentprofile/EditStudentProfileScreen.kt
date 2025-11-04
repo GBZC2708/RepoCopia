@@ -107,10 +107,11 @@ fun EditStudentProfileScreen(
             grado = grado,
             seccion = seccion,
             idInstitucion = institucion,
-            idTutor = alumno.idTutor,
-            idDocente = alumno.idDocente,
-            fotoPerfil = alumno.fotoPerfil
+            idTutor = alumno.idTutor ?: "",
+            idDocente = alumno.idDocente ?: "",
+            fotoPerfil = alumno.fotoPerfil ?: ""
         )
+
 
         Toast.makeText(context, "Perfil actualizado.", Toast.LENGTH_SHORT).show()
         latestOnSaveSuccess()

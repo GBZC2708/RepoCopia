@@ -42,6 +42,7 @@ import com.example.alphakids.ui.components.MainBottomBar
 import com.example.alphakids.ui.components.PrimaryButton
 import com.example.alphakids.ui.components.SearchBar
 import com.example.alphakids.ui.components.WordListItem
+import androidx.compose.material.icons.automirrored.rounded.ListAlt
 
 val difficultiesList = listOf("Fácil", "Intermedio", "Difícil")
 
@@ -136,13 +137,13 @@ fun WordsScreen(
                 PrimaryButton(
                     modifier = Modifier.weight(1f),
                     text = "Crear palabra",
-                    icon = Icons.Rounded.ListAlt,
+                    icon = Icons.AutoMirrored.Rounded.ListAlt,
                     onClick = onCreateWordClick
                 )
                 PrimaryButton(
                     modifier = Modifier.weight(1f),
                     text = "Asignar palabra",
-                    icon = Icons.Rounded.ListAlt,
+                    icon = Icons.AutoMirrored.Rounded.ListAlt,
                     onClick = onAssignWordClick,
                     enabled = words.isNotEmpty()
                 )

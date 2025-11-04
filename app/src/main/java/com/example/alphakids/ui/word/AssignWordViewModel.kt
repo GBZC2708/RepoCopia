@@ -26,6 +26,7 @@ sealed interface AssignmentUiState {
 }
 
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class AssignWordViewModel @Inject constructor(
     private val createAssignmentUseCase: CreateAssignmentUseCase,
     private val getStudentsForDocenteUseCase: GetStudentsForDocenteUseCase,
