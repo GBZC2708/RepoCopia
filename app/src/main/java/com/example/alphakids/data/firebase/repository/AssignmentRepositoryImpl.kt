@@ -125,28 +125,27 @@ class AssignmentRepositoryImpl @Inject constructor(
 
     override fun getStudentsForDocente(docenteId: String): Flow<List<Estudiante>> {
         Log.d("AssignmentRepo", "Fetching students for docente: $docenteId")
-        val query: Query = estudiantesCol.orderBy("grado", Query.Direction.ASCENDING)
-        return query.snapshots()
+        return estudiantesCol
+            // Antes solo ordenábamos por grado, lo que impedía que el docente viera a todos sus alumnos.
+            // Al filtrar explícitamente por id_docente garantizamos que reciba el listado completo correcto.
+            .whereEqualTo("id_docente", docenteId)
+            .snapshots()
             .map { querySnapshot ->
                 val estudiantes = querySnapshot.toObjects(Estudiante::class.java)
 
-                val resolvedStudents = if (estudiantes.isEmpty()) {
+                if (estudiantes.isEmpty()) {
                     Log.w(
                         "AssignmentRepo",
-                        "No se encontraron estudiantes en Firestore. Usando datos de ejemplo para pruebas."
+                        "Sin coincidencias reales para el docente, devolviendo datos de ejemplo."
                     )
                     sampleStudents
                 } else {
-                    estudiantes
+                    estudiantes.sortedWith(
+                        compareBy<Estudiante> { it.grado ?: "" }
+                            .thenBy { it.seccion ?: "" }
+                            .thenBy { it.nombre }
+                    )
                 }
-
-                // Ordenamos priorizando los asignados al docente y luego alfabéticamente.
-                resolvedStudents.sortedWith(
-                    compareByDescending<Estudiante> { it.idDocente == docenteId }
-                        .thenBy { it.grado }
-                        .thenBy { it.seccion }
-                        .thenBy { it.nombre }
-                )
             }
             .catch { exception ->
                 Log.e("AssignmentRepo", "Error in student flow for docente $docenteId", exception)

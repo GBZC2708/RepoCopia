@@ -41,6 +41,8 @@ import com.example.alphakids.ui.screens.tutor.studentprofile.CreateStudentProfil
 import com.example.alphakids.ui.screens.tutor.studentprofile.EditStudentProfileScreen
 import com.example.alphakids.ui.screens.tutor.games.AssignedWordsScreen
 import com.example.alphakids.ui.screens.tutor.games.CameraOCRScreen
+import com.example.alphakids.ui.screens.tutor.games.DiscoverCameraScreen
+import com.example.alphakids.ui.screens.tutor.games.DiscoverGameScreen
 import com.example.alphakids.ui.screens.tutor.games.GameWordsScreen
 import com.example.alphakids.ui.screens.tutor.games.MyGamesScreen
 import com.example.alphakids.ui.screens.tutor.games.WordHistoryScreen
@@ -193,7 +195,8 @@ fun AppNavHost(
             MyGamesScreen(
                 onBackClick = { navController.popBackStack() },
                 onWordsGameClick = { navController.navigate(Routes.gameWordsRoute(studentId)) }, // PASA EL ID
-                onHistoryClick = { navController.navigate(Routes.WORD_HISTORY) }
+                onHistoryClick = { navController.navigate(Routes.WORD_HISTORY) },
+                onDiscoverClick = { navController.navigate(Routes.discoverGameRoute(studentId)) }
             )
         }
 
@@ -208,6 +211,31 @@ fun AppNavHost(
                 onWordClick = { assignmentId ->
                     navController.navigate(Routes.wordPuzzleRoute(assignmentId))
                 }
+            )
+        }
+
+        composable(
+            route = Routes.DISCOVER_GAME,
+            arguments = listOf(navArgument("studentId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val studentId = backStackEntry.arguments?.getString("studentId") ?: return@composable
+
+            DiscoverGameScreen(
+                isLoading = false,
+                onBackClick = { navController.popBackStack() },
+                onScanClick = { navController.navigate(Routes.discoverCameraRoute(studentId)) }
+            )
+        }
+
+        composable(
+            route = Routes.DISCOVER_CAMERA,
+            arguments = listOf(navArgument("studentId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val studentId = backStackEntry.arguments?.getString("studentId") ?: ""
+
+            DiscoverCameraScreen(
+                studentId = studentId,
+                onBackClick = { navController.popBackStack() }
             )
         }
         // Pantalla de Palabras Asignadas

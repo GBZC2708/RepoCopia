@@ -82,8 +82,10 @@ class StudentViewModel @Inject constructor(
                 seccion = seccion,
                 idTutor = tutorId,
                 idInstitucion = idInstitucion,
-                idDocente = "",
-                fotoPerfil = null
+                // Guardamos null para que Firestore respete el campo id_docente esperado.
+                idDocente = null,
+                fotoPerfil = null,
+                monedas = 0
             )
 
             Log.d("StudentViewModel", "Intentando crear estudiante: ${nuevoEstudiante.nombre} con idTutor: $tutorId")

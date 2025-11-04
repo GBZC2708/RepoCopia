@@ -75,6 +75,16 @@ object Routes {
      */
     fun gameWordsRoute(studentId: String) = "$GAME_WORDS_BASE/$studentId"
 
+    const val DISCOVER_GAME_BASE = "discover_game"
+    const val DISCOVER_GAME = "$DISCOVER_GAME_BASE/{studentId}"
+
+    fun discoverGameRoute(studentId: String) = "$DISCOVER_GAME_BASE/$studentId"
+
+    const val DISCOVER_CAMERA_BASE = "discover_camera"
+    const val DISCOVER_CAMERA = "$DISCOVER_CAMERA_BASE/{studentId}"
+
+    fun discoverCameraRoute(studentId: String) = "$DISCOVER_CAMERA_BASE/$studentId"
+
     const val ASSIGNED_WORDS = "assigned_words/{studentId}"
 
     /**

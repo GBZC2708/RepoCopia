@@ -40,7 +40,8 @@ class StudentRepositoryImpl @Inject constructor(
             idDocente = "",
             idInstitucion = "Institución A",
             fotoPerfil = null,
-            fechaRegistro = null
+            fechaRegistro = null,
+            monedas = 0
         ),
         Estudiante(
             id = "sample_student_tutor_2",
@@ -53,7 +54,8 @@ class StudentRepositoryImpl @Inject constructor(
             idDocente = "",
             idInstitucion = "Institución B",
             fotoPerfil = null,
-            fechaRegistro = null
+            fechaRegistro = null,
+            monedas = 0
         )
     )
 
@@ -117,6 +119,28 @@ class StudentRepositoryImpl @Inject constructor(
             Result.success(Unit)
         } catch (e: Exception) {
             Log.e(TAG, "Error al actualizar estudiante ${estudiante.id}", e)
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun adjustStudentCoins(studentId: String, delta: Int): Result<Int> {
+        return try {
+            val newBalance = db.runTransaction { transaction ->
+                val docRef = estudiantesCol.document(studentId)
+                val snapshot = transaction.get(docRef)
+
+                val currentCoins = snapshot.getLong("monedas")?.toInt() ?: 0
+                val updatedCoins = (currentCoins + delta).coerceAtLeast(0)
+
+                // Guardamos el saldo actualizado directamente en Firestore para mantener sincronía con la app.
+                transaction.update(docRef, mapOf("monedas" to updatedCoins))
+                updatedCoins
+            }
+
+            Log.d(TAG, "Balance actualizado para estudiante $studentId: $newBalance")
+            Result.success(newBalance)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error al ajustar monedas para estudiante $studentId", e)
             Result.failure(e)
         }
     }

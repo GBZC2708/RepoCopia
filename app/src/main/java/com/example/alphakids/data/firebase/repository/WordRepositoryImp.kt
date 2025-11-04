@@ -238,4 +238,31 @@ class WordRepositoryImpl @Inject constructor(
                 emit(sampleWords)
             }
     }
+
+    override suspend fun findWordByTextOptions(options: List<String>): Word? {
+        if (options.isEmpty()) return null
+
+        val sanitized = options
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+            .take(10)
+
+        if (sanitized.isEmpty()) return null
+
+        return try {
+            val snapshot = palabrasCol
+                .whereIn("texto", sanitized)
+                .limit(1)
+                .get()
+                .await()
+
+            snapshot.toObjects(Palabra::class.java)
+                .firstOrNull()
+                ?.let(WordMapper::toDomain)
+        } catch (e: Exception) {
+            Log.e("WordRepo", "Error buscando palabra por texto", e)
+            null
+        }
+    }
 }

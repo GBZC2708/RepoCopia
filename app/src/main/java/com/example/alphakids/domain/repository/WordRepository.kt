@@ -41,4 +41,6 @@ interface WordRepository {
         dificultad: String? = null,
         sortBy: WordSortOrder = WordSortOrder.TEXT_ASC
     ): Flow<List<Word>>
+
+    suspend fun findWordByTextOptions(options: List<String>): Word?
 }

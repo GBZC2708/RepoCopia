@@ -3,7 +3,10 @@ package com.example.alphakids.ui.screens.tutor.games
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -31,7 +34,8 @@ import com.example.alphakids.ui.theme.dmSansFamily
 fun MyGamesScreen(
     onBackClick: () -> Unit,
     onWordsGameClick: () -> Unit,
-    onHistoryClick: () -> Unit
+    onHistoryClick: () -> Unit,
+    onDiscoverClick: () -> Unit
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -83,11 +87,19 @@ fun MyGamesScreen(
                 )
                 DashboardActionCard(
                     modifier = Modifier.weight(1f),
-                    text = "En desarrollo",
+                    text = "Descubre",
                     icon = Icons.Rounded.Android,
-                    onClick = { /* No-op */ }
+                    // Nuevo minijuego que reutiliza la lógica de cámara para explorar palabras.
+                    onClick = onDiscoverClick
                 )
             }
+            Spacer(modifier = Modifier.height(16.dp))
+            DashboardActionCard(
+                modifier = Modifier.fillMaxWidth(),
+                text = "En desarrollo",
+                icon = Icons.Rounded.Android,
+                onClick = { /* Placeholder para futuros juegos */ }
+            )
         }
     }
 }
@@ -99,7 +111,8 @@ fun MyGamesScreenPreview() {
         MyGamesScreen(
             onBackClick = {},
             onWordsGameClick = {},
-            onHistoryClick = {}
+            onHistoryClick = {},
+            onDiscoverClick = {}
         )
     }
 }

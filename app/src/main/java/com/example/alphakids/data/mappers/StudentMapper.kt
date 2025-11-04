@@ -21,7 +21,8 @@ object StudentMapper {
             seccionAcademica = dto.seccionAcademica,
             docenteId = dto.docenteId,
             fotoPerfilUrl = dto.fotoPerfil,
-            fechaRegistroMillis = dto.fechaRegistro?.toDate()?.time
+            fechaRegistroMillis = dto.fechaRegistro?.toDate()?.time,
+            monedas = dto.monedas
         )
     }
 
@@ -41,7 +42,8 @@ object StudentMapper {
             seccionAcademica = model.seccionAcademica,
             docenteId = model.docenteId,
             fotoPerfil = model.fotoPerfilUrl,
-            fechaRegistro = null
+            fechaRegistro = null,
+            monedas = model.monedas
         )
     }
 }
