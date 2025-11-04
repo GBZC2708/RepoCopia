@@ -11,15 +11,16 @@ object StudentMapper {
             nombre = dto.nombre,
             apellido = dto.apellido,
             edad = dto.edad,
-            grado = dto.grado ?: "",
-            seccion = dto.seccion ?: "",
+            // Compatibilidad con documentos antiguos donde grado/sección se almacenaron con otras claves.
+            grado = dto.grado ?: dto.gradoAcademico ?: "",
+            seccion = dto.seccion ?: dto.seccionAcademica ?: "",
             idTutor = dto.idTutor,
-            idDocente = dto.idDocente ?: "",
+            idDocente = dto.idDocente ?: dto.docenteId ?: "",
             idInstitucion = dto.idInstitucion ?: "",
             institucion = dto.institucion,
-            gradoAcademico = dto.gradoAcademico,
-            seccionAcademica = dto.seccionAcademica,
-            docenteId = dto.docenteId,
+            gradoAcademico = dto.gradoAcademico ?: dto.grado,
+            seccionAcademica = dto.seccionAcademica ?: dto.seccion,
+            docenteId = dto.docenteId ?: dto.idDocente,
             fotoPerfilUrl = dto.fotoPerfil,
             fechaRegistroMillis = dto.fechaRegistro?.toDate()?.time,
             monedas = dto.monedas
@@ -35,12 +36,20 @@ object StudentMapper {
             grado = model.grado,
             seccion = model.seccion,
             idTutor = model.idTutor,
-            idDocente = model.idDocente,
-            idInstitucion = model.idInstitucion,
+            idDocente = when {
+                model.idDocente.isNotBlank() -> model.idDocente
+                !model.docenteId.isNullOrBlank() -> model.docenteId
+                else -> null
+            },
+            idInstitucion = model.idInstitucion.takeIf { it.isNotBlank() },
             institucion = model.institucion,
-            gradoAcademico = model.gradoAcademico,
-            seccionAcademica = model.seccionAcademica,
-            docenteId = model.docenteId,
+            gradoAcademico = (model.gradoAcademico ?: model.grado).takeIf { it.isNotBlank() },
+            seccionAcademica = (model.seccionAcademica ?: model.seccion).takeIf { it.isNotBlank() },
+            docenteId = when {
+                !model.docenteId.isNullOrBlank() -> model.docenteId
+                model.idDocente.isNotBlank() -> model.idDocente
+                else -> null
+            },
             fotoPerfil = model.fotoPerfilUrl,
             fechaRegistro = null,
             monedas = model.monedas
