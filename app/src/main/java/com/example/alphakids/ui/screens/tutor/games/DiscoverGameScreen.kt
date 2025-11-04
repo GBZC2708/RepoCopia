@@ -79,7 +79,9 @@ fun DiscoverGameScreen(
                         icon = Icons.Rounded.Explore,
                         difficulty = "Libre",
                         // Reutilizamos el mismo botón de "Escanear" para saltar a la cámara.
-                        onTakePhotoClick = onScanClick
+                        onTakePhotoClick = onScanClick,
+                        questionText = null,
+                        showLetterPlaceholders = false
                     )
                 }
             }

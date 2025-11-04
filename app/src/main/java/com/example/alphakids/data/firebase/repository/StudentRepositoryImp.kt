@@ -99,6 +99,18 @@ class StudentRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun observeStudentById(studentId: String): Flow<Estudiante?> {
+        // Mantiene sincronizado el perfil del estudiante con los cambios que se produzcan en Firestore.
+        return estudiantesCol
+            .document(studentId)
+            .snapshots()
+            .map { snapshot -> snapshot.toObject(Estudiante::class.java) }
+            .catch { exception ->
+                Log.e(TAG, "Error observando estudiante $studentId", exception)
+                emit(null)
+            }
+    }
+
     override suspend fun updateStudent(estudiante: Estudiante): Result<Unit> {
         if (estudiante.id.isBlank()) {
             return Result.failure(IllegalArgumentException("El ID del estudiante no puede estar vacío."))

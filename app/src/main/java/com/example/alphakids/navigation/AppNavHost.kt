@@ -18,6 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.alphakids.domain.models.UserRole
 import com.example.alphakids.ui.auth.AuthViewModel
 import com.example.alphakids.ui.word.WordUiState
@@ -47,6 +48,7 @@ import com.example.alphakids.ui.screens.tutor.games.GameWordsScreen
 import com.example.alphakids.ui.screens.tutor.games.MyGamesScreen
 import com.example.alphakids.ui.screens.tutor.games.WordHistoryScreen
 import com.example.alphakids.ui.screens.tutor.games.WordPuzzleScreen
+import com.example.alphakids.ui.screens.tutor.home.StudentHomeViewModel
 
 
 @Composable
@@ -155,11 +157,15 @@ fun AppNavHost(
             arguments = listOf(navArgument("studentId") { type = NavType.StringType })
         ) { backStackEntry ->
             val studentId = backStackEntry.arguments?.getString("studentId") ?: "default"
+            val studentHomeViewModel: StudentHomeViewModel = hiltViewModel(backStackEntry)
+            val homeUiState by studentHomeViewModel.uiState.collectAsStateWithLifecycle()
 
-            val studentName = if (studentId == "sofia_id") "Sofía" else "Estudiante"
+            LaunchedEffect(studentId) {
+                studentHomeViewModel.loadStudent(studentId)
+            }
 
             StudentHomeScreen(
-                studentName = studentName,
+                uiState = homeUiState,
                 onLogoutClick = onLogout,
                 onBackClick = { navController.popBackStack() },
                 onPlayClick = {
@@ -168,7 +174,7 @@ fun AppNavHost(
                         "Play button clicked, navigating to MyGames with studentId: $studentId"
                     )
                     navController.navigate(Routes.myGamesRoute(studentId))
-                }, // <-- NAVEGA A LA SELECCIÓN DE JUEGOS
+                },
                 onDictionaryClick = { navigateToStudentBottomNav(Routes.dictionaryRoute(studentId)) },
                 onAchievementsClick = { navigateToStudentBottomNav(Routes.achievementsRoute(studentId)) },
                 onSettingsClick = { navController.navigate(Routes.editStudentProfileRoute(studentId)) },
@@ -180,7 +186,8 @@ fun AppNavHost(
                     }
                     navigateToStudentBottomNav(targetRoute)
                 },
-                currentRoute = "home"
+                currentRoute = "home",
+                onRetryLoadProfile = studentHomeViewModel::retry
             )
         }
 

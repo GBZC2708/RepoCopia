@@ -12,6 +12,8 @@ interface StudentRepository {
 
     suspend fun getStudentById(studentId: String): Estudiante?
 
+    fun observeStudentById(studentId: String): Flow<Estudiante?>
+
     suspend fun updateStudent(estudiante: Estudiante): Result<Unit>
 
     suspend fun adjustStudentCoins(studentId: String, delta: Int): Result<Int>

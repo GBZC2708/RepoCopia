@@ -8,6 +8,7 @@ import com.example.alphakids.domain.models.Word
 import com.example.alphakids.domain.usecases.AdjustStudentCoinsUseCase
 import com.example.alphakids.domain.usecases.FindWordByTextUseCase
 import com.example.alphakids.domain.usecases.HasDiscoveredWordUseCase
+import com.example.alphakids.domain.usecases.ObserveStudentByIdUseCase
 import com.example.alphakids.domain.usecases.ObserveDiscoveredWordsUseCase
 import com.example.alphakids.domain.usecases.SaveDiscoveredWordUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,6 +16,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -24,6 +26,7 @@ private const val ATTEMPTS_LIMIT = 3
 private const val SUCCESS_REWARD = 10
 // Penalización ligera cuando la palabra no pertenece al diccionario.
 private const val FAILURE_PENALTY = -5
+private const val INITIAL_STATUS = "Ubica la palabra en el recuadro y presiona Escanear"
 
 /**
  * Representa el estado de la dinámica "Descubre" en tiempo real.
@@ -31,13 +34,14 @@ private const val FAILURE_PENALTY = -5
 data class DiscoverCameraUiState(
     val attemptsLeft: Int = ATTEMPTS_LIMIT,
     val lastDetectedWord: String = "",
-    val statusMessage: String = "Escanea una palabra para comenzar",
+    val statusMessage: String = INITIAL_STATUS,
     val lastCoinsDelta: Int = 0,
     val totalCoins: Int? = null,
     val isProcessing: Boolean = false,
     val gameFinished: Boolean = false,
     val error: String? = null,
-    val discoveredWordIds: Set<String> = emptySet()
+    val discoveredWordIds: Set<String> = emptySet(),
+    val studentName: String = ""
 )
 
 @HiltViewModel
@@ -46,14 +50,16 @@ class DiscoverCameraViewModel @Inject constructor(
     private val observeDiscoveredWords: ObserveDiscoveredWordsUseCase,
     private val hasDiscoveredWord: HasDiscoveredWordUseCase,
     private val saveDiscoveredWord: SaveDiscoveredWordUseCase,
-    private val adjustStudentCoins: AdjustStudentCoinsUseCase
+    private val adjustStudentCoins: AdjustStudentCoinsUseCase,
+    private val observeStudentById: ObserveStudentByIdUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DiscoverCameraUiState())
     val uiState: StateFlow<DiscoverCameraUiState> = _uiState.asStateFlow()
 
     private var studentId: String? = null
-    private var watchJob: Job? = null
+    private var discoveredWordsJob: Job? = null
+    private var studentObserverJob: Job? = null
     private var lastProcessTime = 0L
     private var lastProcessedWord = ""
 
@@ -61,38 +67,60 @@ class DiscoverCameraViewModel @Inject constructor(
         if (studentId == targetStudentId) return
         studentId = targetStudentId
 
+        resetGame()
+
         // Observamos las palabras ya descubiertas para evitar duplicados.
-        watchJob?.cancel()
-        watchJob = viewModelScope.launch {
+        discoveredWordsJob?.cancel()
+        discoveredWordsJob = viewModelScope.launch {
             observeDiscoveredWords(targetStudentId).collect { discovered ->
                 _uiState.update { state ->
                     state.copy(discoveredWordIds = discovered.map { it.wordId }.toSet())
                 }
             }
         }
+
+        // Escuchamos los cambios del perfil para mostrar nombre y monedas actualizadas.
+        studentObserverJob?.cancel()
+        studentObserverJob = viewModelScope.launch {
+            observeStudentById(targetStudentId).collectLatest { student ->
+                _uiState.update { state ->
+                    if (student == null) {
+                        state.copy(
+                            studentName = "",
+                            totalCoins = null,
+                            error = "No pudimos cargar la información del perfil.",
+                            statusMessage = "Intenta nuevamente en unos segundos"
+                        )
+                    } else {
+                        state.copy(
+                            studentName = student.nombre,
+                            totalCoins = student.monedas,
+                            error = null,
+                            statusMessage = if (state.statusMessage.isBlank()) INITIAL_STATUS else state.statusMessage
+                        )
+                    }
+                }
+            }
+        }
     }
 
     fun resetGame() {
-        _uiState.value = DiscoverCameraUiState()
+        val current = _uiState.value
+        _uiState.value = DiscoverCameraUiState(
+            studentName = current.studentName,
+            totalCoins = current.totalCoins,
+            discoveredWordIds = current.discoveredWordIds
+        )
         lastProcessedWord = ""
         lastProcessTime = 0L
     }
 
-    fun handleDetectedText(rawText: String) {
+    fun handleDetectedWord(normalizedWord: String) {
         val student = studentId ?: return
         val now = System.currentTimeMillis()
 
-        if (_uiState.value.isProcessing || _uiState.value.gameFinished) return
+        if (_uiState.value.gameFinished) return
         if (now - lastProcessTime < TimeUnit.SECONDS.toMillis(2)) return
-
-        // Tomamos la primera palabra relevante detectada por OCR.
-        val normalizedWord = rawText
-            .split("\n")
-            .flatMap { it.split(" ") }
-            .firstOrNull { candidate -> candidate.any { it.isLetter() } }
-            ?.filter { it.isLetter() }
-            ?.lowercase()
-            ?: return
 
         if (normalizedWord == lastProcessedWord) return
 
@@ -185,7 +213,7 @@ class DiscoverCameraViewModel @Inject constructor(
             it.copy(
                 attemptsLeft = attemptsLeft,
                 lastDetectedWord = detectedWord,
-                statusMessage = "No existe",
+                statusMessage = "No encontramos esa palabra en tu diccionario",
                 lastCoinsDelta = FAILURE_PENALTY,
                 totalCoins = updatedCoins,
                 isProcessing = false,
@@ -194,8 +222,55 @@ class DiscoverCameraViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Valida si todavía se puede escanear y actualiza el estado para informar a la UI.
+     */
+    fun onScanRequested(): Boolean {
+        val current = _uiState.value
+        if (current.isProcessing) {
+            return false
+        }
+        if (current.gameFinished) {
+            return false
+        }
+
+        if (current.attemptsLeft <= 0) {
+            _uiState.update {
+                it.copy(
+                    statusMessage = "Se acabaron los intentos",
+                    gameFinished = true,
+                    error = null
+                )
+            }
+            return false
+        }
+
+        _uiState.update {
+            it.copy(
+                statusMessage = "Buscando palabra...",
+                error = null,
+                lastCoinsDelta = 0,
+                isProcessing = true
+            )
+        }
+        return true
+    }
+
+    /** Notifica que no se detectó texto válido en el último intento. */
+    fun onEmptyScanResult() {
+        _uiState.update {
+            it.copy(
+                isProcessing = false,
+                lastDetectedWord = "",
+                statusMessage = "No pudimos leer la palabra, ajusta tu cámara",
+                lastCoinsDelta = 0
+            )
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
-        watchJob?.cancel()
+        discoveredWordsJob?.cancel()
+        studentObserverJob?.cancel()
     }
 }

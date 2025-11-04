@@ -2,6 +2,7 @@ package com.example.alphakids.ui.screens.tutor.games
 
 import android.Manifest
 import android.speech.tts.TextToSpeech
+import android.util.Log
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
@@ -47,13 +48,16 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.foundation.layout.BoxScope
+import androidx.core.content.ContextCompat
 import com.example.alphakids.ui.components.PrimaryButton
+import com.example.alphakids.ui.screens.camera.ScannerOverlay
 import com.example.alphakids.ui.theme.dmSansFamily
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognizer
+import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.CoroutineScope
@@ -61,6 +65,7 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Cámara especializada para el modo "Descubre". Lee palabras y delega la lógica al ViewModel.
@@ -83,6 +88,9 @@ fun DiscoverCameraScreen(
     var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
     val executor: ExecutorService = remember { Executors.newSingleThreadExecutor() }
     val recognizer = remember { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
+    val mainExecutor = remember { ContextCompat.getMainExecutor(context) }
+    // Flag atómico que consumen los analizadores para procesar un único fotograma por petición.
+    val scanRequestFlag = remember { AtomicBoolean(false) }
 
     // Text to Speech para guiar al niño en cada resultado.
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
@@ -129,7 +137,9 @@ fun DiscoverCameraScreen(
     Scaffold(
         topBar = {
             DiscoverCameraTopBar(
+                studentName = uiState.studentName,
                 attemptsLeft = uiState.attemptsLeft,
+                totalCoins = uiState.totalCoins,
                 onBackClick = onBackClick
             )
         }
@@ -150,30 +160,51 @@ fun DiscoverCameraScreen(
                 modifier = Modifier.fillMaxSize()
             )
 
-            DisposableEffect(previewView, cameraProvider) {
-                if (previewView != null && cameraProvider == null) {
-                    val provider = ProcessCameraProvider.getInstance(context).get()
-                    cameraProvider = provider
-                    startCamera(
-                        provider,
-                        previewView!!,
-                        executor,
-                        lifecycleOwner,
-                        coroutineScope
-                    ) { imageProxy ->
-                        processImage(
-                            imageProxy,
-                            recognizer,
-                            viewModel::handleDetectedText
-                        )
-                    }
+            ScannerOverlay(modifier = Modifier.fillMaxSize())
+
+            // Iniciamos CameraX de forma asíncrona cada vez que la vista o los permisos cambian.
+            DisposableEffect(previewView, cameraPermission.status.isGranted) {
+                if (previewView != null && cameraPermission.status.isGranted) {
+                    val providerFuture = ProcessCameraProvider.getInstance(context)
+                    providerFuture.addListener({
+                        try {
+                            val provider = providerFuture.get()
+                            cameraProvider = provider
+                            startCamera(
+                                cameraProvider = provider,
+                                previewView = previewView!!,
+                                executor = executor,
+                                lifecycleOwner = lifecycleOwner,
+                                scope = coroutineScope,
+                                recognizer = recognizer,
+                                shouldAnalyze = { scanRequestFlag.compareAndSet(true, false) },
+                                onWordDetected = { word ->
+                                    coroutineScope.launch { viewModel.handleDetectedWord(word) }
+                                },
+                                onEmptyResult = {
+                                    coroutineScope.launch { viewModel.onEmptyScanResult() }
+                                }
+                            )
+                        } catch (e: Exception) {
+                            Log.e("DiscoverCameraScreen", "No se pudo iniciar la cámara", e)
+                        }
+                    }, mainExecutor)
                 }
 
-                onDispose { cameraProvider?.unbindAll() }
+                onDispose {
+                    cameraProvider?.unbindAll()
+                }
             }
 
             // Panel inferior que resume el resultado actual.
-            DiscoverStatusPanel(uiState = uiState)
+            DiscoverStatusPanel(
+                uiState = uiState,
+                onScanClick = {
+                    if (viewModel.onScanRequested()) {
+                        scanRequestFlag.set(true)
+                    }
+                }
+            )
         }
     }
 
@@ -182,6 +213,7 @@ fun DiscoverCameraScreen(
         DiscoverResultDialog(
             statusMessage = uiState.statusMessage,
             coinsDelta = uiState.lastCoinsDelta,
+            currentCoins = uiState.totalCoins,
             onRetry = viewModel::resetGame,
             onExit = onBackClick
         )
@@ -190,7 +222,9 @@ fun DiscoverCameraScreen(
 
 @Composable
 private fun DiscoverCameraTopBar(
+    studentName: String,
     attemptsLeft: Int,
+    totalCoins: Int?,
     onBackClick: () -> Unit
 ) {
     Row(
@@ -208,18 +242,51 @@ private fun DiscoverCameraTopBar(
                 tint = Color.White
             )
         }
-        Text(
-            text = "Intentos restantes: $attemptsLeft",
-            color = Color.White,
-            fontFamily = dmSansFamily,
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp
-        )
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 12.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Perfil: ${studentName.ifBlank { "Sin nombre" }}",
+                color = Color.White,
+                fontFamily = dmSansFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+            Text(
+                text = "Intentos restantes: $attemptsLeft",
+                color = Color.White.copy(alpha = 0.9f),
+                fontFamily = dmSansFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp
+            )
+        }
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = "Monedas",
+                color = Color.White.copy(alpha = 0.7f),
+                fontFamily = dmSansFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 12.sp
+            )
+            Text(
+                text = totalCoins?.toString() ?: "--",
+                color = Color.White,
+                fontFamily = dmSansFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+        }
     }
 }
 
 @Composable
-private fun BoxScope.DiscoverStatusPanel(uiState: DiscoverCameraUiState) {
+private fun BoxScope.DiscoverStatusPanel(
+    uiState: DiscoverCameraUiState,
+    onScanClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .align(Alignment.BottomCenter)
@@ -265,6 +332,17 @@ private fun BoxScope.DiscoverStatusPanel(uiState: DiscoverCameraUiState) {
                 fontSize = 12.sp
             )
         }
+        Spacer(modifier = Modifier.height(12.dp))
+        // Botón principal que dispara el análisis controlado del fotograma actual.
+        PrimaryButton(
+            text = when {
+                uiState.attemptsLeft <= 0 -> "Sin intentos"
+                uiState.isProcessing -> "Escaneando..."
+                else -> "Escanear"
+            },
+            enabled = !uiState.isProcessing && uiState.attemptsLeft > 0,
+            onClick = onScanClick
+        )
     }
 }
 
@@ -272,6 +350,7 @@ private fun BoxScope.DiscoverStatusPanel(uiState: DiscoverCameraUiState) {
 private fun DiscoverResultDialog(
     statusMessage: String,
     coinsDelta: Int,
+    currentCoins: Int?,
     onRetry: () -> Unit,
     onExit: () -> Unit
 ) {
@@ -292,12 +371,15 @@ private fun DiscoverResultDialog(
         title = { Text(statusMessage, fontFamily = dmSansFamily) },
         text = {
             Text(
-                text = if (coinsDelta > 0) {
-                    "Ganaste $coinsDelta monedas"
-                } else if (coinsDelta < 0) {
-                    "Perdiste ${coinsDelta * -1} monedas"
-                } else {
-                    "Sigue intentando para conseguir monedas"
+                text = buildString {
+                    when {
+                        coinsDelta > 0 -> append("Ganaste $coinsDelta monedas")
+                        coinsDelta < 0 -> append("Perdiste ${coinsDelta * -1} monedas")
+                        else -> append("Sigue intentando para conseguir monedas")
+                    }
+                    currentCoins?.let { total ->
+                        append("\nMonedas actuales: $total")
+                    }
                 }
             )
         }
@@ -321,7 +403,10 @@ private fun startCamera(
     executor: ExecutorService,
     lifecycleOwner: androidx.lifecycle.LifecycleOwner,
     scope: CoroutineScope,
-    onImageAvailable: (ImageProxy) -> Unit
+    recognizer: TextRecognizer,
+    shouldAnalyze: () -> Boolean,
+    onWordDetected: (String) -> Unit,
+    onEmptyResult: () -> Unit
 ) {
     val preview = Preview.Builder().build().also {
         it.setSurfaceProvider(previewView.surfaceProvider)
@@ -332,7 +417,21 @@ private fun startCamera(
         .build()
         .apply {
             setAnalyzer(executor) { imageProxy ->
-                scope.launch { onImageAvailable(imageProxy) }
+                if (!shouldAnalyze()) {
+                    imageProxy.close()
+                    return@setAnalyzer
+                }
+
+                processImage(
+                    imageProxy = imageProxy,
+                    recognizer = recognizer,
+                    onWordDetected = { word ->
+                        scope.launch { onWordDetected(word) }
+                    },
+                    onEmptyResult = {
+                        scope.launch { onEmptyResult() }
+                    }
+                )
             }
         }
 
@@ -345,20 +444,68 @@ private fun startCamera(
 private fun processImage(
     imageProxy: ImageProxy,
     recognizer: TextRecognizer,
-    onTextDetected: (String) -> Unit
+    onWordDetected: (String) -> Unit,
+    onEmptyResult: () -> Unit
 ) {
     val mediaImage = imageProxy.image
     if (mediaImage != null) {
-        val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+        val rotation = imageProxy.imageInfo.rotationDegrees
+        val image = InputImage.fromMediaImage(mediaImage, rotation)
         recognizer.process(image)
+            // Reconocemos el texto y filtramos únicamente lo que cae dentro del recuadro visible.
             .addOnSuccessListener { result ->
-                val detected = result.text
-                if (detected.isNotBlank()) {
-                    onTextDetected(detected)
+                val candidate = extractWordFromRegion(result, imageProxy, rotation, SCAN_ROI)
+                if (candidate != null) {
+                    onWordDetected(candidate)
+                } else {
+                    onEmptyResult()
                 }
+            }
+            .addOnFailureListener { error ->
+                Log.e("DiscoverCameraScreen", "Error procesando imagen", error)
+                onEmptyResult()
             }
             .addOnCompleteListener { imageProxy.close() }
     } else {
+        onEmptyResult()
         imageProxy.close()
     }
+}
+
+private data class NormalizedRect(val left: Float, val top: Float, val right: Float, val bottom: Float)
+
+// Región de interés centrada que coincide con la superposición mostrada al usuario.
+private val SCAN_ROI = NormalizedRect(
+    left = (1f - 0.7f) / 2f,
+    top = (1f - 0.5f) / 2f,
+    right = 1f - (1f - 0.7f) / 2f,
+    bottom = 1f - (1f - 0.5f) / 2f
+)
+
+private fun extractWordFromRegion(
+    textResult: Text,
+    imageProxy: ImageProxy,
+    rotationDegrees: Int,
+    region: NormalizedRect
+): String? {
+    val imageWidth = if (rotationDegrees % 180 == 0) imageProxy.width else imageProxy.height
+    val imageHeight = if (rotationDegrees % 180 == 0) imageProxy.height else imageProxy.width
+
+    textResult.textBlocks.forEach { block ->
+        block.lines.forEach { line ->
+            line.elements.forEach { element ->
+                val boundingBox = element.boundingBox ?: return@forEach
+                val centerX = boundingBox.centerX().toFloat() / imageWidth
+                val centerY = boundingBox.centerY().toFloat() / imageHeight
+
+                if (centerX in region.left..region.right && centerY in region.top..region.bottom) {
+                    val normalized = element.text.filter { it.isLetter() }
+                    if (normalized.isNotBlank()) {
+                        return normalized.lowercase()
+                    }
+                }
+            }
+        }
+    }
+    return null
 }
