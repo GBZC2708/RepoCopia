@@ -66,13 +66,13 @@ fun EditStudentProfileScreen(
     val selectedStudent by viewModel.selectedStudent.collectAsState()
     val editUiState by viewModel.editUiState.collectAsState()
 
-    // Cargar el alumno si aplica
+    // Cargar el estudiante si aplica
     LaunchedEffect(studentId) {
         // Si tu VM tiene un loader, úsalo (si no, quita este bloque):
         // viewModel.loadStudentById(studentId)
     }
 
-    // Estados locales (se inicializan con el alumno seleccionado)
+    // Estados locales (se inicializan con el estudiante seleccionado)
     var nombre by remember(selectedStudent) { mutableStateOf(selectedStudent?.nombre ?: "") }
     var apellido by remember(selectedStudent) { mutableStateOf(selectedStudent?.apellido ?: "") }
     var edad by remember(selectedStudent) { mutableStateOf(selectedStudent?.edad?.toString() ?: "") }
@@ -83,8 +83,8 @@ fun EditStudentProfileScreen(
     val latestOnSaveSuccess by rememberUpdatedState(newValue = onSaveSuccess)
 
     fun onSave() {
-        val alumno = selectedStudent
-        if (alumno == null) {
+        val estudiante = selectedStudent
+        if (estudiante == null) {
             Toast.makeText(context, "No se pudo cargar el estudiante.", Toast.LENGTH_SHORT).show()
             return
         }
@@ -100,16 +100,16 @@ fun EditStudentProfileScreen(
 
         // Llama al update del VM (ajusta nombres de parámetros a tu implementación real)
         viewModel.updateStudent(
-            id = alumno.id,
+            id = estudiante.id,
             nombre = nombre,
             apellido = apellido,
             edad = edadInt,
             grado = grado,
             seccion = seccion,
             idInstitucion = institucion,
-            idTutor = alumno.idTutor ?: "",
-            idDocente = alumno.idDocente ?: "",
-            fotoPerfil = alumno.fotoPerfil ?: ""
+            idTutor = estudiante.idTutor ?: "",
+            idDocente = estudiante.idDocente ?: "",
+            fotoPerfil = estudiante.fotoPerfil ?: ""
         )
 
 

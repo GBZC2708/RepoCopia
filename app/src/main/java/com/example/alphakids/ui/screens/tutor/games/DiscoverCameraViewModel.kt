@@ -25,7 +25,7 @@ import javax.inject.Inject
 private const val ATTEMPTS_LIMIT = 3
 private const val SUCCESS_REWARD = 10
 // Penalización ligera cuando la palabra no pertenece al diccionario.
-private const val FAILURE_PENALTY = -5
+private const val FAILURE_PENALTY = 0
 private const val INITIAL_STATUS = "Ubica la palabra en el recuadro y presiona Escanear"
 
 /**
@@ -242,8 +242,6 @@ class DiscoverCameraViewModel @Inject constructor(
 
     private suspend fun applyPenalty(student: String, detectedWord: String) {
         val attemptsLeft = (_uiState.value.attemptsLeft - 1).coerceAtLeast(0)
-        val coinsResult = adjustStudentCoins(student, FAILURE_PENALTY)
-        val updatedCoins = coinsResult.getOrNull()
 
         _uiState.update {
             it.copy(
@@ -251,7 +249,6 @@ class DiscoverCameraViewModel @Inject constructor(
                 lastDetectedWord = detectedWord,
                 statusMessage = "No encontramos esa palabra en tu diccionario",
                 lastCoinsDelta = FAILURE_PENALTY,
-                totalCoins = updatedCoins,
                 isProcessing = false,
                 gameFinished = attemptsLeft == 0
             )
