@@ -27,6 +27,11 @@ import java.util.UUID
  */
 object DemoDataStore {
 
+    // Estado por defecto seguro: intenta usar "ACTIVE"; si no existe, usa el primer valor del enum.
+    private val DEFAULT_USER_STATUS: UserStatus by lazy {
+        try { UserStatus.valueOf("ACTIVE") } catch (_: Exception) { UserStatus.values().first() }
+    }
+
     data class DemoUser(
         val id: String,
         val role: UserRole,
@@ -45,7 +50,7 @@ object DemoDataStore {
                 apellido = lastName,
                 email = email,
                 rol = role,
-                estado = UserStatus.ACTIVE,
+                estado = DEFAULT_USER_STATUS,
                 fotoPerfil = photoUrl,
                 creadoEn = System.currentTimeMillis()
             )
@@ -544,4 +549,3 @@ object DemoDataStore {
         _currentUser.value = null
     }
 }
-
