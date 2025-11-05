@@ -1,5 +1,12 @@
 package com.example.alphakids.data.di
 
+import com.example.alphakids.data.demo.DemoAchievementRepository
+import com.example.alphakids.data.demo.DemoAssignmentRepository
+import com.example.alphakids.data.demo.DemoAuthRepository
+import com.example.alphakids.data.demo.DemoModeConfig
+import com.example.alphakids.data.demo.DemoStudentRepository
+import com.example.alphakids.data.demo.DemoWordRepository
+import com.example.alphakids.data.demo.DemoDiscoverRepository
 import com.example.alphakids.data.firebase.repository.AssignmentRepositoryImpl
 import com.example.alphakids.data.firebase.repository.AuthRepositoryImpl
 import com.example.alphakids.data.firebase.repository.ImageStorageRepositoryImpl
@@ -12,6 +19,7 @@ import com.example.alphakids.domain.repository.ImageStorageRepository
 import com.example.alphakids.domain.repository.StudentRepository
 import com.example.alphakids.domain.repository.WordRepository
 import com.example.alphakids.domain.repository.DiscoverRepository
+import com.example.alphakids.domain.repository.AchievementRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage // Importación necesaria para el constructor de ImageStorageRepositoryImpl
@@ -28,25 +36,41 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideAuthRepository(auth: FirebaseAuth, db: FirebaseFirestore): AuthRepository {
-        return AuthRepositoryImpl(auth, db)
+        return if (DemoModeConfig.isEnabled) {
+            DemoAuthRepository()
+        } else {
+            AuthRepositoryImpl(auth, db)
+        }
     }
 
     @Provides
     @Singleton
     fun provideStudentRepository(db: FirebaseFirestore): StudentRepository {
-        return StudentRepositoryImpl(db)
+        return if (DemoModeConfig.isEnabled) {
+            DemoStudentRepository()
+        } else {
+            StudentRepositoryImpl(db)
+        }
     }
 
     @Provides
     @Singleton
     fun provideWordRepository(db: FirebaseFirestore): WordRepository {
-        return WordRepositoryImpl(db)
+        return if (DemoModeConfig.isEnabled) {
+            DemoWordRepository()
+        } else {
+            WordRepositoryImpl(db)
+        }
     }
 
     @Provides
     @Singleton
     fun provideAssignmentRepository(db: FirebaseFirestore): AssignmentRepository {
-        return AssignmentRepositoryImpl(db)
+        return if (DemoModeConfig.isEnabled) {
+            DemoAssignmentRepository()
+        } else {
+            AssignmentRepositoryImpl(db)
+        }
     }
 
     @Provides
@@ -58,6 +82,16 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideDiscoverRepository(db: FirebaseFirestore): DiscoverRepository {
-        return DiscoverRepositoryImpl(db)
+        return if (DemoModeConfig.isEnabled) {
+            DemoDiscoverRepository()
+        } else {
+            DiscoverRepositoryImpl(db)
+        }
+    }
+
+    @Provides
+    @Singleton
+    fun provideAchievementRepository(): AchievementRepository {
+        return DemoAchievementRepository()
     }
 }

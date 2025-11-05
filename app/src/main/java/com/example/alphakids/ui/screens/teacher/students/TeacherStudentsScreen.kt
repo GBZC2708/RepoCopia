@@ -63,7 +63,7 @@ fun TeacherStudentsScreen(
 ) {
     val teacherBottomNavItems = listOf(
         BottomNavItem("home", "Inicio", Icons.Rounded.Home),
-        BottomNavItem("students", "Alumnos", Icons.Rounded.Groups),
+        BottomNavItem("students", "Estudiantes", Icons.Rounded.Groups),
         BottomNavItem("words", "Palabras", Icons.Rounded.Spellcheck)
     )
 
@@ -91,7 +91,7 @@ fun TeacherStudentsScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             AppHeader(
-                title = "Mis alumnos",
+                title = "Mis estudiantes",
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -139,13 +139,13 @@ fun TeacherStudentsScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 InfoCard(
                     modifier = Modifier.weight(1f),
-                    title = "Total Alumnos",
+                    title = "Total de estudiantes",
                     data = metrics.totalStudents.toString(),
                     icon = Icons.Rounded.Groups
                 )
                 InfoCard(
                     modifier = Modifier.weight(1f),
-                    title = "Alumnos Activos",
+                    title = "Estudiantes activos",
                     data = metrics.activeStudents.toString(),
                     icon = Icons.Rounded.Face
                 )
@@ -345,7 +345,7 @@ fun TeacherStudentsScreenPreview() {
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
                 AppHeader(
-                    title = "Mis alumnos",
+                    title = "Mis estudiantes",
                     navigationIcon = {
                         IconButton(onClick = {}) {
                             Icon(
@@ -370,7 +370,7 @@ fun TeacherStudentsScreenPreview() {
                 MainBottomBar(
                     items = listOf(
                         BottomNavItem("home", "Inicio", Icons.Rounded.Home),
-                        BottomNavItem("students", "Alumnos", Icons.Rounded.Groups),
+                        BottomNavItem("students", "Estudiantes", Icons.Rounded.Groups),
                         BottomNavItem("words", "Palabras", Icons.Rounded.Spellcheck)
                     ),
                     currentRoute = "students",
@@ -402,12 +402,12 @@ fun TeacherStudentsScreenPreview() {
                         data = metrics.totalStudents.toString(),
                         icon = Icons.Rounded.Groups
                     )
-                    InfoCard(
-                        modifier = Modifier.weight(1f),
-                        title = "Alumnos Activos",
-                        data = metrics.activeStudents.toString(),
-                        icon = Icons.Rounded.Face
-                    )
+                InfoCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Estudiantes activos",
+                    data = metrics.activeStudents.toString(),
+                    icon = Icons.Rounded.Face
+                )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {

@@ -56,7 +56,7 @@ fun TeacherHomeScreen(
     val teacherName by viewModel.teacherName.collectAsState()
     val teacherBottomNavItems = listOf(
         BottomNavItem("home", "Inicio", Icons.Rounded.Home),
-        BottomNavItem("students", "Alumnos", Icons.Rounded.Groups),
+        BottomNavItem("students", "Estudiantes", Icons.Rounded.Groups),
         BottomNavItem("words", "Palabras", Icons.Rounded.Spellcheck)
     )
 
@@ -119,7 +119,7 @@ fun TeacherHomeScreen(
             )
 
             Text(
-                text = "Este es tu panel de docente, podrás asignar palabras y monitorear a tus alumnos.",
+                text = "Este es tu panel de docente, podrás asignar palabras y monitorear a tus estudiantes.",
                 fontFamily = dmSansFamily,
                 fontWeight = FontWeight.Medium,
                 fontSize = 12.sp,
